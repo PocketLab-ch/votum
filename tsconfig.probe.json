@@ -1,0 +1,18 @@
+{
+	/*
+	 * Die Probe-Drehbücher werden vom Typprüfer sonst nicht gesehen.
+	 *
+	 * `svelte-check` läuft gegen die von SvelteKit erzeugte `include`-Liste, und
+	 * die kennt `src`, `test` und `tests` — nicht `probe`. Am 01.09.2026 fiel
+	 * dadurch auf, dass alle acht Aufrufe von `pruefeTraktandum` dort noch die
+	 * alte Signatur führten: Der dritte, seit dem Sicherheitsdurchgang
+	 * verpflichtende Parameter fehlte. Zur Laufzeit wäre daraus ein
+	 * `meeting_id = NULL` geworden, das nie trifft — jeder Lauf hätte «das
+	 * Traktandum gibt es nicht mehr» gemeldet, nachdem er bezahlt worden wäre.
+	 *
+	 * Eine eigene Datei statt eines Eingriffs in die generierte: Die schreibt
+	 * SvelteKit bei jedem Start neu.
+	 */
+	"extends": "./tsconfig.json",
+	"include": ["probe/**/*.ts", ".svelte-kit/ambient.d.ts", ".svelte-kit/non-ambient.d.ts"]
+}

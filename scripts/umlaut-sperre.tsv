@@ -1,0 +1,26 @@
+# Sperrliste für scripts/check-umlaute.mjs: je Zeile das Muster und die
+# Obergrenze der Fundstellen in Zeichenketten und Kommentaren unter src/ sowie
+# im Fliesstext unter docs/, durch Tab getrennt.
+# Die Obergrenze darf nur sinken, nie steigen; erzwingen kann das der Lauf
+# nicht, das prüft der Review. Steigt die Zahl der Fundstellen, nennt der Lauf
+# das Muster und alle seine Stellen; die neue steht darunter.
+#
+# Die Muster sind Stämme, auch im Wortinnern: «muess» trifft «muessen»,
+# «Pruef» trifft «Pruefung» und «geprueft». Bezeichner, Dateinamen, Routen, CSS-Klassen und URL-Pfade zählt
+# der Wächter nicht.
+#
+# Gemessen am 20.10.2026 mit «node scripts/check-umlaute.mjs --erheben», nach
+# der Umstellung auf die Kommentare des Parsers (vorher fehlten die Kommentare
+# hinter dem ersten Platzhalter einer Vorlage) und mit Fundstellen im
+# Wortinnern. Mitgezählt sind auch Namen, die ASCII bleiben, etwa die Skills
+# «codepruefung» und «sicherheitspruefung» oder das Testdatenmuster «Nachpruef»;
+# für eine Obergrenze ist das gleichgültig, sie deckelt nur den Bestand.
+fuer	29
+ueber	41
+waere	16
+muess	3
+koenn	1
+naechst	7
+haeng	12
+Aenderung	8
+Pruef	30

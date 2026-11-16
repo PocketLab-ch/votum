@@ -1,0 +1,59 @@
+# Ausschlüsse für jeden öffentlichen Stand (git archive), auch den Spiegel auf
+# Codeberg (docs/veroeffentlichung-personendaten.md).
+#
+# ACHTUNG: Diese Liste bewusst kurz halten. Wer hier Quellcode ausschliesst,
+# verletzt die Lizenz. Im Zweifel drin lassen.
+
+# Die Sperrliste des Personendaten-Wächters: ungesalzene Prüfsummen über kurze
+# Namen lassen sich mit einer Namensliste zurückrechnen.
+scripts/personendaten-sperre.tsv export-ignore
+
+# Die hauseigenen Muster des Handbuch-Wächters (Hosts, Abwehr, Orte von
+# Geheimnissen): als Sperrliste ein Inventar des Betriebs.
+scripts/betriebsangaben-sperre.json export-ignore
+
+# Interne Prüfberichte, die Angriffswege und offene Befunde beschreiben; kein
+# Quellcode. Dieselbe Regel wie in unterhalt (docs/sicherheits/,
+# docs/pendenzen-sicherheit.md) und immotool (docs/audits/). Die Tests zu den
+# Befunden bleiben im Stand.
+docs/audit/ export-ignore
+docs/ausit/ export-ignore
+docs/pendenzen-sicherheit.md export-ignore
+docs/befunde-sicherheitsdurchgang-2026-10-09.md export-ignore
+
+# Nur für das interne Repo (Entscheid 0051, Codeberg-Plan Schritt 3): Die CI läuft auf
+# Gitea und braucht die Sperrliste, im Spiegel wäre sie rot und nutzlos. Der Fahrplan der
+# Befunde vom 09.10.2026 ist erledigt und kein Quellcode.
+.gitea/ export-ignore
+docs/plan-offene-punkte-2026-10-13.md export-ignore
+
+# Interne Arbeitspapiere (Sicherheitsprüfung des Codeberg-Stands, 15.11.2026):
+# Freigabeprotokoll, Messprotokoll, Pendenzen, datierte Pläne, Befund-, Prüf-
+# und Anwaltsberichte. Sie beschreiben den Betrieb dieses Hauses und offene
+# Punkte, nicht die Software. Im Stand bleiben die Produktdokumente (README,
+# Handbuch, installation, dienste, gestaltung, leitplanken, verbund,
+# vererbung-abend), `docs/agents/` und `docs/entscheide/`.
+docs/freigabe.md export-ignore
+docs/proben.md export-ignore
+docs/pendenzen.md export-ignore
+docs/veroeffentlichung-personendaten.md export-ignore
+docs/pruefung/ export-ignore
+docs/abgleich-*.md export-ignore
+docs/anwalt*.md export-ignore
+docs/befunde-*.md export-ignore
+docs/bericht-*.md export-ignore
+docs/echte-protokolle-*.md export-ignore
+docs/einordnung-*.md export-ignore
+docs/erhebung-*.md export-ignore
+docs/gegenlesung-*.md export-ignore
+docs/juristische-pruefung-*.md export-ignore
+docs/plan-*.md export-ignore
+docs/pruefauftrag-*.md export-ignore
+docs/rechtspruefung-*.md export-ignore
+docs/vorbereitung-*.md export-ignore
+docs/zweitpruefung-*.md export-ignore
+
+# Zwei Prüfskripte mit Daten Dritter (Sicherheitsprüfung des Codeberg-Stands,
+# 15.11.2026, A2). Kein Quellcode der Anwendung; intern laufen sie unverändert.
+e2e/nirgendweg.mjs export-ignore
+e2e/nirgendwerk.mjs export-ignore

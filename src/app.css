@@ -1,0 +1,1615 @@
+/*
+ * Gestaltungsgrundlage. Alle weiteren Sichten setzen darauf auf.
+ *
+ * Zwei Anforderungen bestimmen die Werte: Die Teilnehmersicht muss von älteren
+ * Personen ohne Erklärung bedienbar sein (NFR-11), und die Präsentationssicht
+ * wird projiziert. Deshalb grosse Grundschrift und hohe Kontraste statt
+ * gedämpfter Grautöne.
+ */
+
+:root {
+	--schrift: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+	--radius: 0.5rem;
+	--rand: 1rem;
+	--zeile: 1.6;
+
+	/* Berührungsziel nach den üblichen Barrierefreiheitsempfehlungen. */
+	--ziel-min: 2.75rem;
+	/* Im Saal wird mit dem Daumen und unter Zeitdruck bedient. */
+	--ziel-saal: 3.5rem;
+
+	/*
+	 * Drei Bahnen statt einer.
+	 *
+	 * Bisher lief alles durch 62rem. Auf einem Bildschirm mit 1440 px stand alles
+	 * in einer Spalte über gut 40 Prozent der Fläche, rechts blieb Leere — und die
+	 * Startseite verlangte Scrollen, um von der laufenden Versammlung zu den
+	 * offenen Punkten zu kommen. Die Bahn richtet sich ab jetzt nach der Aufgabe:
+	 * Fliesstext bleibt schmal, weil lange Zeilen schlecht lesbar sind; eine Seite
+	 * mit Seitenleiste darf die Fläche nutzen.
+	 */
+	--lesebreite: 42rem;
+	/* Höhe der Kopfleiste, gemessen: 69 px. Grosszügig aufgerundet, damit die
+	   Bahn darunter nie um ein Pixel zu hoch wird und eine Rollleiste erzeugt. */
+	--kopf-hoehe: 4.5rem;
+	--bahn-max: 78rem;
+	--spalte-seitenleiste: 17rem;
+
+	/*
+	 * Wie schmal eine Karte im Raster werden darf, bevor eine Spalte wegfällt.
+	 *
+	 * Der Wert entscheidet über die Spaltenzahl, und wenige Pixel entscheiden
+	 * über eine ganze Reihe: Mit 24rem brauchten drei Karten 1176 Pixel, das
+	 * Raster neben der Seitenleiste ist 1120 breit (1440 minus Leiste minus
+	 * Innenabstand) — also standen sie zu zweit, und die dritte fiel allein in
+	 * eine neue Reihe. Mit 22rem sind es 1080, und die Reihe geht auf.
+	 *
+	 * **Nachgemessen, nicht gerechnet.** Der erste Versuch mit 23rem war um
+	 * acht Pixel zu breit, weil der Innenabstand der Bahn in der Rechnung
+	 * fehlte. Wer den Wert ändert, misst `.kacheln` im Browser nach.
+	 */
+	--kachel-min: 22rem;
+	/*
+	 * Wie schmal eine Spalte der Arbeitsfläche werden darf, bevor die zweite
+	 * wegfällt. 28rem sind 448 px; zwei davon plus 1.5rem Lücke brauchen 920 px.
+	 * Gemessen passt das ab einem 1280er Bildschirm (Bahn 960 px) — mit 30rem
+	 * fing es erst bei 1440 an. Wer den Wert ändert, misst nach.
+	 */
+	--arbeitsspalte-min: 28rem;
+}
+
+/*
+ * **`color-scheme` sagt dem Browser, wie er SEINE Bedienelemente zeichnet**
+ * (Auftraggeber, 02.09.2026: «Bei der Hell-Mode sind die Checkbox und Auswahl-Bullets
+ * extrem dunkel. Es wirkt, als wäre dort die Einstellung Hell/Dunkel nicht gut
+ * hinterlegt.» — sie war es gar nicht).
+ *
+ * Kästchen, Auswahlknöpfe, Datumsfelder und Rollbalken malt der Browser selbst;
+ * `main input:not([type='radio']):not([type='checkbox'])` nimmt die beiden
+ * ersten ausdrücklich von der Hausgestaltung aus. Ohne diese Zeile richtet er
+ * sich nach dem **Gerät** statt nach der Seite. Gemessen bei heller Seite:
+ *
+ * | Systemeinstellung | Kästchen |
+ * |---|---|
+ * | hell | leeres Kästchen mit Rand |
+ * | dunkel | **schwarzer Block** |
+ *
+ * Die Zeile gehört in beide Blöcke und nicht nach `:root`: Wer von Hand
+ * umschaltet, will die Bedienelemente mitgeschaltet haben, und `data-theme`
+ * steht immer (Vorgabe in `app.html`, Feinschliff im Skript davor).
+ */
+:root[data-theme='light'] {
+	color-scheme: light;
+	/*
+	 * **Und die Farbe des gefüllten Zustands** (02.09.2026, beim Nachmessen des
+	 * Kästchenbefundes). Mit `color-scheme` allein zeichnet der Browser den
+	 * gewählten Auswahlknopf in seinem eigenen Blau — mitten in einer
+	 * Anwendung, deren Knöpfe, Verweise und Marken grün sind. Das Häkchen
+	 * darauf wählt der Browser selbst und trifft den Kontrast; hier steht nur,
+	 * welche Farbe die Fläche hat.
+	 *
+	 * **`var(--akzent)` und nicht der Wert** (aus dem Code-Review). Zeichengleich
+	 * ausgeschrieben wäre es ein zweiter Schreiber derselben Farbe: Wer den
+	 * Akzent ändert, liesse Kästchen und Auswahlknöpfe auf der alten stehen, und
+	 * kein Wächter schlüge an. Die Reihenfolge stört nicht — eine Variable im
+	 * selben Block löst auch auf, wenn sie darunter definiert wird.
+	 */
+	accent-color: var(--akzent);
+	--grund: #fbfbfa;
+	--flaeche: #ffffff;
+	--flaeche-2: #f2f2ef;
+	--linie: #d8d8d2;
+	--text: #1a1a17;
+	--text-leise: #5b5b54;
+	--akzent: #2d5016;
+	--akzent-text: #ffffff;
+	--warnung: #8a4b00;
+	--fehler: #9b1c1c;
+	--hinweis: #7a5c00;
+	--neutral: #7a8791;
+	--flaeche-hinweis: #fff8e6;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	accent-color: var(--akzent);
+	--grund: #14140f;
+	--flaeche: #1e1e18;
+	--flaeche-2: #2a2a22;
+	--linie: #3d3d33;
+	--text: #f0f0e8;
+	--text-leise: #a8a89c;
+	--akzent: #a3c585;
+	--akzent-text: #14140f;
+	--warnung: #e0a458;
+	--fehler: #e88b8b;
+	--hinweis: #e2c275;
+	--neutral: #8d99a3;
+	--flaeche-hinweis: #2e2a1c;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+/*
+ * **Die Kopfleiste klebt, also muss jeder Sprung an ihr vorbei** (29.08.2026).
+ *
+ * `header` in `+layout.svelte` ist `position: sticky; top: 0` und je nach Umbruch
+ * 69 bis 118 px hoch. Ohne diese Zeile landet jedes Sprungziel darunter: ein
+ * Ankerlink, der Tastaturfokus, `element.focus()` nach einem Absenden. Gemessen
+ * am Einlass des Abends: 13 von 18 Bedienelementen waren nach `scrollIntoView()`
+ * **vollstaendig** verdeckt («44px von 44px»).
+ *
+ * Drei Seiten trugen dafuer ein eigenes `scroll-margin-top: 8rem` — eine
+ * Einzelfallbehebung an der Stelle, an der es jemandem auffiel. Hier gilt sie
+ * fuer alle.
+ *
+ * **Die gemessene Hoehe, nicht ein fester Wert.** Die Leiste bricht um: Bei
+ * 1400 px Fensterbreite ist sie 118 px hoch, bei 900 px mit laufender Versammlung
+ * **206 px**. Ein festes `8rem` (128 px) deckte deshalb nur die breiten Fenster —
+ * genau die, an denen gemessen worden war. `+layout.svelte` schreibt die
+ * tatsaechliche Hoehe per `ResizeObserver` nach `--kopf-ist`.
+ *
+ * **Der Rueckfall ist grosszuegig**, weil er ohne JavaScript und in den
+ * Sekundenbruchteilen vor der Hydration gilt: 13rem decken auch die hoechste
+ * gemessene Leiste. Zu viel Abstand beim Springen kostet nichts, zu wenig
+ * verdeckt das Ziel.
+ */
+html {
+	scroll-padding-top: calc(var(--kopf-ist, 13rem) + 1rem);
+}
+
+body {
+	background: var(--grund);
+	color: var(--text);
+	font-family: var(--schrift);
+	font-size: 1.0625rem;
+	line-height: var(--zeile);
+	-webkit-text-size-adjust: 100%;
+}
+
+/*
+ * Kein waagrechtes Scrollen auf schmalen Geräten.
+ *
+ * **Nur am Körper, nicht an `main`.** `overflow-x: hidden` macht ein Element zum
+ * Rollbehälter — auch senkrecht, denn `overflow-y` rechnet dann auf `auto`. Wer
+ * darin etwas klebriges setzt, klebt an *diesem* Behälter statt am Fenster: Die
+ * Seitenleiste stand deshalb dauerhaft 68 Pixel zu tief und klebte an nichts.
+ * Die Lücke zwischen Kopfleiste und Leiste kam von hier.
+ */
+body {
+	overflow-x: hidden;
+}
+
+/*
+ * Die Bahnen.
+ *
+ * Der Rahmen setzt **keine** Breite fest — auch nicht ohne Seitenleiste. Ein
+ * Deckel von 62rem liess auf einem Bildschirm mit 1600 Pixeln links und rechts
+ * je gut 300 Pixel leer, und zwar ausgerechnet auf der Sitzungsleitung, die
+ * zwei Spalten nebeneinander führt und im Saal jede Zeile braucht, die sie
+ * bekommen kann.
+ *
+ * Die Breite regelt jetzt der Inhalt selbst: Fliesstext bleibt über
+ * `.lesebreite` schmal (und Absätze unmittelbar im Inhalt von selbst),
+ * Formularreihen über `.felder`, Karten über ihre eigene Breite. Was die Fläche
+ * braucht, bekommt sie.
+ *
+ * `:has()` statt eines Merkmals an `main`: Die Seite entscheidet durch das, was
+ * sie zeichnet, und niemand muss zusätzlich daran denken, ein Merkmal zu setzen.
+ */
+main {
+	max-width: none;
+	padding: var(--rand) 1.5rem;
+}
+
+/* Unter 60rem ist der breitere Seitenabstand verschenkte Fläche. */
+@media (max-width: 60rem) {
+	main {
+		padding: var(--rand);
+	}
+}
+
+/*
+ * Eine Seite mit Seitenleiste nimmt die ganze Fläche — ohne Deckel, ohne
+ * Innenabstand, ohne Mittelachse.
+ *
+ * Ein Deckel von 78rem liess auf einem breiten Bildschirm links und rechts je
+ * gut 300 Pixel leer, und die Leiste schwebte als abgesetzter Kasten in der
+ * Mitte. Die Leiste ist aber kein Inhalt, sondern Rand: Sie gehört an den Rand
+ * des Fensters und wird von ihrem Inhalt durch eine Linie getrennt, nicht durch
+ * Luft. Für den Fliesstext sorgt weiter unten `.lesebreite`.
+ */
+main:has(> .bahn) {
+	max-width: none;
+	padding: 0;
+}
+
+/* Im Saal zählt die Fläche ebenso. */
+main:has(> .saal) {
+	max-width: none;
+	padding: 0;
+}
+
+.bahn {
+	display: grid;
+	grid-template-columns: var(--spalte-seitenleiste) minmax(0, 1fr);
+	align-items: stretch;
+	/*
+	 * Die Leiste reicht bis zum unteren Rand, auch wenn der Inhalt kürzer ist.
+	 * Sonst endete die Trennlinie mitten im Bild und der Rand sähe abgerissen
+	 * aus. Abzuziehen ist die Kopfleiste.
+	 */
+	min-height: calc(100dvh - var(--kopf-hoehe));
+}
+
+.bahn > .inhalt {
+	min-width: 0;
+	padding: var(--rand) 1.5rem;
+}
+
+/*
+ * Unter 60rem stapelt sich die Bahn: die Leiste über den Inhalt. Sie
+ * verschwindet nicht — sie ist die Führung, und wer sie auf dem Telefon
+ * wegklappt, sucht wieder.
+ */
+@media (max-width: 60rem) {
+	.bahn {
+		grid-template-columns: minmax(0, 1fr);
+		min-height: 0;
+	}
+
+	.bahn > .inhalt {
+		padding: var(--rand);
+	}
+}
+
+/* Fliesstext bleibt schmal, auch wenn die Bahn breit ist. */
+.lesebreite {
+	max-width: var(--lesebreite);
+}
+
+/*
+ * **Der Erklärabsatz unter einer Überschrift — eine Farbe, nicht fünfzehn.**
+ *
+ * Gemeldet am 02.09.2026 vom Auftraggeber («das Layout unterscheidet sich»), gefunden
+ * beim Nachmessen: `.einleitung` steht in 22 Dateien und war **nirgends**
+ * zentral definiert. Fünfzehn Seiten erfanden sie selbst, sechs gar nicht — und
+ * am Bildschirm sah man es:
+ *
+ * | Seite | Farbe |
+ * |---|---|
+ * | Verlauf, Reglement, Nutzniessung | grau |
+ * | Personen, Protokoll | **schwarz** |
+ *
+ * Wer die Klasse selbst definierte, machte den Absatz grau; wer nicht, bekam
+ * die Grundfarbe des Fliesstexts. Ein Erklärsatz ist aber Beiwerk zur
+ * Überschrift und tritt zurück — überall gleich.
+ *
+ * **Die Breite steht hier mit** (02.09.2026, aus dem Code-Review). Ein erster
+ * Anlauf verliess sich auf `main > p:not(.breit)` weiter unten — das deckt aber
+ * nur Absätze. Auf der Zugangsseite trägt eine `<ul>` dieselbe Klasse, und nach
+ * dem Entfernen der lokalen Regel lief sie über 1120 px, während der Absatz
+ * direkt darüber bei 672 umbrach. Ein Erklärtext ist schmal, ob er nun ein
+ * Absatz ist oder eine Aufzählung.
+ */
+.einleitung {
+	max-width: var(--lesebreite);
+	color: var(--text-leise);
+}
+
+/*
+ * Und zwar von selbst.
+ *
+ * Die Bahn ist jetzt so breit wie das Fenster; ein Erklärabsatz liefe darin über
+ * 1100 Pixel, und bei so langen Zeilen findet das Auge den Anfang der nächsten
+ * nicht mehr. Betroffen sind nur Absätze unmittelbar im Inhalt — Tabellen,
+ * Listen und Kästen behalten die volle Breite, denn dort ist sie der Zweck.
+ *
+ * `.breit` hebt es auf, wo ein Absatz doch die Fläche braucht.
+ *
+ * Gilt seit dem Wegfall des Deckels an `main` für beide Bahnen: Ohne
+ * Seitenleiste läuft ein Absatz sonst über die ganze Fensterbreite.
+ *
+ * **Und für den Stapel** (03.09.2026, aus dem Code-Review): Dort liegen die
+ * Absätze zwei Ebenen tiefer, `main > p` erreicht sie nicht mehr. Gemessen auf
+ * der umgestellten Reglementsseite liefen vier Erklärabsätze über 1120 px,
+ * während die daneben bei 672 umbrachen — ein Rückschritt, den erst der Umbau
+ * erzeugt hat und den niemand an der Seite selbst gesucht hätte. Der Deckel
+ * gehört an dieselbe Stelle wie der Abstand: an das direkte Kind des
+ * Abschnitts.
+ */
+.bahn > .inhalt > p:not(.breit),
+.seitenstapel > .abschnitt > p:not(.breit),
+main > p:not(.breit) {
+	max-width: var(--lesebreite);
+}
+
+/*
+ * Felder in einer Reihe — als Raster, nicht als Fluss.
+ *
+ * Acht Seiten führten dieselbe Reihe aus `display: flex` mit
+ * `align-items: flex-end` und jede etwas anders. Beim Umbruch sprangen die
+ * Felder gegeneinander: «Ende» sass höher als «Beginn», weil unter dem einen
+ * ein Hinweissatz stand und unter dem anderen nicht. Ein Raster hat feste
+ * Spuren, also fluchten die Zeilen — auch wenn eine Beschriftung zweizeilig
+ * wird oder ein Hinweis dazukommt.
+ *
+ * Die Spur ist 12rem breit und die Reihe höchstens 58rem: Das ergibt vier
+ * gleiche Spuren, in denen ein `.breit`-Feld genau zwei belegt — zwei breite
+ * Felder füllen also eine Zeile, zwei schmale die nächste. Wären die Spuren
+ * breiter, passten nur drei hinein, und ein zweites breites Feld fiele in die
+ * nächste Zeile, während daneben eine Spur leer bliebe. `auto-fit` legt bei
+ * schmalem Fenster von selbst um.
+ */
+.felder {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+	gap: 0.75rem 1rem;
+	align-items: start;
+	max-width: 58rem;
+}
+
+.felder > label,
+.felder > .feld {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+	font-size: 0.9rem;
+	font-weight: 550;
+	min-width: 0;
+}
+
+/*
+ * Dieselbe Beschriftung in der gestapelten Spalte. Ohne diese Regel trugen
+ * Felder aus einer Kindkomponente kein Gewicht — die Kopie in der Komponente
+ * erreicht sie wegen der Stilkapselung nicht.
+ */
+.formular > label,
+.formular > .feld {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	font-weight: 550;
+	min-width: 0;
+}
+
+/* Breiter, weil der Inhalt es braucht — ein Name, ein Antragswortlaut. */
+.felder > .breit {
+	grid-column: span 2;
+}
+
+.felder > .voll {
+	grid-column: 1 / -1;
+}
+
+/* Ein Knopf in der Reihe steht auf der Grundlinie der Felder und wächst nicht
+   über seine Spur — ein Knopf, so breit wie ein Eingabefeld, sieht aus wie ein
+   Fehler. */
+.felder > button {
+	align-self: end;
+	justify-self: start;
+}
+
+/* Ankreuzfelder stehen neben ihrer Beschriftung, nicht darüber. */
+.felder > .kasten {
+	flex-direction: row;
+	align-items: start;
+	gap: 0.5rem;
+	font-weight: 400;
+	min-height: var(--ziel-min);
+}
+
+/*
+ * Wahlblöcke — eine Frage, darunter die Möglichkeiten mit je einem Erklärsatz.
+ *
+ * Steht hier und nicht in einer Seite, weil dieselbe Wahl an mehreren Stellen
+ * vorkommt: beim Anlegen, beim Nachbessern, in der gemeinsamen Versammlung.
+ * Bis zum 11.08.2026 baute jede Seite ihre Felder selbst, und genau daran fiel
+ * auf, dass Tag, Beginn und Ort anders aussahen als das Suchfeld daneben.
+ */
+.wahlen {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+/* Nebeneinander und gleich hoch, wo Platz ist. */
+.wahlen.raster {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+	gap: 0.75rem;
+	align-items: stretch;
+}
+
+.wahlen label {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	font-weight: 550;
+}
+
+.wahlen .wahl {
+	flex-direction: row;
+	align-items: flex-start;
+	gap: 0.6rem;
+	font-weight: 400;
+	min-height: var(--ziel-min);
+}
+
+.wahlen .wahl > span {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+/* Was nur zu einer angekreuzten Möglichkeit gehört, rückt unter sie ein. */
+.wahlen .eingerueckt {
+	margin-left: 1.6rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--linie);
+}
+
+.wahlen .hilfe,
+.felder .hilfe {
+	font-weight: 400;
+	font-size: 0.875rem;
+	color: var(--text-leise);
+}
+
+/* Unter 34rem passt keine zweite Spur mehr — dann steht alles untereinander. */
+@media (max-width: 34rem) {
+	.felder {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.felder > .breit,
+	.felder > .voll {
+		grid-column: 1 / -1;
+	}
+}
+
+h1,
+h2,
+h3 {
+	line-height: 1.25;
+	margin: 0 0 0.5em;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+}
+
+h1 {
+	font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+/*
+ * Lange deutsche Wörter dürfen trennen.
+ *
+ * Diese Anwendung ist voll davon: Stimmberechtigtenstand, Beschlussfähigkeit,
+ * Mehrheitserfordernisse, Versammlungstage. Als Überschrift auf einem Telefon
+ * passt keines davon in eine Zeile, und ein unteilbares Wort schiebt die Seite
+ * breiter — ein Pixel genügt, damit der Browser sie herauszoomt.
+ *
+ * `hyphens: auto` trennt an der richtigen Stelle, weil das Dokument `lang="de"`
+ * trägt; `overflow-wrap` fängt ab, wo das Wörterbuch keine Trennung kennt.
+ */
+h1,
+h2,
+h3,
+h4 {
+	hyphens: auto;
+	overflow-wrap: break-word;
+}
+
+a {
+	color: var(--akzent);
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+}
+
+/*
+ * **Ein Eingabefeld in einem Formular sieht überall gleich aus.**
+ *
+ * Bis zum 11.08.2026 gestaltete jede Seite ihre Felder selbst — und wo sie es
+ * nicht tat, blieb der Browserstandard stehen. Nachgemessen auf der Anlegeseite:
+ * Tag, Beginn und Ort waren **29 px** hoch und ohne Rahmenfarbe, das Suchfeld
+ * daneben **44 px** und deutlich abgesetzt, die Felder im Versammlungsformular
+ * ebenfalls 44 px. Gemeldet als «Datum, Zeit und Ort sind anders dargestellt als
+ * das Suchfeld».
+ *
+ * 44 px ist `--ziel-min`: die kleinste Fläche, die sich am Telefon zuverlässig
+ * treffen lässt. Ein 29 px hohes Feld ist nicht nur uneinheitlich, es ist auch
+ * zu klein zum Antippen.
+ *
+ * **Auf `.felder` und `.wahlen` begrenzt, nicht auf jedes `input` der
+ * Anwendung.** Der erste Versuch galt global — und riss die Sitzungsleitung
+ * auseinander: Ihre Erfassungstabelle trägt Dutzende schmaler Felder in einer
+ * Zeile, und mit Innenabstand und Mindesthöhe wuchs der Querlauf am Telefon von
+ * 61 auf 221 px, mit 39 statt 5 Feldern ausserhalb des Bildes. Gemessen, nicht
+ * vermutet: einmal mit und einmal ohne die Regel.
+ *
+ * Nicht getroffen sind Auswahl- und Ankreuzfelder — sie sind Quadrate neben
+ * ihrer Beschriftung, kein Eingabefeld.
+ */
+/*
+ * `.formular` steht daneben: die gestapelte Spalte (GemeinschaftFormular,
+ * TraktandumFormular, Betreiber, Reglement …). Sie stand bis zum 11.08.2026 nur
+ * in den Komponenten selbst — und Svelte kapselt Stile je Datei. Ein Feld, das
+ * aus einer **Kindkomponente** kam, blieb deshalb ungestaltet: «Fall suchen» und
+ * «Mehrheitserfordernis» standen mit Gewicht 400 neben einem «Titel» mit 550
+ * (gemessen im Traktandumformular).
+ */
+/*
+ * **Umgekehrt am 21.08.2026: erst alle, dann die Ausnahmen.**
+ *
+ * Gemeldet mit einem Bild des Formulars «Eine weitere Sache aufnehmen»: «kann
+ * man die Eingabe und Auswahlfenster nicht im Stiel der Webseite darstellen? So
+ * sieht es nach einem Stielbruch aus.» Und so war es: Das Auswahlfeld daneben
+ * trug den Browserstandard, weil sein Formular keine der drei Klassen führte.
+ *
+ * Die Begrenzung auf `.formular`, `.felder` und `.wahlen` war der Versuch,
+ * einen früheren Fehler zu vermeiden (siehe unten). Sie verlagerte ihn nur:
+ * Jedes neue Formular fiel heraus, bis jemand daran dachte, die Klasse zu
+ * setzen — und daran denkt niemand, weil nichts daran erinnert.
+ *
+ * **Jetzt gilt die Regel für alles unter `main`**, mit ausdrücklichen Ausnahmen
+ * dort, wo sie schadet. Das ist die sichere Richtung: Ein vergessenes Formular
+ * sieht richtig aus; eine vergessene Ausnahme fällt beim ersten Hinsehen auf —
+ * und der Querlauf-Wächter (`e2e/telefonbreite.mjs`) misst sie.
+ */
+main input:not([type='radio']):not([type='checkbox']),
+main select,
+main textarea {
+	min-height: var(--ziel-min);
+	padding: 0.5rem 0.65rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: var(--flaeche);
+	color: var(--text);
+	font-weight: 400;
+}
+
+/*
+ * **Ein Dateifeld bringt seine eigene Breite mit** — und zwar eine, die sich um
+ * die Bahn nicht kümmert: Der Knopf «Datei auswählen» und der Dateiname stehen
+ * nebeneinander, zusammen rund 335 px. In einer 249 px breiten Spalte schiebt
+ * das die ganze Seite quer, und `body` blendet den Querlauf aus — abgeschnitten
+ * statt scrollbar.
+ *
+ * Bei 320 px auf der Betreiberseite gemessen: 50 px Überlauf, mit diesen zwei
+ * Zeilen null (26.08.2026). Ein **prozentuales** `max-width` genügt nicht: Es
+ * löst beim Messen der Mindestbreite auf «keines» auf. Ein festes `max-width`
+ * täte es — dann müsste man aber je Stelle eine Zahl raten.
+ *
+ * **Nur `label > input`**, nicht jedes Dateifeld unter `main`: Steht das Feld
+ * in einer Zeile neben seinem Absendeknopf (`Anhaenge.svelte`, die Nachweise
+ * der Vollmachten), schiebt eine volle Breite den Knopf auf eine zweite Zeile —
+ * im Review nachgemessen, 44 auf 98 px. Dort ist das Feld ein Geschwister, kein
+ * Kind einer Beschriftung.
+ */
+main label > input[type='file'] {
+	width: 100%;
+	min-width: 0;
+}
+
+/*
+ * **Die Ausnahmen — gemessen, nicht vermutet.**
+ *
+ * Der erste Versuch einer globalen Regel riss am 11.08.2026 die Sitzungsleitung
+ * auseinander: Ihre Erfassungstabelle trägt viele schmale Felder in einer Zeile,
+ * und mit Innenabstand und Mindesthöhe wuchs der Querlauf am Telefon von 61 auf
+ * 221 px, mit 39 statt 5 Feldern ausserhalb des Bildes.
+ *
+ * Deshalb bleiben Felder **in Tabellenzeilen** und das Stellenfeld der
+ * Traktandenliste schmal: Sie stehen zu mehreren nebeneinander, und dort zählt
+ * die Zeile, nicht die Zielgrösse. Angetippt wird in der Tabelle ohnehin das
+ * Ankreuzfeld, nicht das Textfeld.
+ */
+main td input,
+main td select,
+main .stellenform input {
+	min-height: var(--ziel-min);
+	padding: 0.1rem 0.35rem;
+}
+
+/*
+ * Eine Auswahlliste darf schrumpfen.
+ *
+ * Von sich aus nimmt ein `select` die Breite seines längsten Eintrags, und als
+ * Flex-Element geht es wegen `min-width: auto` nicht darunter. Ein Eintrag wie
+ * «Versammlungstag Musterhof · Dienstag, 12. Mai 2026» schob damit die ganze
+ * Seite breiter als das Telefon — und der Browser zoomte sie heraus. Zweimal
+ * unabhängig aufgetreten, auf der Anwesenheits- und auf der Versammlungsseite;
+ * deshalb steht die Regel hier und nicht dort.
+ */
+select {
+	min-width: 0;
+	max-width: 100%;
+}
+
+/*
+ * **Rechts Platz für den Pfeil** (UI-Durchgang, Auftrag V2, 06.10.2026).
+ *
+ * Mit dem Polster der Feldregel oben (0.65rem) zeichnet Chrome den Pfeil in
+ * dieses Polster, und ein Eintrag, der nicht ganz ins Feld passt, läuft bis an
+ * den Pfeil heran: «… nicht angekündigt» stiess am Telefon an ihn, und die
+ * Leitung zeigte es bei «bis zur nächsten Versammlung» am Notebook ebenso.
+ * Gemessen über alle 133 Seiten: 5 von 173 Auswahlfeldern. Die Übersicht hatte
+ * es lokal schon mit 2rem behoben (`.wechsel`).
+ *
+ * **1.75rem, nicht 2rem.** Mit 2rem verlor «— Aufruf zurücknehmen —» in der
+ * 229 px breiten Auswahl der Leitung am Telefon seinen letzten Strich; 1.75rem
+ * lässt rund 10 px zwischen Text und Pfeil und genügt dort.
+ *
+ * Ein Feld in Eigenbreite wird dadurch um rund 18 px breiter. Es schrumpft mit
+ * seinem Behälter, solange dieser es zulässt; eine Rasterspur ohne Angabe tut
+ * das nicht (Vertagen auf der Anwesenheit lief damit 9 px quer, dort jetzt
+ * `minmax(0, 1fr)`). Felder in einer Tabellenzeile behalten ihr schmales
+ * Polster: `main td select` oben wiegt mehr als diese Regel (die Ausnahme mit
+ * dem Querlauf der Sitzungsleitung).
+ */
+main select {
+	padding-right: 1.75rem;
+}
+
+button {
+	min-height: var(--ziel-min);
+	padding: 0 1rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: var(--flaeche);
+	cursor: pointer;
+}
+
+button:hover {
+	background: var(--flaeche-2);
+}
+
+/*
+ * **Ein Knopf, der wie ein Verweis aussieht** (03.09.2026).
+ *
+ * Die Regel stand seit jeher in `Archivschalter.svelte` — und Svelte kapselt
+ * Stile je Datei. Gezaehlt acht Verwendungen in fuenf Dateien, und an sieben
+ * davon tat die Klasse **nichts**: auf der Startseite dreimal, auf
+ * `/gemeinschaften`, `/personen`, `einheiten` und auf der Betreiberseite.
+ * Gemessen im Browser sah der Knopf «alle 137 anzeigen» mitten im Satz aus wie
+ * ein gewoehnlicher Knopf: weisser Grund, voller Rahmen, keine Unterstreichung.
+ *
+ * Dieselbe Fehlerklasse, die `docs/gestaltung.md` unter «Eine Klasse ohne Stil
+ * ist eine Rueckmeldung, die niemand sieht» beschreibt — nur andersherum: nicht
+ * die Klasse fehlte, sondern ihre Reichweite.
+ *
+ * Sie steht deshalb hier und nicht mehr in der Komponente; zwei Kopien liefen
+ * beim naechsten Feinschliff auseinander.
+ *
+ * **`min-height` bleibt.** Der Knopf erbt aus der `button`-Regel die
+ * Zielgroesse `--ziel-min` und belegt damit auch als Verweis mitten im Satz
+ * eine Zeilenhoehe von 44 px. Das ist Absicht und war vorher genauso: Wer im
+ * Saal mit dem Daumen «alle anzeigen» trifft, braucht die Flaeche, und die
+ * Alternative waere ein Ziel, das nur mit der Maus zu treffen ist.
+ */
+.flach {
+	background: none;
+	border: none;
+	padding: 0;
+	font: inherit;
+	color: var(--akzent);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+/*
+ * **Und der Ueberfahr-Zustand dazu** (03.09.2026, aus der Sicherheitspruefung
+ * derselben Aenderung). `button:hover` weiter oben hat die Spezifitaet 0-1-1
+ * und schlaegt `.flach` mit 0-1-0: Der flache Knopf bekaeme beim Ueberfahren
+ * eine Flaeche und saehe wieder aus wie ein Knopf. In `Archivschalter.svelte`
+ * fiel das nie auf, weil die dortige lokale Regel hoeher spezifisch war.
+ *
+ * Zurueckgenommen wird nur der Hintergrund. Die Unterstreichung bleibt auch
+ * beim Ueberfahren stehen: Sie ist hier keine Hervorhebung, sondern das
+ * Merkmal, an dem man den Knopf ueberhaupt als anklickbar erkennt.
+ */
+.flach:hover {
+	background: none;
+}
+
+/*
+ * **Ein Verweis, der eine Handlung anbietet, sieht aus wie ein Knopf.**
+ *
+ * Manches führt auf eine eigene Seite statt in ein Formular — «Konten führen»,
+ * «Nötige Mehrheit ändern». Als blosser Textlink steht es zwischen Fliesstext
+ * und wird übersehen; als `<button>` gebaut wäre es eine Lüge, denn es schickt
+ * nichts ab. Deshalb ein Verweis mit dem Aussehen eines Knopfes — und die
+ * Angabe steht hier und nicht je Seite, damit die nächste nicht wieder anders
+ * aussieht (docs/gestaltung.md, «Ein Feld sieht überall gleich aus»).
+ */
+.knopfartig {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--ziel-min);
+	padding: 0 1rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: var(--flaeche);
+	color: var(--text);
+	text-decoration: none;
+}
+
+.knopfartig:hover {
+	background: var(--flaeche-2);
+}
+
+/*
+ * **Der Hauptknopf: `button.haupt`** (UI-Durchgang, Auftrag V2, 06.10.2026).
+ *
+ * Die Klasse stand in 33 Dateien im Markup, eine Regel dazu in 21 davon, jede
+ * eine eigene Abschrift. Wo keine stand, war der Hauptweg ein gewöhnlicher
+ * Knopf: «Prüfen», «Entwurf erzeugen», «Speichern» im Protokoll, «Erfassen»
+ * bei den Vollmachten, «2 Gemeinschaften versiegeln», «Stimmen erfassen»
+ * stand dunkel und dünn da, während derselbe Schritt eine Seite weiter grün
+ * war. Und die Abschriften liefen schon auseinander: Gemessen trug er auf
+ * vier Seiten das Gewicht 400, auf der Leitung einer Versammlung 600, auf den
+ * übrigen 550. Die Abschrift der Leitung steht noch (die Datei lag bei einer
+ * anderen Arbeit); sie ist im Befundbericht unter «Offen» geführt.
+ *
+ * **`main` davor, aus einem Grund.** Svelte macht aus einer Seitenregel
+ * `button { … }` die Regel `button.svelte-…`, gleich schwer wie `button.haupt`
+ * und im Dokument später; sie gewönne. `main button.haupt` wiegt eine Stufe
+ * mehr, aber weniger als jede Seitenregel mit einer Klasse davor
+ * (`.gescannt button.haupt`, `.tat button`). Eine Seite, die den Knopf
+ * begründet anders zeichnet, behält damit ihr Wort.
+ *
+ * **Nur `button`.** Die Falle steht unten bei `.archiv button.leise`: Eine
+ * Klasse ohne Bezug trifft alles, was sie trägt. `haupt` steht auch an einem
+ * `span` der Historie, dort als Spaltenaufbau. Ein Verweis in Knopfgestalt
+ * nimmt `.knopfartig.haupt`.
+ */
+main button.haupt,
+.knopfartig.haupt {
+	border-color: var(--akzent);
+	background: var(--akzent);
+	color: var(--akzent-text);
+	font-weight: 550;
+}
+
+.knopfartig.haupt:hover {
+	background: var(--akzent);
+}
+
+main button.haupt:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/*
+ * **Eine Handlung in einer Liste: Zeichen, Beschriftung, Farbe.**
+ *
+ * Gemeldet am 20.08.2026 zur Anwesenheitsliste: «Handlungen mit Icons ergänzen.
+ * Sieht alles ähnlich aus. Oder mit Farben arbeiten.» Beides, und aus einem
+ * Grund: In vierzehn Zeilen mit je drei Schaltflächen sucht das Auge sonst in
+ * jeder Zeile dieselbe Beschriftung erneut zusammen.
+ *
+ * **Die Farbe sitzt an der Kante und im Zeichen, nicht in der Fläche.** Drei
+ * gefüllte Knöpfe je Zeile wären ein Jahrmarkt, und die Fläche gehört der
+ * Handlung, die eine Seite anführt. `data-ton` sagt, was die Handlung tut:
+ * `gut` fügt hinzu, `warnung` nimmt weg, `fehler` greift ein, ohne Angabe tut
+ * sie niemandem etwas.
+ */
+.handlung {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: var(--ziel-min);
+	padding: 0 0.8rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--text-leise);
+	font: inherit;
+	font-size: 0.85rem;
+	cursor: pointer;
+}
+
+.handlung:hover:not(:disabled) {
+	background: var(--flaeche-2);
+}
+
+.handlung[data-ton='gut'] {
+	border-color: color-mix(in srgb, var(--akzent) 55%, var(--linie));
+	color: var(--akzent);
+}
+
+.handlung[data-ton='warnung'] {
+	border-color: color-mix(in srgb, var(--warnung) 55%, var(--linie));
+	color: var(--warnung);
+}
+
+.handlung[data-ton='fehler'] {
+	border-color: color-mix(in srgb, var(--fehler) 45%, var(--linie));
+	color: var(--fehler);
+}
+
+/*
+ * **Gewicht `haupt`: dieselbe Handlung, nur als Hauptweg der Seite.**
+ *
+ * «Jetzt versiegeln» oder «Abstimmung schliessen» sind keine Zeilenhandlungen
+ * in einer Liste, sondern der eine Schritt, um den es auf der Seite geht. Sie
+ * bekommen die Fläche — in der Farbe ihres Tons, damit der Ton nicht zweierlei
+ * bedeutet.
+ */
+.handlung[data-gewicht='haupt'] {
+	padding: 0 1.15rem;
+	font-size: 1rem;
+	font-weight: 550;
+	border-color: transparent;
+	background: var(--akzent);
+	color: var(--akzent-text);
+}
+
+.handlung[data-gewicht='haupt'][data-ton='warnung'] {
+	background: var(--warnung);
+	color: var(--flaeche);
+}
+
+.handlung[data-gewicht='haupt'][data-ton='fehler'] {
+	background: var(--fehler);
+	color: var(--flaeche);
+}
+
+.handlung[data-gewicht='haupt']:hover:not(:disabled) {
+	filter: brightness(1.08);
+	background: var(--akzent);
+}
+
+.handlung:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/*
+ * **Als Verweis ohne Unterstreichung** (UI-Durchgang, Auftrag V2, 06.10.2026).
+ * Ein `<a class="handlung">` erbte die Unterstreichung des Verweises und sah
+ * neben den Knöpfen aus wie ein Textlink auf einer Fläche. Die Leitung hat es
+ * am 06.10.2026 lokal behoben (`.fremdgefuehrt a.handlung`); die Regel gehört
+ * hierher, weil die Klasse hier steht.
+ */
+a.handlung {
+	text-decoration: none;
+}
+
+/*
+ * **Das Rückfragefenster — hier, nicht in einer Komponente** (26.08.2026).
+ *
+ * Es gibt zwei Wege zu derselben Frage, und beide sollen gleich aussehen:
+ *
+ *   - `Rueckfrage.svelte` fängt den Klick ab und fragt sofort. Das geht, solange
+ *     die Seite alles weiss, was in der Frage steht.
+ *   - `Rueckfragefenster.svelte` zeigt eine Frage, die erst der **Server**
+ *     beantworten konnte — «mit ihr gehen 2 Quotenwerte verloren» steht in
+ *     `unit_quota` und nirgends auf der Seite.
+ *
+ * Vorher stand die zweite Art als Kachel am Kopf der Seite. Auftraggeber, 26.08.2026:
+ * «Das sieht gequetscht aus. Wäre da ein Modal nicht besser, ohne dass die Seite
+ * top springt? Das wäre dann bei allen Ansichten identisch zu handhaben.»
+ *
+ * Der Stil steht deshalb hier und nicht zweimal in zwei Komponenten: Svelte
+ * grenzt Stilblöcke auf ihre Komponente ab, zwei Kopien liefen auseinander.
+ */
+.rueckfrage {
+	max-width: 32rem;
+	width: calc(100% - 2rem);
+	/*
+	 * **`position: static`, solange es kein Fenster ist** (26.08.2026, aus dem
+	 * Code-Review, im Browser nachgemessen). Ein `<dialog open>` ohne
+	 * `showModal()` ist im Vorgabestil des Browsers `position: absolute` — es
+	 * steht dann **nicht** im Fluss, sondern legt sich über den Inhalt darunter
+	 * (gemessen: Fenster und Folgeblock beginnen auf derselben Höhe). Betroffen
+	 * sind zwei Fälle: der Weg ohne JavaScript und der Augenblick zwischen
+	 * Ausliefern und Hydration. `:modal` bleibt davon unberührt.
+	 */
+	padding: 1.25rem 1.4rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: var(--flaeche);
+	color: var(--text);
+}
+
+dialog.rueckfrage:not(:modal) {
+	position: static;
+	margin: 1rem 0;
+}
+
+.rueckfrage::backdrop {
+	/* themenfest: Durchscheinendes Schwarz hinter dem Fenster, das traegt in beiden Themen. */
+	background: rgb(0 0 0 / 0.55);
+}
+
+.rueckfrage h2 {
+	margin: 0 0 0.4rem;
+	font-size: 1.15rem;
+}
+
+.rueckfrage p {
+	margin: 0;
+	color: var(--text-leise);
+	max-width: 46ch;
+}
+
+/*
+ * Mehrere Sätze untereinander brauchen Luft — ein Fenster ohne Abstand liest
+ * sich als ein Block. **Jedes Geschwisterpaar**, nicht nur `p + p`: Auf der
+ * Eigentümerseite folgt der beruhigende Satz auf eine Aufzählung, und dort war
+ * der Abstand gemessen null (26.08.2026, aus dem Code-Review).
+ */
+.rueckfrage > * + * {
+	margin-top: 0.5rem;
+}
+
+.rueckfrage ul {
+	margin-bottom: 0;
+	padding-left: 1.25rem;
+	color: var(--text-leise);
+	max-width: 46ch;
+}
+
+.rueckfrage .tun {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.6rem;
+	margin-top: 1.25rem;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.rueckfrage .tun button,
+.rueckfrage .tun .ab {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	min-height: var(--ziel-min);
+	padding: 0 1.15rem;
+	border-radius: var(--radius);
+	font: inherit;
+	font-weight: 550;
+	cursor: pointer;
+}
+
+.rueckfrage .ab {
+	border: 1px solid var(--linie);
+	background: transparent;
+	color: var(--text);
+	text-decoration: none;
+}
+
+.rueckfrage .ja {
+	border: 1px solid transparent;
+	background: var(--akzent);
+	color: var(--akzent-text);
+}
+
+.rueckfrage .ja[data-ton='warnung'] {
+	background: var(--warnung);
+	color: var(--flaeche);
+}
+
+.rueckfrage .ja[data-ton='fehler'] {
+	background: var(--fehler);
+	color: var(--flaeche);
+}
+
+/*
+ * Rückmeldung beim Überfahren und ein gesperrter Zustand — wie bei jedem
+ * anderen Hauptknopf (`.handlung[data-gewicht='haupt']`). Ohne diese beiden
+ * Regeln schlägt die Farbe oben jedes `button:hover`, und der Knopf im Fenster
+ * wäre der einzige der Anwendung, der auf nichts reagiert.
+ */
+.rueckfrage .ja:hover:not(:disabled) {
+	filter: brightness(1.08);
+}
+
+.rueckfrage .tun button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+:focus-visible {
+	outline: 3px solid var(--akzent);
+	outline-offset: 2px;
+}
+
+/*
+ * Tabellen auf dem Telefon.
+ *
+ * Eine Tabelle mit mehr als drei Spalten passt auf kein Telefon, und sie wehrt
+ * sich gegen jeden Versuch, sie einzupacken: Chrome zieht die **ganze Seite**
+ * auf die Breite einer breiten Tabelle, auch wenn sie in einem schiebbaren
+ * Kasten steckt. Gemessen am 30.07.2026 auf einem iPhone: 640 statt 390 Pixel,
+ * die Seite auf 61 Prozent herausgezoomt. Weder `overflow-x` noch `contain`
+ * noch `table-layout` ändern daran etwas — einzig, die Tabelle nicht mehr als
+ * Tabelle zu setzen.
+ *
+ * Zwei Bausteine, getrennt, weil sie Verschiedenes tun:
+ *
+ *   `.tabellenbahn`  ein Kasten, in dem eine breite Tabelle seitlich schiebt.
+ *                    Für Fenster zwischen Telefon und Notebook.
+ *   `table.karten`   auf dem Telefon wird jede Zeile zur Karte.
+ *
+ * **Es wird nichts weggelassen.** Jede Zelle behält ihren Inhalt und bekommt
+ * ihre Beschriftung aus `data-spalte` — die Kopfzeile fällt weg, und ohne
+ * Beschriftung stünde da eine Zahl ohne Bedeutung. Wer `karten` setzt, setzt
+ * deshalb auch `data-spalte` an jede Zelle, deren Sinn nicht aus ihr selbst
+ * hervorgeht.
+ *
+ * Die Rollen `table`, `row` und `cell` gehören ins Markup: `display: block`
+ * nimmt einer Tabelle sonst ihre Bedeutung im Zugänglichkeitsbaum, und ein
+ * Vorleseprogramm läse eine Folge von Absätzen statt einer Aufstellung.
+ */
+.tabellenbahn {
+	overflow-x: auto;
+}
+
+@media (max-width: 46rem) {
+	.tabellenbahn {
+		margin-inline: calc(-1 * var(--rand));
+		padding-inline: var(--rand);
+	}
+
+	.tabellenbahn:has(> table.karten) {
+		overflow-x: visible;
+		margin-inline: 0;
+		padding-inline: 0;
+	}
+
+	table.karten,
+	table.karten tbody,
+	table.karten tr,
+	table.karten td {
+		display: block;
+	}
+
+	table.karten thead {
+		display: none;
+	}
+
+	table.karten {
+		min-width: 0;
+	}
+
+	table.karten tbody tr {
+		border: 1px solid var(--linie);
+		border-radius: var(--radius);
+		padding: 0.6rem 0.8rem;
+		margin-bottom: 0.5rem;
+	}
+
+	table.karten td {
+		border: 0;
+		padding: 0.15rem 0;
+		/* Rechtsbündige Zahlen stünden in der Karte am fernen Rand, weg von ihrer
+		   Beschriftung. In einer Spalte richtet die Kante aus, in einer Karte
+		   trennt sie. */
+		text-align: left;
+	}
+
+	table.karten td[data-spalte]::before {
+		content: attr(data-spalte) ': ';
+		color: var(--text-leise);
+		font-size: 0.85em;
+	}
+
+	/* Die erste Zelle trägt die Karte und braucht keine Beschriftung. */
+	table.karten td[data-spalte=''],
+	table.karten td.kopfzelle {
+		font-weight: 600;
+		padding-bottom: 0.35rem;
+	}
+
+	table.karten td.kopfzelle::before {
+		content: none;
+	}
+}
+
+/*
+ * Nur für Vorleseprogramme sichtbar.
+ *
+ * Stand bisher in sechs Dateien wortgleich als lokale Regel. Eine Beschriftung,
+ * die niemand sieht, wird beim Abschreiben leicht falsch — `display: none`
+ * nähme sie auch dem Vorleseprogramm, und dann fehlt die Beschriftung ganz.
+ */
+.nurLeser {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/*
+ * Die Suchleiste — ein Aussehen für alle Listen.
+ *
+ * Drei Ansichten bekamen am 10.08.2026 innerhalb einer Stunde je ein Suchfeld,
+ * und schon das dritte sah anders aus als das erste. Die Regel steht deshalb
+ * hier und nicht dreimal lokal; die Suchregel selbst liegt im Kern
+ * (`domain/listensuche.ts`).
+ *
+ * `.zaehler` gehört dazu: Eine gefilterte Liste ohne Zahl lässt offen, ob man
+ * gerade drei von drei oder drei von achtzig sieht.
+ */
+.suchleiste {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+	margin: 1rem 0 0.5rem;
+}
+
+.suchleiste > .suchfeld {
+	flex: 1 1 16rem;
+	max-width: 26rem;
+	display: block;
+}
+
+.suchleiste input[type='search'] {
+	width: 100%;
+	min-height: var(--ziel-min);
+	padding: 0.4rem 0.7rem;
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	background: var(--flaeche);
+	color: var(--text);
+	font: inherit;
+}
+
+/*
+ * **Der Zähler über einer Liste** — «25 von 210 Zeilen».
+ *
+ * Die Gestalt stand bis zum 03.09.2026 nur unter `.suchleiste`. Als die zweite
+ * Liste der Personenseite einen eigenen Zähler bekam, stand er in voller
+ * Textgrösse und -farbe da: dieselbe Klasse, dieselbe Aussage, ein anderes
+ * Aussehen. Der Abstand bleibt der Suchleiste vorbehalten, weil er dort aus dem
+ * Zeilenfluss kommt.
+ */
+.zaehler {
+	color: var(--text-leise);
+	font-size: 0.9rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.suchleiste .zaehler {
+	margin: 0;
+}
+
+/*
+ * Kacheln — Karten nebeneinander, sobald die Breite reicht.
+ *
+ * Die Versammlungsansicht stapelte zehn Kästen untereinander und nutzte davon
+ * 672 von 1328 Pixeln; die halbe Bahn lag brach, und was zusammengehört, stand
+ * anderthalb Bildschirme auseinander. `auto-fit` mit `minmax` entscheidet nach
+ * der vorhandenen Breite statt nach einer festen Spaltenzahl — auf dem Telefon
+ * bleibt es einspaltig, ohne eigene Abfrage.
+ */
+/*
+ * `stretch` und nicht `start`: Karten in einer Reihe sind gleich hoch.
+ *
+ * Mit `start` behielt jede Karte ihre eigene Höhe — auf der Versammlungsseite
+ * standen 215, 197 und 314 Pixel nebeneinander, drei Unterkanten auf drei
+ * Höhen, drei Knöpfe auf drei Linien. Gemeldet am 11.08.2026 als «wirkt
+ * unruhig». Die Karte selbst muss dafür ihre Zelle füllen; `Karte.svelte` tut
+ * das mit `height: 100%` und schiebt ihren Fuss per `margin-top: auto` nach
+ * unten.
+ */
+.kacheln {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(min(var(--kachel-min), 100%), 1fr));
+	gap: 0.75rem;
+	align-items: stretch;
+}
+
+/* Was den Blick zuerst braucht oder breit gelesen wird, nimmt die ganze Zeile. */
+.kacheln > .voll {
+	grid-column: 1 / -1;
+}
+
+/*
+ * Die Arbeitsfläche: **Bestand links, Eintragen rechts.**
+ *
+ * Gemeldet am 12.08.2026: «Was man machen kann ist, den Platz optimaler zu
+ * nutzen. Die Kacheln WQ / Kopfstimme / Eigentümertabelle könnten einen Block
+ * bilden und daneben Eigentümer erfassen und Einheiten zuordnen.»
+ *
+ * Nachgemessen war nicht die Breite das Problem — die Bahn ist 1120 px breit und
+ * jeder Block nutzte sie ganz. Sie standen nur alle **untereinander**: Kacheln,
+ * Tabelle, zwei Formulare, zusammen 1780 px auf einem 900 px hohen Bildschirm.
+ * Wer eine Einheit zuordnen wollte, sah dabei die Tabelle nicht mehr, gegen die
+ * er sie prüft.
+ *
+ * Drei Eigenschaften, jede mit Grund:
+ *
+ * 1. **`auto-fit` statt zweier fester Spalten.** Unter der Mindestbreite fällt
+ *    die zweite Spalte weg und alles stapelt sich wie bisher — auf dem Telefon
+ *    und auf einem schmalen Fenster. Ein festes `1fr 1fr` presste zwei Formulare
+ *    in je 200 px.
+ * 2. **`align-items: start`, nicht `stretch`.** Anders als bei `.kacheln` sind
+ *    das keine gleichrangigen Karten, sondern zwei Stapel verschiedener Länge.
+ *    Auf gleiche Höhe gezogen entstünde unten Leerraum in der kürzeren Spalte —
+ *    genau die Verschwendung, die hier weggehen soll.
+ * 3. **Die Spalten sind gleich breit.** Der erste Versuch gab dem Bestand mehr
+ *    (1.35fr), damit die Tabelle atmet — dann blieben der rechten Spalte 464 px,
+ *    und ein `.felder`-Raster mit zwei 12rem-Spuren braucht 400 px plus Rand.
+ *    Es passte, aber ohne Luft; gemessen bei 1fr/1fr sind es 548 px je Spalte.
+ *
+ * Zur Mindestbreite steht der Wert bei den Variablen — und er ist ausgemessen,
+ * nicht gerechnet: Mit 30rem standen die Spalten auf einem 1280er Bildschirm
+ * **untereinander**, weil die Bahn dort 960 px misst und zwei 480er Spalten mit
+ * Lücke 984 brauchen. Vierundzwanzig Pixel entschieden über die ganze Reihe
+ * (docs/gestaltung.md, «Wenige Pixel entscheiden über eine ganze Reihe»).
+ */
+
+.arbeitsflaeche {
+	display: grid;
+	/*
+	 * **Höchstens zwei Spuren** (26.08.2026, Auftraggeber: «Sobald eine Einheit erfasst
+	 * wurde, verzerrt es die Ansicht der Kachel»).
+	 *
+	 * `auto-fit` legt so viele Spuren an, wie hineinpassen, und lässt die leeren
+	 * wieder zusammenfallen. Auf einer breiten Bahn sind das drei — die dritte
+	 * blieb leer und fiel weg, die beiden Stapel standen breit. **Bis auf der
+	 * Seite ein `.voll` auftaucht**: Es spannt über `1 / -1` über *alle* Spuren,
+	 * damit ist auch die dritte nicht mehr leer, sie fällt nicht mehr zusammen —
+	 * und die beiden Stapel schrumpfen von 788 auf 517 px, während rechts eine
+	 * leere Spur stehen bleibt. Genau das passiert auf der Einheitenseite in dem
+	 * Augenblick, in dem die erste Einheit erfasst ist und die Tabelle erscheint.
+	 *
+	 * Der Deckel: Jede Spur ist mindestens halb so breit wie die Bahn, also
+	 * passen nie mehr als zwei. `min(100%, …)` behält den Umbruch aufs Telefon.
+	 * Keine der vier Seiten mit `.arbeitsflaeche` führt drei Stapel; nachgesehen,
+	 * alle haben genau zwei `.spalte`. Es waren fünf: Die Einheitenseite trägt
+	 * seit dem 27.08.2026 den Seitenstapel, und mit ihr ging der Fall weg, den
+	 * der Absatz darüber beschreibt.
+	 */
+	grid-template-columns: repeat(
+		auto-fit,
+		minmax(min(100%, max(var(--arbeitsspalte-min), 50% - 0.75rem)), 1fr)
+	);
+	gap: 1.5rem;
+	align-items: start;
+}
+
+/* Was quer über beide Spalten gehört — eine breite Tabelle, ein Hinweis. */
+.arbeitsflaeche > .voll {
+	grid-column: 1 / -1;
+}
+
+/*
+ * Der Seitenstapel: benannte Abschnitte in fester Reihenfolge.
+ *
+ * **Das Modell.** Eine Seite beantwortet der Reihe nach: Wo stehe ich (Lage),
+ * was ist da (Bestand), was kann ich tun (Handeln), warum ist das so
+ * (Hintergrund, zugeklappt). Jeder Abschnitt bekommt die ganze Bahn.
+ * Nebeneinander steht nur, was **innerhalb** eines Abschnitts gleichrangig ist,
+ * und dafür gibt es `.kacheln` mit gleich hohen Karten (Regel 5).
+ *
+ * **Warum das die Lücken schliesst.** Ein Loch entsteht, wo zwei ungleich lange
+ * Dinge nebeneinanderstehen. Stehen auf Seitenebene keine zwei Dinge mehr
+ * nebeneinander, gibt es nichts, was ausfransen kann.
+ *
+ * **Was es NICHT ist:** eine Beschriftung. Die vier Namen sind ein Wortschatz
+ * für den, der die Seite schreibt, nicht für den, der sie liest. Auf dem
+ * Bildschirm stehen weiter die Überschriften der Blöcke selbst: «Wertquoten»,
+ * «Einheit hinzufügen». Das Modell ordnet die Seite, es beschriftet sie nicht.
+ *
+ * Der Abstand steht hier und nicht an den Blöcken: Trüge jeder Block sein
+ * eigenes `margin-top`, hinge er von seinem Nachbarn ab statt vom Stapel.
+ */
+.seitenstapel {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+/*
+ * **`.seitenstapel > .abschnitt` und nicht `.abschnitt`** (27.08.2026, aus dem
+ * Code-Review). Der Name war längst vergeben: Vierzehn Stellen in fünf Routen
+ * führen ihn mit anderer Bedeutung, meist als `<h2 class="abschnitt">`, zweimal
+ * als `<div class="felder abschnitt">`.
+ *
+ * Eine ungebundene Regel hätte sie alle getroffen, und zwar dort am härtesten,
+ * wo niemand hinsieht: Svelte kapselt die seitenlokalen Regeln zwar mit höherer
+ * Spezifität, aber das schützt nur bei Eigenschaften, die sie **selbst**
+ * setzen. `flex-direction` setzt keine von ihnen. Auf `tage/<id>/stammdaten`
+ * wäre die Zählmarke unter die Überschrift gekippt, auf der Eigentümerseite
+ * hätte `display: flex` das Feldraster `display: grid` überstimmt und die
+ * Erfassungsmaske auf eine Spalte zusammenfallen lassen.
+ *
+ * Der Elternteil im Selektor bindet die Regel an das Modell, statt an ein Wort.
+ *
+ * Innerhalb eines Abschnitts stehen die Blöcke enger als die Abschnitte
+ * zueinander. Sonst zerfiele die Gruppe: Zwei Kacheln, die zusammengehören,
+ * sähen aus wie zwei Abschnitte.
+ *
+ * Dieselbe Regel wie `.arbeitsflaeche > .spalte`, deshalb zusammen: Zwei
+ * Kopien liefen beim nächsten Feinschliff auseinander, und die Blöcke stünden
+ * auf umgestellten Seiten anders eng als auf den übrigen.
+ */
+.seitenstapel > .abschnitt,
+.arbeitsflaeche > .spalte {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	min-width: 0;
+}
+
+/*
+ * **Im Stapel regelt der Abstand die Luecke, nicht die Marge** (03.09.2026,
+ * gemessen an der Reglementsseite).
+ *
+ * Ein Flex-Container laesst Margen nicht mehr kollabieren: Sie addieren sich
+ * zum `gap`. Nach dem Umbau der Reglementsseite standen zwischen ihren Bloecken
+ * 822 px Luecke, an vierzehn Stellen 41 bis 76 px statt der vorgesehenen 24 —
+ * jedes Mal `gap` plus die Marge einer Ueberschrift oder eines Absatzes. Die
+ * Seite wurde durch den Stapel hoeher statt kuerzer, und das war nicht die
+ * Absicht.
+ *
+ * Die Regel trifft **nur die direkten Kinder** eines Abschnitts, also die
+ * Bloecke. Was in ihnen steht, behaelt seine Margen; sonst fielen Ueberschrift
+ * und Absatz eines Formulars zusammen.
+ *
+ * **Und eine Ueberschrift braucht trotzdem mehr Luft nach oben als nach
+ * unten**, sonst steht sie gleich weit von ihrem eigenen Inhalt wie vom
+ * vorigen Block und die Gruppe zerfaellt. Dafuer die zweite Regel; das erste
+ * Kind eines Abschnitts braucht sie nicht, dort trennt schon der Abschnitt.
+ */
+.seitenstapel > .abschnitt > * {
+	margin-block: 0;
+}
+
+.seitenstapel > .abschnitt > h2:not(:first-child) {
+	margin-top: 1rem;
+}
+
+/*
+ * Ein Erfassungsblock — mit Rahmen, Grundfläche und einer Überschrift.
+ *
+ * Gemeldet am 12.08.2026: «Einheiten Hinzufügen, Nutzniessung erfassen und dgl.
+ * auch in einer Kachel darstellen.» Auf der Einheitenseite stand «Einheit
+ * hinzufügen» als blosse Überschrift über einem Formular, während links die
+ * Wertquoten in einem Kasten sassen — zwei Blöcke nebeneinander, von denen einer
+ * gerahmt war und der andere im Nichts hing.
+ *
+ * Steht in `app.css` und nicht in den Seiten: Vier Seiten führen denselben
+ * Block, und vier Kopien laufen beim nächsten Feinschliff auseinander
+ * (docs/gestaltung.md, «Was für alle gilt, wird für alle geändert»).
+ */
+.kachel {
+	background: var(--flaeche);
+	border: 1px solid var(--linie);
+	border-radius: var(--radius);
+	min-width: 0;
+	padding: 1.15rem 1.25rem;
+}
+
+.kachel > h2 {
+	align-items: center;
+	display: flex;
+	font-size: 1rem;
+	gap: 0.5rem;
+	margin: 0 0 0.5rem;
+}
+
+/* Der Erklärsatz unter der Überschrift, nicht jeder Hinweis im Block. */
+.kachel > h2 + .hilfe {
+	margin: 0 0 1rem;
+}
+
+/*
+ * Die Schrittzahl vor der Überschrift, wo eine Reihenfolge gilt: erst erfassen,
+ * dann zuordnen. Für die Sprachausgabe ausgeblendet — dort steht sie schon im
+ * Satz darunter, und «1 Eigentümer erfassen» liest sich als Anzahl.
+ */
+.kachel .ziffer {
+	align-items: center;
+	background: var(--akzent);
+	border-radius: 50%;
+	color: var(--akzent-text);
+	display: inline-flex;
+	flex: none;
+	font-size: 0.8rem;
+	font-weight: 650;
+	height: 1.5rem;
+	justify-content: center;
+	width: 1.5rem;
+}
+
+/*
+ * Der Archivblock — an drei Objektseiten derselbe (Gemeinschaft, Versammlung,
+ * Person), deshalb hier und nicht dreimal lokal.
+ *
+ * **Warum überhaupt eine Regel** (25.08.2026, aus dem Code-Review). Die Klasse
+ * trug bis dahin gar keinen Stil: Der Block klebte in voller Überschriftgrösse
+ * am Formular darüber, während die Nachbarsektion «entfernen» sich mit Linie
+ * und leiser Überschrift zurücknimmt. «Eine Klasse ohne Stil ist eine
+ * Rückmeldung, die niemand sieht.»
+ *
+ * Er steht **über** dem Entfernen und nimmt sich weniger zurück als jenes:
+ * Archivieren ist der mildere Weg und soll zuerst gelesen werden.
+ */
+.archiv {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--linie);
+}
+
+.archiv h2 {
+	font-size: 1.05rem;
+}
+
+.archiv p.klein {
+	color: var(--text-leise);
+	max-width: 62ch;
+}
+
+/*
+ * Der zurückgenommene Knopf **im Archivblock**. Er stand dort im Markup und
+ * nirgends im Stil und sah damit aus wie der Hauptknopf daneben (derselbe
+ * Befund wie am 17.08.2026).
+ *
+ * **Warum auf `.archiv` eingeschränkt** (25.08.2026, zweite Reviewrunde). Die
+ * erste Fassung schrieb `button.leise` ohne Bezug — und traf damit 34 Knöpfe in
+ * 14 Dateien, die bis dahin keine eigene Regel hatten: «Aufnehmen»,
+ * «Freigeben», «Festhalten», «Angenommen», «Abgelehnt». Sie verloren ihre
+ * Fläche und färbten sich beim Überfahren in Warnfarbe — ein Ton, der eine
+ * Wegnahme ankündigt, die dort nicht stattfindet. «Angenommen» und «Abgelehnt»
+ * standen anschliessend beide in Warnorange nebeneinander.
+ *
+ * Der Warnton gehört zur Handlung, nicht zum Gewicht: Im Archivblock nimmt der
+ * Knopf tatsächlich etwas aus der Anzeige.
+ */
+.archiv button.leise {
+	background: transparent;
+	border: 1px solid var(--linie);
+	color: var(--text);
+	font-weight: 500;
+}
+
+.archiv button.leise:hover {
+	border-color: var(--warnung);
+	color: var(--warnung);
+}
+
+/*
+ * Die Marke «archiviert» — an vier Stellen dieselbe (Gemeinschaftsliste,
+ * Personenliste, Eigentümerliste, Häuser unter ihrer Klammer). Vier lokale
+ * Abschriften liefen auseinander, sobald eine davon die Farbe wechselt.
+ */
+.archivmarke {
+	margin-left: 0.5rem;
+	padding: 0.05rem 0.4rem;
+	border: 1px solid var(--warnung);
+	border-radius: 999px;
+	color: var(--warnung);
+	font-size: 0.8125rem;
+	white-space: nowrap;
+}
+
+/*
+ * **Die Zustandsmarke einer Versammlung** (UI-Durchgang, Auftrag V2,
+ * 06.10.2026): «Entwurf», «laufend», «versiegelt» als Pille neben dem Titel.
+ *
+ * Sie stand auf sechs Seiten einzeln (Versammlungsliste, Übersicht, Einlass,
+ * Anwesenheit, Freigabe, Historie), und die Abschriften wichen schon ab: die
+ * Liste 12.8 px mit schmalerem Polster, die übrigen 13.6 px; «freigegeben»
+ * nur in der Liste leicht getönt, auf der Übersicht derselben Versammlung
+ * grau; ungebrochen nur in Liste und Historie. Jetzt überall 13.6 px,
+ * ungebrochen, «laufend» kräftig und «freigegeben» leicht getönt.
+ *
+ * **Nur mit `data-zustand`.** Der Name `.zustand` ist mehrfach vergeben: der
+ * Kasten auf der Startseite, die Statuszeile des Beamerfensters, der Stand
+ * einer Pendenz. Keiner davon trägt das Merkmal, und keiner ist gemeint.
+ */
+.zustand[data-zustand] {
+	font-size: 0.85rem;
+	padding: 0.15rem 0.65rem;
+	border-radius: 999px;
+	background: var(--flaeche-2);
+	white-space: nowrap;
+}
+
+.zustand[data-zustand='laufend'] {
+	background: color-mix(in srgb, var(--akzent) 25%, transparent);
+	font-weight: 550;
+}
+
+.zustand[data-zustand='freigegeben'] {
+	background: color-mix(in srgb, var(--akzent) 14%, transparent);
+}
+
+/* Feld und Knopf nebeneinander; auf dem Telefon untereinander. */
+.archivform {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* Wer Bewegung reduziert haben will, bekommt keine. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+/*
+ * **Die Meldung an einem Pflichtfeld** (Bedienbarkeitsprüfung 05.09.2026,
+ * Telefon 14 und Bewirtschaftung 20).
+ *
+ * Sie ersetzt die Sprechblase des Browsers, die auf Englisch kam und «halb
+ * hinter dem Knopf» stand. Deshalb steht sie im Fluss: Sie schiebt die Seite
+ * auseinander, statt sie zu überdecken, und bleibt stehen, bis die Eingabe
+ * stimmt.
+ *
+ * Hier und nicht in einem Bauteil, weil sie von `$lib/pflichtfelder` erzeugt
+ * wird und damit ausserhalb jedes Svelte-Bereichs steht — eine Klasse in einer
+ * `<style>`-Insel erreichte sie nicht.
+ *
+ * Ohne Farbfläche: Ein Feld, das noch gefüllt werden muss, ist kein Unfall. Die
+ * Marke am Feld selbst (`[aria-invalid]`) sagt, welches gemeint ist.
+ */
+.feldfehler {
+	margin: 0.3rem 0 0;
+	color: var(--fehler);
+	font-size: 0.875rem;
+	max-width: var(--lesebreite);
+}
+
+/*
+ * **Mit `!important`, und das ist hier kein Faulheitszeichen.**
+ *
+ * Der erste Anlauf schrieb die Regel ohne, und im Browser gemessen war der Rand
+ * am ungültigen Feld weiterhin `rgb(216,216,210)`: Jedes Bauteil setzt sein
+ * eigenes `input { border: … }`, Svelte hängt daran eine Bereichsklasse, und
+ * diese Regel steht in `app.css` also sowohl schwächer als auch früher. Der
+ * Kommentar darüber behauptete den roten Rand trotzdem.
+ *
+ * Ein Fehlerzustand darf von einer örtlichen Regel nicht überstimmt werden —
+ * derselbe Grund, aus dem im ganzen Stylesheet sonst nur die Bremse für
+ * reduzierte Bewegung `!important` trägt.
+ */
+[aria-invalid='true'] {
+	border-color: var(--fehler) !important;
+}
+
+/*
+ * **Ankreuz- und Wahlknöpfe zeichnen keinen Rand** (Code-Review 06.09.2026).
+ *
+ * Der erste Anlauf setzte allein `border-color` und sicherte darüber im
+ * Kommentar zu, der Rand sage, welches Feld gemeint ist. Bei `appearance: auto`
+ * malt der Browser das Kästchen selbst; die Regel lief dort ins Leere, und
+ * genau die beiden Pflichtfelder dieser Art im Bestand blieben unmarkiert.
+ *
+ * `outline` liegt neben dem Rand und wirkt auch dort. Der Abstand hält sie vom
+ * Kästchen weg, damit sie nicht wie ein zweiter Rahmen aussieht; den
+ * Tastaturfokus überschreibt sie nicht, weil dessen Regel später steht und
+ * dieselbe Eigenschaft setzt.
+ */
+input[type='radio'][aria-invalid='true'],
+input[type='checkbox'][aria-invalid='true'] {
+	outline: 2px solid var(--fehler);
+	outline-offset: 2px;
+}

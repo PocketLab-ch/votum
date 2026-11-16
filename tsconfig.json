@@ -1,0 +1,20 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"rewriteRelativeImportExtensions": true,
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler",
+		// Migrationen und Verlauf laufen serverseitig und brauchen die Node-Typen.
+		// Der Kern nutzt sie nicht — dafür sorgt der Schichtenwächter.
+		"types": ["node"]
+	}
+	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+}

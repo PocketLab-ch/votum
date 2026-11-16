@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Votum">
+  <!--
+    Die Urne mit dem Zettel im Einwurf — gefasst für den Browserreiter.
+
+    Bei 16 px trägt ein freistehendes Zeichen seine Umrisse nicht mehr; das
+    gefüllte Rundquadrat schon. Zettel und Zeilen sind hier eine Spur kräftiger
+    als in der freistehenden Fassung, damit der schräge Zettel auch klein noch
+    als Zettel lesbar bleibt und nicht zum Fleck wird.
+  -->
+  <rect width="64" height="64" rx="14" fill="#2d5016"/>
+  <g fill="#fbfbfa">
+    <g transform="rotate(-12 32 22)">
+      <rect x="23" y="9" width="19" height="21" rx="2.5" opacity="0.55"/>
+      <rect x="27" y="14" width="12" height="3" rx="1.5"/>
+      <rect x="27" y="20" width="8" height="3" rx="1.5"/>
+    </g>
+    <rect x="14" y="30" width="36" height="24" rx="4"/>
+  </g>
+  <rect x="22" y="34" width="20" height="4" rx="2" fill="#2d5016"/>
+</svg>

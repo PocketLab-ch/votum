@@ -1,0 +1,8 @@
+# Ausnahmeliste für scripts/check-anrede.mjs: je Zeile die Datei und der Grund,
+# durch Tab getrennt. Eine Datei hier trägt die Du-Form in den Aufträgen an das
+# Sprachmodell; dort wird nach innen geduzt, wie es die Hausregel will.
+# Deckt eine Zeile keine Du-Form mehr, macht der Lauf rot.
+src/lib/domain/erfordernisvorschlag.ts	Auftrag an das Sprachmodell
+src/lib/domain/antragspruefung.ts	Auftrag an das Sprachmodell
+src/lib/domain/protokollentwurf.ts	Auftrag an das Sprachmodell
+src/lib/domain/traktandenpruefung.ts	Auftrag an das Sprachmodell

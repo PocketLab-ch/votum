@@ -1,0 +1,19 @@
+-- Der Planer unterschaetzte `stweg_archiv_wegen` um zwei Groessenordnungen.
+--
+-- **Gemessen am 25.08.2026** (dritte Pruefrunde, `EXPLAIN ANALYZE` gegen die
+-- Entwicklungsdatenbank): Ein Aufruf kostet rund 42 Mikrosekunden und 13
+-- Puffertreffer -- die Funktion rollt eine rekursive Kette ueber `stweg` ab.
+-- Die Vorgabe `COST 100` entspricht 0.25 Kosteneinheiten und sagt dem Planer
+-- damit, sie sei etwa so teuer wie ein Vergleich zweier Zahlen.
+--
+-- Die Folge war nicht theoretisch: In `holeAlleVersammlungen` zog der Planer
+-- den Aufruf in den Join-Filter und wertete ihn 1102-mal aus statt 29-mal --
+-- 50 ms bei 29 Versammlungen und 38 Gemeinschaften. Die Abfragen selbst sind
+-- inzwischen auf `LEFT JOIN LATERAL` umgestellt, was die Auswertung je Zeile
+-- festnagelt; diese Kostenangabe nimmt dem Planer zusaetzlich den Anreiz, sie
+-- an eine schlechtere Stelle zu ziehen.
+--
+-- **PARALLEL SAFE**, weil die Funktion ausschliesslich liest. Die Vorgabe ist
+-- `UNSAFE`, und die verhindert Parallelplaene fuer **jede** Abfrage, in der sie
+-- vorkommt -- also fuer die Gemeinschafts- und die Versammlungsliste.
+ALTER FUNCTION stweg_archiv_wegen(uuid) COST 5000 PARALLEL SAFE;

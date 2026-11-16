@@ -1,0 +1,144 @@
+# Ausnahmen für scripts/check-texte.mjs: lange Sätze im Bestand, die beim
+# Einzug der fünften Bauform und des Abkürzungsschnitts (20.10.2026) zum
+# ersten Mal gemessen und nicht umformuliert wurden. Je Zeile: Datei,
+# Satzanfang, heutige Länge in Zeichen und Grund, durch Tab getrennt.
+#
+# Der Anfang muss den gefundenen Satz beginnen. Rot wird der Lauf, wenn eine
+# Ausnahme keinen Satz mehr deckt (sonst wäre die Liste eine stille
+# Ausschaltung) und wenn der gedeckte Satz länger wird als die Zahl: Die
+# Ausnahme hält Anfang und Höchstlänge des heutigen Satzes fest, nicht
+# alles, was mit ihm beginnt; den Rest des Wortlauts prüft sie nicht.
+#
+# Neue Ausnahmen nicht zum Grünmachen eines neuen Satzes. Zwei Fälle sind
+# zulässig: Eine neue Fassung des Regelwerks übernimmt einen Satz unverändert
+# (dann dieselbe Zeile mit der neuen Datei und dem Grund «unverändert aus
+# <Vorfassung>»), oder eine Umformulierung ist nach Laien- und Fachprüfung
+# bewusst lang geblieben.
+#
+# Die Regelwerkstexte sind versionierte Rechtsquelle; eine Umformulierung
+# braucht die Laien- und Fachprüfung und wird nicht in einem Wächterauftrag
+# nebenbei gemacht.
+
+src/lib/domain/auszaehlung.ts	Müssen Betroffene zustimmen, zählt nur ihre schriftliche Zustimmung vor dem Eröffnen, auch auf einem	211	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/auszaehlung.ts	Ausweg, nur bei Beschlüssen nach Köpfen wie der Abberufung der Verwaltung: auf Papier ohne Namen abs	213	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/konsultativ.ts	Ohne Versammlung entsteht ein Beschluss nur, wenn alle Eigentümer dem Antrag schriftlich mit Untersc	200	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/mehrhinweise.ts	… In Votum lässt sich ein milderes Mehr als in der Einladung im Saal nicht mehr setzen; die Abwesend	186	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/mehrhinweise.ts	Bei Wahl und Wiederwahl ruhen sie nach dem Bundesgericht nicht (BGE 134 III 481 E. 3.5 und 3.8); wer	193	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/reglement.ts	gilt die Klausel nicht, und es genügt das qualifizierte Mehr nach Art. 712g Abs. 3 ZGB (Wermelinger,	189	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/traktandenpruefung.ts	Personen erscheinen als Platzhalter in eckigen Klammern: [Person 1] ist eine bestimmte Person, [Pers	205	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/versammlung.ts	Werden trotzdem welche gefasst, kann jeder Eigentümer, der nicht zugestimmt hat, sie beim Gericht an	219	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Ist eine Bestimmung Ihres Reglements zu diesem Mehr hinterlegt, wendet dieses Werkzeug sie an, wenn 	239	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Wendet es eine mildere Bestimmung an, etwa eine Mehrheit der Anwesenden, gilt nicht, was diese Karte	217	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Gilt das Gesetz, heben Sie die Bestimmung vor der Versammlung auf der Seite «Abweichende Quoren im R	247	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Ob das Reglement dieses Mehr überhaupt ändern darf, ist umstritten: Der Wortlaut («wenn nichts ander	276	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Eine Abweichung von der gesetzlichen Zählweise muss zudem einstimmig beschlossen werden (Art. 712m R	261	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-07.ts	Verlangt eine hinterlegte Regel zusätzlich eine Mehrheit aller Wertquoten, lässt dieses Werkzeug sei	290	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Verlangt Ihre Bestimmung die einfache Mehrheit der Anwesenden nach Köpfen, genügt es, die zweite zu 	209	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Sorgen Sie deshalb vor der Versammlung dafür, dass Eigentümer, die nicht kommen können, sich vertret	287	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Er ist dann angenommen, aber beim Gericht anfechtbar, innert eines Monats, nachdem die Eigentümer vo	256	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Wird der Beschluss in der Frist nicht angefochten, trägt er, sofern er nicht aus einem anderen Grund	234	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Die ermächtigten Eigentümer reichen Schlichtungsgesuch und Klage am sichersten erst einige Wochen na	419	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Ist die Bestimmung strenger und erreicht der Beschluss nur das Mehr nach Gesetz, weist dieses Werkze	188	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Gilt das Gesetz, heben Sie die Bestimmung vor der Versammlung auf der Seite «Abweichende Quoren im R	247	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Warum die Geltung umstritten ist: Eine Mehrheit der Anwesenden liest der SVIT-Kommentar schon als da	195	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Ob das Reglement dieses Mehr überhaupt ändern darf, ist ebenfalls umstritten: Der Wortlaut («wenn ni	286	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Eine Abweichung von der gesetzlichen Zählweise muss zudem einstimmig beschlossen werden (Art. 712m R	261	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Ehegatte und Verwandte des Beklagten in gerader Linie, etwa Eltern, Kinder, Grosseltern oder Enkel, 	272	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Wer einlädt, klärt das möglichst schon mit der Einladung, damit Vollmachten an diese Angehörigen noc	211	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Sicher ist die Ermächtigung deshalb nur, wenn die Ja-Stimmen auch die Mehrheit aller Eigentümer ohne	294	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Nach Gesetz braucht die Verwaltung keine Ermächtigung für Betreibung, Rechtsöffnung, die vorläufige 	447	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Auch unter Ihrer Bestimmung behält jeder Eigentümer das Recht, notwendige Verwaltungshandlungen zu v	265	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-08.ts	Soll die Bewirtschaftung Kompetenzen über die gewöhnliche Verwaltung hinaus erhalten, braucht diese 	253	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-09.ts	Anträge zum Ablauf, etwa der Schluss der Diskussion, sind nicht gemeint: Über sie wird sofort abgest	188	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-09.ts	Wird doch beschlossen, halten Sie im Protokoll fest, worauf sich der Beschluss stützt: auf die Besti	188	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-09.ts	Wer an der Versammlung war oder vertreten war, kann sich auf die fehlende Ankündigung nur berufen, w	270	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-09.ts	Die Frist läuft für Anwesende und Vertretene ab der Versammlung, für die übrigen, sobald sie vom Bes	183	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-10.ts	Gehört eine Wohnung mehreren, genügt nach dem SVIT-Kommentar eine anwesende Person von ihnen für die	210	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-10.ts	Es lässt die Vertretung an der Versammlung zu, bei der Universalversammlung spricht der Kommentar ab	186	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-10.ts	Sonst zählen sie nur, wenn ihre Vollmacht auch Geschäfte deckt, die nicht angekündigt waren; eine Vo	224	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-11.ts	Gehört eine Wohnung mehreren, lässt der SVIT-Kommentar an einer einberufenen Versammlung eine anwese	222	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-11.ts	Bei drei Eigentümern kann nach dem SVIT-Kommentar ebenfalls jeder direkt klagen (Art. 712a Rz. 214, 	202	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-11.ts	Für die Mehrheit aller Eigentümer ohne die Beklagten, die es neben der Mehrheit nach Ihrem Reglement	263	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-11.ts	Gegen wen sich die Klage richten muss, hängt von der Eigentumsform ab und ist bei einer Familienwohn	277	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-11.ts	Was dieses Werkzeug rechnet, hängt an Ihrer Bestimmung: Stellt sie auf alle Eigentümer ab, zählt es 	412	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-12.ts	Gehört eine Wohnung mehreren, lässt der SVIT-Kommentar an einer einberufenen Versammlung eine anwese	222	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-12.ts	Für die Universalversammlung genügt das nach unserer Lesart nicht: Jede von ihnen ist selbst Stockwe	262	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-12.ts	Sicher ist die Universalversammlung deshalb nur, wenn alle Eigentümer der Wohnung da sind, gleich in	210	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-12.ts	Sicher ist sie zudem nur, wenn auch da ist, wer an einer Wohnung eine Nutzniessung oder ein Wohnrech	320	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-14.ts	Der SVIT-Kommentar bejaht sie und verlangt für die Milderung selbst die Einstimmigkeit (Art. 712g Rz	230	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-14.ts	Ob das Reglement das Mehr für seine eigene Änderung erschweren darf, ist ebenfalls umstritten: Der S	275	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-14.ts	Sicher ist ein Beschluss nur, wenn er auch das gesetzliche Erfordernis erreicht; lassen Sie die Gelt	188	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-21.ts	Soll die Bewirtschaftung Kompetenzen über die gewöhnliche Verwaltung hinaus erhalten, etwa gemeinsch	295	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-21.ts	Hat die Bewirtschaftung solche Kompetenzen schon, ist umstritten, ob ihre Wahl ein höheres Mehr brau	244	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-21.ts	Hat die Bewirtschaftung solche Kompetenzen schon, ist umstritten, ob ihre Wahl nach Gesetz ein höher	218	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-22.ts	Ob ein Teil gemeinschaftlich ist oder zum Sonderrecht gehört, ändert nur eine öffentlich beurkundete	212	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-23.ts	Soll die Bewirtschaftung Kompetenzen über die gewöhnliche Verwaltung hinaus erhalten, etwa gemeinsch	435	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/server/traktanden.ts	War das Erfordernis falsch und hätte das Ergebnis nach dem richtigen anders gelautet, beantragen Sie	202	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/components/Eingriffe.svelte	Gegen wen sich die Klage richten muss, hängt von der Eigentumsform ab und ist bei einer Familienwohn	191	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/components/TraktandumFormular.svelte	… Durch Beschluss lassen sich die Wertquoten nur ändern, wenn jede Person, die hier steht, zustimmt 	285	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/routes/betreiber/loeschen/[id=kennung]/+page.svelte	Wer nicht an der Versammlung war und nicht vertreten wurde, erfährt davon mit dem Protokoll; für ihn	182	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/routes/gemeinschaften/[id=kennung]/reglement/+page.svelte	Das Gesetz lässt die Vertretung an der Versammlung zu; mit einer entsprechenden Vollmacht hat der Ve	188	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/routes/gemeinschaften/[id=kennung]/reglement/+page.svelte	Die Sitzungsleitung soll neutral bleiben und ein nicht angekündigtes Geschäft nicht durch das Schwei	215	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/routes/tage/[id=kennung]/protokoll/+page.svelte	Beides ist freiwillig — das Gesetz verlangt als Protokollinhalt nur die Beschlüsse (ZGB Art. 712n Ab	196	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+src/routes/versammlungen/neu/+page.svelte	… Ob es die erste oder die zweite Versammlung nach ZGB Art. 712p ist und wie abgestimmt wird, steht 	192	Bestandstext; Änderung braucht Laien- und Fachprüfung.
+#
+# Seit A6 (29.10.2026): Die sechste Bauform «Satzfunktion» misst Sätze, die
+# eine Funktion zurückgibt; sie liefen vorher durch die fünf anderen Bauformen.
+# Die folgenden Sätze sind Bestand, den der neue Wächter erst jetzt misst; sie
+# zu kürzen braucht die Laienprüfung und gehört nicht in diesen Auftrag.
+src/lib/domain/ausnahmen.ts	Als Universalversammlung zur Abstimmung g	209	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/auszaehlung.ts	Führen Sie ihn deshalb erst aus, wenn di	206	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/auszaehlung.ts	Während der Abstimmung entscheidet sie o	206	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/entscheidbaum.ts	Rechtmässig ist eine andere Ordnung hier	217	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/mehrhinweise.ts	Nach der Fachliteratur soll Einstimmigke	204	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/nutzniessung.ts	Nach ZGB Art. 712o Abs. 2 gilt der Nutzn	198	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/protokoll.ts	Eine früher stattfindende Versammlung da	294	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/protokoll.ts	Werden ausserhalb dieser Ausnahme Beschl	241	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/vonhand.ts	War der Stand bei der Abstimmung ein and	181	Bestand A6, Kürzen braucht die Laienprüfung
+#
+# Die Satzfunktions-Bauform (A6, 29.10.2026) misst auch Ternäre je Zweig,
+# einzelne `return '…'` und `text(…)`-Zellen. Die folgenden Sätze sind
+# Bestand, den sie erst jetzt misst; kürzen braucht die Laienprüfung.
+src/lib/domain/ausnahmen.ts	Jede Partei ist selbst da: bei gemeinsam	208	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/ausnahmen.ts	Mündlich genügt, etwa am Telefon mit Ihn	198	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/ausnahmen.ts	Kein Beschluss, weil jemand während der 	275	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/auszaehlung.ts	Ist der Antrag angenommen und dieses Meh	399	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/auszaehlung.ts	Ehegatte und Verwandte des Beklagten in 	315	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/auszaehlung.ts	Ist sie es nicht, empfiehlt Votum die Ab	396	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/eingriffe.ts	Verlangt jemand, dass stattdessen über d	293	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/entscheidbaum.ts	Hinterlegen Sie sie vor dem Versand der 	269	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/entscheidbaum.ts	Ist sie in einem Punkt strenger und in e	245	Bestand A6, Kürzen braucht die Laienprüfung; Schluss nach der Endfassung Block C, Abschnitt 7
+src/lib/domain/folgeantrag.ts	Wird der Grundantrag in dieser Abstimmun	234	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/mehrhinweise.ts	Diese Stimmen zählen hier nur, wenn die 	237	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/mehrhinweise.ts	Nach der anderen Lesart («…») würde für 	207	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/mehrhinweise.ts	Unabhängig davon darf sie ohne Beschluss	353	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/mehrhinweise.ts	Ihre Gemeinschaft lässt darüber zudem nu	183	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/protokoll.ts	Soll neu entschieden werden, muss die Sa	209	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/reglement.ts	Sie wird hier nicht automatisch angewand	234	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/reglement.ts	Eine Abweichung davon wendet dieses Werk	271	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/reglement.ts	Sie wird hier nicht angewandt: Sie lässt	284	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/rueckkommen.ts	Mit dem neuen Beschluss zur Sache wird d	232	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/rules/quorum-2026-10-29.ts	Das qualifizierte Mehr heisst: Mehr als 	241	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/rules/quorum-2026-10-29.ts	Erreicht der Beschluss dieses Mehr, aber	196	Regelwerkstext; Änderung braucht Laien- und Fachprüfung.
+src/lib/domain/ausnahmen.ts	Kein Beschluss, weil jemand nur durch eine Person vertreten war	228	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/ausnahmen.ts	Die danach über eine Vollmacht abgegebene Stimme von … zählt dafür	248	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/rueckkommen.ts	Soll er nicht mehr gelten, nehmen Sie nach dem angenommenen Rückkommen	309	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/domain/rueckkommen.ts	Sollen sie nicht mehr gelten, nehmen Sie nach dem angenommenen Rückkommen	312	Bestand A6, Kürzen braucht die Laienprüfung
+src/lib/rules/quorum-2026-11-05.ts	Verlangt das Reglement für seine eigene Änderung die Einstimmigkeit, ist umstritten, ob diese Verschärfung gilt: Der Kommentar hält sie für unzulässig, andere Autoren lassen sie zu, das Bundesgericht hat die Frage offengelassen.	228	Nach Laien- und Fachprüfung bewusst lang (F4c Block 1, Runden 1 bis 4, 05.11.2026, quellen/pruefung/berichte/2026-11-05-votum-f4c-l6-*).
+src/lib/rules/quorum-2026-11-05.ts	Erreicht der Beschluss das qualifizierte Mehr, aber nicht die Zustimmung aller, ist er nach der Klausel abgelehnt und nach dem gesetzlichen Mehr angenommen; verkündet wird nach der Einstellung Ihrer Gemeinschaft.	212	Nach Laien- und Fachprüfung bewusst lang (F4c Block 1, Runden 1 bis 4, 05.11.2026, quellen/pruefung/berichte/2026-11-05-votum-f4c-l6-*).
+src/lib/rules/quorum-2026-11-10.ts	Auch die Zählung ist umstritten: Nach dem SVIT-Kommentar genügt die Zustimmung sämtlicher anwesenden und vertretenen Eigentümer (Art. 712m Rz. 197; anders Manz), nach der herrschenden Lehre braucht es alle im Grundbuch aufgeführten.	232	Unverändert aus der Vorfassung (wortgleich seit der Fassung 2026-09-22); erstmals gemessen, weil der Auftrag E1 Block B den Wortlaut als exportierte Konstante braucht (Entscheid 0044, zweiter Nachtrag, R5 a).
+src/lib/rules/quorum-2026-11-10.ts	Die Zählbasis ist umstritten: Der SVIT-Kommentar lässt das einfache Mehr der anwesenden und vertretenen Eigentümer genügen (Art. 712a Rz. 214, mit Kohler; anders Strittmatter, der alle Eigentümer zählt); das Bundesgericht hat die Frage nicht entschieden.	254	Unverändert aus der Vorfassung (Hinweis 7 der Fassung 2026-11-05); erstmals gemessen, weil der Auftrag E1 Block C den Wortlaut als exportierte Konstante braucht (Entscheid 0044, zweiter Nachtrag, R1 a).
+src/lib/rules/quorum-2026-11-13.ts	Das Gesetz nennt die Bestellung einer Verwaltung, deren Befugnisse über die gewöhnliche Verwaltung h	190	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Darf die Bewirtschaftung nach Reglement oder Verwaltungsvertrag schon mehr als die gewöhnliche Verwa	395	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Hat die Bewirtschaftung nur die Aufgaben, die das Gesetz jeder Bewirtschaftung gibt (namentlich ZGB 	197	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Der SVIT-Kommentar lässt auch bei erweiterten Befugnissen das einfache Mehr genügen und nennt die Fr	205	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Erreicht die Wahl nur das einfache Mehr, ist der Antrag nach dieser Karte abgelehnt; Sie können an e	186	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Solange die bisherige Bewirtschaftung im Amt ist, steht dieser Weg nicht offen; läuft ihr Vertrag no	189	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Wer nicht zugestimmt hat, kann sie anfechten: beim Gericht, in der Regel zuerst mit einem Gesuch an 	247	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	In den Einstellungen Ihrer Gemeinschaft (Seite «Lesarten») ist gewählt, dass Votum dem SVIT-Kommenta	205	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Wer sicher gehen will, holt vor der Versammlung Vollmachten ein und wählt trotzdem mit qualifizierte	242	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Den Verwaltungsvertrag unterzeichnet die Gemeinschaft, wo es nicht eilt, erst, wenn die Frist für al	205	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	In einem verwandten Fall (zwei Eigentümer, Klage der Gemeinschaft gegen den einen) liess das Bundesg	238	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/rules/quorum-2026-11-13.ts	Lassen Sie deshalb abstimmen, auch wenn nur eine Person stimmen darf, halten Sie im Protokoll fest, 	215	Wortlaut der Endfassung nach drei Runden Laien- und Fachprüfung (Block B, Entscheid 0048, 13.11.2026, quellen/pruefung/zu-pruefen-2026-11-13-votum-regel43-block-b-endfassung.md); die Länge ist nicht eigens entschieden, Kürzen braucht eine weitere Laienprüfung (docs/pendenzen.md).
+src/lib/domain/beschlussfaehigkeit.ts	Unabhängig davon gilt: Stimmen alle Eigentümer einem Antrag schriftlich zu, stellt das Gesetz das ei	186	Wortlaut der Langfassung nach Laien- und Fachprüfung (13.11.2026, quellen/pruefung/berichte/2026-11-13-votum-einziger-eigentuemer.md, «Übernommene Fassung»); die Fundstellen in der Klammer machen ihn lang, Kürzen braucht eine weitere Laienprüfung.
+src/lib/rules/quorum-2026-11-14.ts	Gezählt werden trotzdem die Köpfe der An	245	Wortlaut 4a der Endfassung Block C nach fünf Runden Laien- und Fachprüfung

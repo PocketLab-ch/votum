@@ -1,0 +1,162 @@
+# Entwicklungsumgebung. Der Produktionsbetrieb nutzt dasselbe Abbild mit
+# anderen Umgebungsvariablen (AD-18) und genau diese zwei Laufzeitteile (AD-13).
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    # **Auch der Entwicklungsstapel kommt nach einem Neustart von selbst
+    # zurueck** (03.09.2026). Ohne Angabe gilt Dockers Vorgabe `no`, und
+    # gemessen war das der Zustand: `versammlung-app-1` und
+    # `versammlung-postgres-1` standen auf `restart=no`, waehrend der
+    # Betriebsstapel daneben `unless-stopped` traegt. Der Dev-Host startet gelegentlich
+    # neu; danach zeigte
+    # die Dev-Adresse hinter dem Proxy ins Leere, bis jemand den
+    # Stapel von Hand hochfuhr.
+    #
+    # `unless-stopped` und nicht `always`: Wer den Stapel bewusst anhaelt, will
+    # ihn angehalten haben, auch ueber einen Neustart hinweg.
+    #
+    # **Was beim Wirtsneustart anders laeuft als bei `compose up`** (aus dem
+    # Code-Review): Docker startet die Container dann nach ihrer Neustartregel,
+    # und `depends_on: service_healthy` weiter unten gilt dabei NICHT. Der
+    # Anwendungscontainer faellt also mit `ECONNREFUSED` aus dem
+    # Migrationslauf, bevor die Datenbank bereit ist, und kommt erst nach ein
+    # bis zwei Anlaeufen hoch. Das ist erwartetes Verhalten und heilt sich
+    # selbst; wer die Fehlschlaege im Protokoll findet, sucht sonst eine
+    # Stoerung, die es nicht gibt.
+    #
+    # Die Kehrseite: Scheitert der Migrationslauf DAUERHAFT (etwa an einer
+    # nachtraeglich geaenderten, schon eingespielten Migration), dreht der
+    # Container in einer Schleife mit wachsendem Abstand, statt stehen zu
+    # bleiben. Dann hilft nur `docker compose stop app` und ein Blick ins
+    # Protokoll.
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: versammlung
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-entwicklung}
+      POSTGRES_DB: versammlung
+    volumes:
+      # PostgreSQL 18 erwartet den Mount eine Ebene höher als frühere Fassungen,
+      # damit "pg_upgrade --link" später nicht an einer Mount-Grenze scheitert.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U versammlung -d versammlung']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - '127.0.0.1:5434:5432'
+
+  app:
+    image: node:24-alpine
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm run migrate && npm run dev -- --host 0.0.0.0 --port 3000"
+    environment:
+      DATABASE_URL: postgres://versammlung_app:${APP_DB_PASSWORD:-entwicklung}@postgres:5432/versammlung
+      DATABASE_MIGRATION_URL: postgres://versammlung:${POSTGRES_PASSWORD:-entwicklung}@postgres:5432/versammlung
+      # Migration 002 legt die Anwendungsrolle ohne Kennwort an — eines gehört
+      # nicht in eine Datei des Repositorys. Der Migrationslauf setzt es aus
+      # dieser Variablen; ohne sie käme die Anwendung mit
+      # «password authentication failed» nicht an ihre eigene Datenbank.
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-entwicklung}
+      # Die Adresse, unter der die Anwendung von aussen erreichbar ist (Audit
+      # B-15). Sie steckt im QR-Code auf der Leinwand, auf den **gedruckten**
+      # Zugangskarten und im Rückweg der Anmeldung über Authentik. Ohne Eintrag
+      # nimmt die Anwendung die Anfrage beim Wort — ein untergeschobenes `Host`
+      # ergäbe dann eine Karte, die auf ein fremdes Haus zeigt.
+      #
+      # In der Entwicklung leer gelassen, weil die Anwendung unter mehreren
+      # Adressen erreicht wird. Auf einem Server im Versammlungsraum gehört sie
+      # gesetzt; auf Prod ist sie in `compose.prod.yml` Pflichtangabe.
+      ORIGIN: ${ORIGIN:-}
+      # Wie in compose.prod.yml; ohne diese Zeile käme ein Eintrag in der .env nie an.
+      # Hier leer lassen, solange Port 3100 offen ist: Wer ihn direkt erreicht,
+      # wählt die Zeile sonst selbst.
+      VERSAMMLUNG_ADRESSKOPFZEILE: ${VERSAMMLUNG_ADRESSKOPFZEILE:-}
+      # Die Namen, unter denen der Entwicklungsserver Anfragen annimmt
+      # (`vite.config.ts`); der Name hinter dem Proxy steht in der .env.
+      VITE_ERLAUBTE_NAMEN: ${VITE_ERLAUBTE_NAMEN:-}
+      VERSAMMLUNG_OFFLINE: ${VERSAMMLUNG_OFFLINE:-false}
+      VERSAMMLUNG_DATEIEN: /daten/dateien
+      # Der Zeitgeber im Dienst (stuendlich, Erinnerung an den
+      # Einladungsversand). `docs/dienste.md` verspricht seit dem 01.09.2026,
+      # er lasse sich mit `VERSAMMLUNG_ERINNERUNG=aus` abschalten, «ohne
+      # Neubau» — nur reichte ihn keine Compose-Datei durch, und Compose gibt
+      # nur weiter, was hier steht. Gemessen am 03.09.2026 im laufenden
+      # Container: nicht gesetzt. Der versprochene Ausschalter gab es also
+      # nicht; wer den Zeitgeber anhalten wollte, musste den Container anhalten.
+      #
+      # Dieselbe Falle wie bei den AUTHENTIK_-Zeilen weiter unten. Ein Eintrag,
+      # den die Anwendung liest und die Doku beschreibt, muss auch ankommen.
+      VERSAMMLUNG_ERINNERUNG: ${VERSAMMLUNG_ERINNERUNG:-}
+      # Zeitstempel nach RFC 3161 (FR-53). Ohne URL wird versiegelt, aber
+      # nicht von aussen bezeugt; die Lücke steht sichtbar am Paket.
+      VERSAMMLUNG_ZEITSTEMPEL_URL: ${VERSAMMLUNG_ZEITSTEMPEL_URL:-}
+      VERSAMMLUNG_ZEITSTEMPEL_NAME: ${VERSAMMLUNG_ZEITSTEMPEL_NAME:-}
+      VERSAMMLUNG_ZEITSTEMPEL_FINGERABDRUECKE: ${VERSAMMLUNG_ZEITSTEMPEL_FINGERABDRUECKE:-}
+      # Der Schlüssel, mit dem Zugangsschlüssel in der Datenbank verschlüsselt
+      # werden (seit 14.08.2026). Ohne ihn lassen sich äussere Dienste zwar in
+      # der Anwendung einrichten, aber **ohne Zugangsschlüssel** — die kämen
+      # sonst im Klartext in die Datenbank. Erzeugen: openssl rand -hex 32
+      VERSAMMLUNG_GEHEIMNIS: ${VERSAMMLUNG_GEHEIMNIS:-}
+      # Authentik als ZWEITER Anmeldeweg (AD-9, FR-26). Die lokale Anmeldung
+      # bleibt immer offen — im Versammlungsraum ohne Netz ist der Ausfall des
+      # Dienstes der Normalfall, nicht die Ausnahme.
+      #
+      # **Bis zum 20.08.2026 standen diese drei Zeilen hier nicht**, obwohl die
+      # Anwendung sie liest und `docs/dienste.md` sie beschreibt: Wer sie in die
+      # `.env` schrieb, sah den Anmeldeknopf trotzdem nie, denn Compose reicht
+      # nur durch, was hier steht. Ein Eintrag ohne Wirkung ist schlimmer als
+      # keiner — man sucht den Fehler dann bei Authentik.
+      #
+      # Bleibt eines der drei Felder leer, erscheint der Knopf gar nicht.
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID:-}
+      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET:-}
+      # KI-Unterstützung (FR-58 bis FR-63): eine Kette von Stufen, jede
+      # OpenAI-kompatibel. Ohne Eintrag bleibt die Anwendung ohne KI benutzbar.
+      # Seit dem 14.08.2026 ist das der **Rückfall**: Was unter «Betreiber →
+      # Äussere Dienste» eingerichtet ist, hat Vorrang.
+      VERSAMMLUNG_KI_1_NAME: ${VERSAMMLUNG_KI_1_NAME:-}
+      VERSAMMLUNG_KI_1_URL: ${VERSAMMLUNG_KI_1_URL:-}
+      VERSAMMLUNG_KI_1_MODELL: ${VERSAMMLUNG_KI_1_MODELL:-}
+      VERSAMMLUNG_KI_1_SCHLUESSEL: ${VERSAMMLUNG_KI_1_SCHLUESSEL:-}
+      VERSAMMLUNG_KI_1_GEDULD: ${VERSAMMLUNG_KI_1_GEDULD:-}
+      VERSAMMLUNG_KI_2_NAME: ${VERSAMMLUNG_KI_2_NAME:-}
+      VERSAMMLUNG_KI_2_URL: ${VERSAMMLUNG_KI_2_URL:-}
+      VERSAMMLUNG_KI_2_MODELL: ${VERSAMMLUNG_KI_2_MODELL:-}
+      VERSAMMLUNG_KI_2_SCHLUESSEL: ${VERSAMMLUNG_KI_2_SCHLUESSEL:-}
+      VERSAMMLUNG_KI_2_GEDULD: ${VERSAMMLUNG_KI_2_GEDULD:-}
+      # Übernahme der Stammdaten aus immotool (FR-7). Ohne Eintrag erscheint die
+      # Wahl auf der Übernahmeseite gar nicht; Datei und Handerfassung bleiben.
+      VERSAMMLUNG_IMMOTOOL_URL: ${VERSAMMLUNG_IMMOTOOL_URL:-}
+      VERSAMMLUNG_IMMOTOOL_TOKEN: ${VERSAMMLUNG_IMMOTOOL_TOKEN:-}
+      # Mailausgang (PRD §13). Ohne Eintrag erscheint der Versandknopf nicht;
+      # das Versandpaket und die Karten entstehen unverändert.
+      VERSAMMLUNG_SMTP_HOST: ${VERSAMMLUNG_SMTP_HOST:-}
+      VERSAMMLUNG_SMTP_PORT: ${VERSAMMLUNG_SMTP_PORT:-587}
+      VERSAMMLUNG_SMTP_BENUTZER: ${VERSAMMLUNG_SMTP_BENUTZER:-}
+      VERSAMMLUNG_SMTP_KENNWORT: ${VERSAMMLUNG_SMTP_KENNWORT:-}
+      VERSAMMLUNG_SMTP_ABSENDER: ${VERSAMMLUNG_SMTP_ABSENDER:-}
+      VERSAMMLUNG_SMTP_ABSENDERNAME: ${VERSAMMLUNG_SMTP_ABSENDERNAME:-}
+    # In der Entwicklung läuft immotool im **anderen** Compose-Projekt, also im
+    # anderen Netz — sein Containername ist von hier aus nicht auflösbar. Über
+    # das Wirtsystem geht es, und `host-gateway` ist dabei die einzige Adresse,
+    # die sich nicht ändert, wenn Docker die Netze neu vergibt.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - .:/app
+      # Dateiablage nach AD-17: zusammen mit der Datenbank zu sichern, nie
+      # getrennt — sonst verweist das Manifest eines Abschlusspakets auf
+      # Dateien, die es nicht mehr gibt.
+      - dateien:/daten
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3100:3000'
+
+volumes:
+  postgres_data:
+  dateien:

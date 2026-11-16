@@ -1,0 +1,72 @@
+{
+  "/": [
+    "index",
+    "welches-kapitel-sie-brauchen",
+    "Übersicht"
+  ],
+  "/gemeinschaften": [
+    "versammlung-fuehren",
+    "abschnitt-1-vorbereiten",
+    "Vorbereiten"
+  ],
+  "/gemeinschaften/*/lesarten": [
+    "versammlung-fuehren",
+    "lesarten-der-gemeinschaft",
+    "Lesarten der Gemeinschaft"
+  ],
+  "/versammlungen": [
+    "versammlung-fuehren",
+    "abschnitt-3-an-der-versammlung",
+    "An der Versammlung"
+  ],
+  "/personen": [
+    "versammlung-fuehren",
+    "abschnitt-1-vorbereiten",
+    "Eigentümer zuordnen"
+  ],
+  "/quorum": [
+    "versammlung-fuehren",
+    "schritt-6-die-mehrheitserfordernisse",
+    "Mehrheitserfordernisse"
+  ],
+  "/pruefen": [
+    "versammlung-fuehren",
+    "abschnitt-4-danach",
+    "Ein Paket prüfen"
+  ],
+  "/verlauf": [
+    "versammlung-fuehren",
+    "abschnitt-4-danach",
+    "Verlauf"
+  ],
+  "/tage": [
+    "verbund",
+    "die-gemeinsame-versammlung",
+    "Der Verbund"
+  ],
+  "/betreiber": [
+    "versammlung-fuehren",
+    "die-betreiberseite",
+    "Die Betreiberseite"
+  ],
+  "/betreiber/dienste": [
+    "dienste",
+    "zwei-wege-etwas-einzurichten",
+    "Äussere Dienste"
+  ],
+  "/betreiber/loeschen": [
+    "versammlung-fuehren",
+    "aufbewahren-und-loschen",
+    "Aufbewahren und löschen"
+  ],
+  "/konto": [
+    "versammlung-fuehren",
+    "ihr-zugang",
+    "Ihr Zugang"
+  ],
+  "/anmelden": [
+    "versammlung-fuehren",
+    "ihr-zugang",
+    "Anmelden"
+  ]
+}

@@ -1,0 +1,40 @@
+# Was nicht in den Baukontext gehört.
+#
+# **Der Anlass** (11.09.2026): `scripts/einrichten.sh` legt die Zugangsdaten der
+# frischen Installation ab — Adresse, Benutzername, Kennwort im Klartext. Ohne
+# diese Datei zieht `COPY . .` der Baustufe sie in eine Abbildschicht. Sie käme
+# nicht in die Laufzeitschicht (die kopiert nur `build`, `migrations`, die
+# Migration und das Kontoskript), läge aber im Zwischenabbild auf dem Wirt.
+#
+# Dieselbe Überlegung gilt für die Env-Dateien: Darin stehen die Kennwörter der
+# Datenbank. Sie werden im Bau nirgends gelesen; der Betrieb bekommt sie über
+# `--env-file`, nicht über das Abbild.
+#
+# **Und es macht den Bau schneller.** `node_modules` und `.git` sind zusammen
+# ein Vielfaches des Quelltextes; die Baustufe legt `node_modules` mit
+# `npm ci` ohnehin neu an, und `git` läuft auf dem Wirt, nicht im Container.
+zugang/
+.env
+.env.*
+!.env.example
+
+# Dieselben Muster wie in `.gitignore`, und aus demselben Grund: «Ein neuer
+# Anbieter bringt eine neue Datei, und die Regel muss vor ihr da sein.» Sie
+# fehlten hier (Sicherheitsdurchgang 11.09.2026); heute liegt keine solche Datei
+# im Arbeitsverzeichnis, aber der Baukontext zieht ein, was da ist.
+secrets/
+*token*
+*.key
+!*.key.example
+
+node_modules/
+.git/
+.svelte-kit/
+build/
+
+# Die Dateiablage nach AD-17. Sie gehört in die Sicherung, nie ins Abbild.
+daten/
+
+# Prüfergebnisse und Aufnahmen der Durchstiche.
+*.log
+/certs/tsa/*

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de" data-theme="light">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+			**`light`, nicht `light dark`** (02.09.2026, aus der zweiten Reviewrunde
+			und im Browser nachgemessen).
+
+			Diese Zeile gilt nur im Fenster vor dem Stylesheet und ohne
+			JavaScript — und in beiden Faellen steht `data-theme="light"` oben im
+			Markup. `content="light dark"` heisst «richte dich nach dem Geraet»:
+			Bei dunklem System zeichnete der Browser das Kaestchen dunkel,
+			waehrend die Seite hell wurde. Gemessen bei dunklem System, ohne
+			Stylesheet:
+
+			| meta | Kaestchen |
+			|---|---|
+			| `light dark` | dunkel — folgt dem Geraet |
+			| `light` | hell — passt zu `data-theme="light"` |
+
+			Das Skript darunter setzt `colorScheme` mit, sobald es das Thema
+			aendert; danach gilt `app.css` mit seiner Angabe je Themenblock.
+		-->
+		<meta name="color-scheme" content="light" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+		<title>Votum</title>
+		<script nonce="%sveltekit.nonce%">
+			// Läuft vor dem ersten Anstrich. Ohne das blitzt bei dunkler
+			// Systemeinstellung kurz die helle Darstellung auf, was auf einem
+			// Beamer im abgedunkelten Raum unangenehm auffällt.
+			(function () {
+				try {
+					var gewaehlt = localStorage.getItem('versammlung.theme');
+					var dunkel =
+						gewaehlt === 'dark' ||
+						(!gewaehlt && window.matchMedia('(prefers-color-scheme: dark)').matches);
+					document.documentElement.dataset.theme = dunkel ? 'dark' : 'light';
+					// Die Bedienelemente des Browsers gleich mit: Bis das Stylesheet
+					// da ist, gilt sonst das `meta` daueber, und das kennt nur `light`.
+					document.documentElement.style.colorScheme = dunkel ? 'dark' : 'light';
+				} catch (e) {
+					// Kein localStorage (privater Modus): Systemeinstellung genügt.
+				}
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+		<script nonce="%sveltekit.nonce%">
+			// **Die Kopfhöhe steht, bevor Svelte übernimmt** (Auftraggeber, 11.09.2026: «In
+			// der Sitzungsleitungssicht gibt es auf einmal eine Lücke bei aktuelles
+			// Geschäft»).
+			//
+			// `--kopf-ist` setzt sonst erst ein Effekt in `+layout.svelte`, also nach
+			// der Hydration. Bis dahin gilt der Rückfallwert 13rem, und der ist für
+			// die klebende Kopfleiste absichtlich grosszügig: gemessen am 11.09.2026
+			// ist sie 69 px hoch (ab 1200 px Fensterbreite), 118 px (ab 900) und 157
+			// px (bei 768). Der Kasten «Aktuelles Geschäft» klebt an
+			// `--kopf-ist + 1rem` und hing damit bis zu 155 px zu tief — als schwarze
+			// Lücke über dem Kasten. Auf dem Entwicklungsserver dauert dieses Fenster
+			// Sekunden, weil die Seite beim ersten Aufruf neu übersetzt wird.
+			//
+			// Hier unten steht das Markup schon und das Stylesheet ist geladen (es
+			// blockiert den Anstrich), die Messung ist also gültig. Der Effekt in
+			// `+layout.svelte` hält den Wert danach mit einem `ResizeObserver` nach;
+			// diese Zeilen schliessen nur das Fenster davor. Ohne JavaScript bleibt
+			// es beim Rückfallwert, und dort ist seine Grosszügigkeit richtig: zu
+			// klein geraten schöbe er den Kasten unter die Leiste.
+			(function () {
+				try {
+					var leiste = document.querySelector('header');
+					if (!leiste) return;
+					// **Nur eine KLEBENDE Leiste zählt** — dieselbe Prüfung wie in
+					// `lib/sichtfeld.ts` (`klebendeKante`), und aus demselben Grund: Die
+					// Saalsichten haben eine eigene Kopfzeile, die mitrollt. Sie zu messen
+					// hiesse, eine Variable zu setzen, die dort nichts bedeutet und die
+					// `+layout.svelte` nach der Hydration wieder entfernt.
+					var lage = getComputedStyle(leiste).position;
+					if (lage !== 'sticky' && lage !== 'fixed') return;
+					var hoehe = Math.ceil(leiste.getBoundingClientRect().height);
+					if (hoehe > 0) document.documentElement.style.setProperty('--kopf-ist', hoehe + 'px');
+				} catch (e) {
+					// Ohne Messung gilt der Rückfallwert; das ist kein Fehler, nur weniger genau.
+				}
+			})();
+		</script>
+	</body>
+</html>

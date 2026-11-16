@@ -1,0 +1,11 @@
+# Jargon-Ausnahmen für scripts/check-texte.mjs: je Zeile Datei, Satzanfang
+# (mindestens 40 Zeichen), Jargonwort und Grund, durch Tab getrennt. Die
+# Ausnahme deckt nur das genannte Jargonwort in dem Satz mit diesem Anfang:
+# Ein zweites Jargonwort im Satz und dasselbe Wort in einem anderen Satz
+# streicht der Wächter weiter an.
+#
+# Ein Eintrag, der kein Jargonwort mehr deckt, macht den Lauf rot; eine Liste,
+# die mehr deckt als nötig, wird zur stillen Ausschaltung der Jargonregel.
+# Neue Einträge nur für Bestand, den eine neue Bauform erst jetzt misst; die
+# Umformulierung braucht die Laienprüfung.
+src/lib/domain/auszaehlung.ts	Als betroffen ist eine Partei bezeichnet, die nicht	Stimmberechtigtenstand	Bestand A6, Umformulierung braucht die Laienprüfung

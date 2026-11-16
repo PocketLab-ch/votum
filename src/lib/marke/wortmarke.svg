@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 64" role="img" aria-label="Votum">
+  <g fill="currentColor">
+    <g transform="rotate(-12 32 18)">
+      <rect x="21" y="4" width="22" height="24" rx="3" opacity="0.38"/>
+      <rect x="25" y="10" width="14" height="3" rx="1.5"/>
+      <rect x="25" y="16" width="10" height="3" rx="1.5"/>
+    </g>
+    <rect x="10" y="28" width="44" height="30" rx="5"/>
+  </g>
+  <rect x="20" y="32" width="24" height="4" rx="2" fill="var(--grund, #fbfbfa)"/>
+  <text x="70" y="45"
+        font-family="'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-size="38" font-weight="560" letter-spacing="-0.3" fill="currentColor">Votum</text>
+</svg>

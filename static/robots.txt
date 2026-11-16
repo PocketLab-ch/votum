@@ -1,0 +1,38 @@
+# Votum: Die Hilfe und die statischen Dateien dürfen in den Index, die
+# Anwendung nicht. Anmeldung und App-Wege gehören niemandem, der sie nicht
+# kennt; die gesperrten App-Seiten leiten ohne Sitzung zur Anmeldung um.
+#
+# Die Code-Wege /z, /p, /b und /e stehen bewusst nicht hier: Ihre Seiten
+# tragen `<meta name="robots" content="noindex, nofollow">`. Ein Disallow
+# würde verhindern, dass die Suchmaschine dieses noindex überhaupt liest, und
+# ein öffentlich geteilter Code-Link könnte als nackte URL samt Code in den
+# Index kommen (Produktentscheid 12.11.2026, «Code-Links freigeben»).
+#
+# Anders die Einlöse-Unterpfade /z/ und /p/: Dort steht der Code im Pfad, und
+# als Weiterleitung tragen sie kein noindex, das man lesen könnte. Sie bleiben
+# gesperrt. In Kauf genommen ist dabei: Ist eine solche Adresse irgendwo
+# verlinkt, kann sie trotz der Sperre als nackte URL in den Index kommen. Dass
+# kein Crawler die Adresse mit dem Code abruft, wiegt schwerer. (Einlösen kann
+# ein blosser Abruf von `/z/<code>` seit FP-1, 12.11.2026, nicht mehr.)
+#
+# Die Allow-Zeilen stehen ohne Leerzeile im selben Block, damit auch ältere
+# Leser sie der Gruppe zuordnen. Sie halten die Hilfe, das Favicon und die
+# Bauteile unter /_app/ offen, falls später ein breites `Disallow: /` dazukommt.
+User-agent: *
+Disallow: /anmelden
+Disallow: /abmelden
+Disallow: /z/
+Disallow: /p/
+Disallow: /versammlungen
+Disallow: /gemeinschaften
+Disallow: /personen
+Disallow: /betreiber
+Disallow: /konto
+Disallow: /verlauf
+Disallow: /quorum
+Disallow: /tage
+Disallow: /anhang
+Disallow: /pruefen
+Allow: /handbuch
+Allow: /favicon.svg
+Allow: /_app/

@@ -1,0 +1,29 @@
+node_modules/
+/build
+/.svelte-kit
+/dist
+.env
+.env.*
+!.env.example
+*.log
+/certs/tsa/*
+!/certs/tsa/.gitkeep
+
+# Dateiablage (AD-17) — gehoert in die Sicherung, nicht ins Repo
+daten/
+
+# Zugangsschluessel jeder Art. Breit gefasst und nicht als Aufzaehlung: Ein
+# neuer Anbieter bringt eine neue Datei, und die Regel muss vor ihr da sein.
+*token*
+*.key
+!*.key.example
+secrets/
+
+# Erzeugt von scripts/handbuch-bauen.mjs (Teil von `npm run build`). Das
+# statische HTML gehoert ins Abbild, nicht ins Repo — Quelle sind docs/*.md.
+static/handbuch/
+
+# Zugangsdaten, die `scripts/einrichten.sh` am Schluss ablegt. Der Ordner und
+# nicht ein Muster: Was hier entsteht, ist immer ein Geheimnis, und ein neuer
+# Dateiname darf die Regel nicht umgehen.
+zugang/

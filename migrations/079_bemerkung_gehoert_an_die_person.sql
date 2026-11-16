@@ -1,0 +1,19 @@
+-- Die Bemerkung gehört an die Person, nicht an die Eigentümerzeile
+-- (23.08.2026, Rücknahme von Migration 078).
+--
+-- Migration 078 legte `party.note` an. Das war falsch, und der Befund sagte es
+-- selbst: «Vera Probemann kommt nie und bevollmächtigt jedes Jahr denselben
+-- Nachbarn — das gehört an die Person» (Prüflauf I, A-12). Beklagt wurde dort
+-- gerade, dass es zwei Bemerkungsfelder mit verschiedenem Umfang gibt; eine
+-- dritte Spalte hätte den Befund vergrössert statt behoben.
+--
+-- `person.note` gibt es seit je und wird auf der Personenseite gepflegt. Neu ist
+-- allein, dass die Eigentümerzeile sie zeigt und schreiben lässt — dieselbe
+-- Bemerkung, an zwei Orten erreichbar, nicht zwei Bemerkungen.
+--
+-- `unit_ownership.note` bleibt: Das ist die Notiz zur ZUORDNUNG einer Einheit
+-- («Kaufvertrag vom …»), ein anderer Sachverhalt.
+--
+-- Ohne Datenverlust: Zwischen 078 und 079 liegt kein Deploy, die Spalte wurde
+-- nur im Prüflauf beschrieben.
+ALTER TABLE party DROP COLUMN IF EXISTS note;

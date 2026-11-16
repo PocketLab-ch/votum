@@ -1,0 +1,11 @@
+-- `aufbewahrung_bis` entfernen (17.09.2026, zweiter Schritt nach Migration 113).
+--
+-- Die Funktion rechnete das Ende einer Aufbewahrungsfrist in Jahren aus. Seit
+-- Migration 113 gibt es diese Frist nicht mehr: Votum löscht eine Versammlung,
+-- sobald die Anfechtungsfrist abgelaufen ist, und das Archiv führt die
+-- Verwaltung. Die Betreiberseite zeigt statt «aufzubewahren bis» jetzt «löschbar
+-- ab», gerechnet im Kern (`src/lib/domain/loeschfrist.ts`).
+--
+-- Eine Funktion, die eine abgeschaffte Frist ausrechnet, liesse sich weiter
+-- aufrufen und lieferte ein Datum, das nichts mehr bedeutet.
+DROP FUNCTION IF EXISTS aufbewahrung_bis(uuid);

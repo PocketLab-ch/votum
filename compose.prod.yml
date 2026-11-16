@@ -1,0 +1,207 @@
+# Betrieb: derselbe Aufbau für den Server und für das Notebook im
+# Versammlungsraum (AD-18). Unterschiedlich sind nur die Umgebungsvariablen.
+#
+# Der Unterschied zu `docker-compose.yml`:
+#
+#   - Ein **gebautes Abbild** mit festem Tag statt `node:24-alpine` mit
+#     eingehängtem Arbeitsverzeichnis. Wer `latest` einsetzt, weiss nach einem
+#     Neustart nicht mehr, welche Fassung im Saal lief.
+#   - Die **Migrationen laufen als eigener, einmaliger Schritt** vor der
+#     Anwendung. Im Entwicklungsaufbau hängen sie am Startbefehl; im Betrieb
+#     wäre das falsch, weil zwei gleichzeitig startende Anwendungscontainer
+#     dieselbe Migration nebeneinander ausführen würden.
+#   - **Kein eingehängtes Arbeitsverzeichnis.** Was im Abbild ist, läuft; was
+#     nicht drin ist, kann auch nicht versehentlich anders sein.
+#   - **Gehärtete Container.** `app` und `migrate` laufen mit
+#     schreibgeschütztem Dateisystem, ohne Capabilities und ohne die
+#     Möglichkeit, Rechte zu erlangen. Wer ausserhalb von `/tmp` und `/daten`
+#     schreiben will, bekommt EROFS.
+#
+# Aufruf:
+#
+#   cp .env.example .env      # und ausfüllen, siehe docs/installation.md
+#   scripts/abbild-bauen.sh   # setzt VERSAMMLUNG_TAG in jeder Env-Datei
+#   docker compose -f compose.prod.yml up -d
+#
+# **Auf einem Rechner, auf dem auch der Entwicklungsstapel läuft**, gehören ein
+# eigener Projektname und eine eigene Env-Datei davor: Ohne den Namen übernimmt
+# dieser Aufruf dessen Container und Datenträger, weil beide aus demselben
+# Verzeichnis kommen; ohne die Datei bekommt der Entwicklungsstapel das ORIGIN
+# des Betriebs untergeschoben und weist dort jedes Formular ab.
+#
+#   docker compose -p versammlung-prod --env-file .env.betrieb -f compose.prod.yml up -d
+#
+# Der einmalige Migrationscontainer ist **kein** dritter Laufzeitteil im Sinn
+# von AD-13: Er endet, bevor die Anwendung startet, und läuft im Betrieb nicht
+# mit.
+
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: versammlung
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt}
+      POSTGRES_DB: versammlung
+    volumes:
+      # PostgreSQL 18 erwartet den Einhängepunkt eine Ebene höher als frühere
+      # Fassungen, damit «pg_upgrade --link» später nicht an einer Grenze
+      # scheitert.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U versammlung -d versammlung']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Bewusst kein veröffentlichter Port: Die Datenbank spricht nur mit der
+    # Anwendung. Wer von aussen hineinsehen muss, nimmt `docker compose exec`.
+
+  # ── Der einmalige Schritt vor jedem Start ────────────────────────────────
+  migrate:
+    # Ohne VERSAMMLUNG_ABBILD das lokal gebaute Abbild (scripts/abbild-bauen.sh).
+    # Kommt das Abbild aus einer Registry, steht hier ihr Name ohne Tag; der Tag
+    # in VERSAMMLUNG_TAG ist dann der Tag in der Registry.
+    image: ${VERSAMMLUNG_ABBILD:-versammlung}:${VERSAMMLUNG_TAG:?VERSAMMLUNG_TAG fehlt — siehe scripts/abbild-bauen.sh}
+    restart: 'no'
+    # Härtung (Auftrag F4, 15.10.2026): Der Prozess läuft ohnehin als
+    # `versammlung` ohne wirksame Rechte; das hier nimmt ihm auch die
+    # Möglichkeit, welche zu bekommen. Schreibbar bleiben nur `/tmp` (tmpfs)
+    # und, bei `app`, die Ablage unter `/daten`.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command: ['node', '--experimental-strip-types', 'src/lib/server/migrate.ts']
+    environment:
+      DATABASE_MIGRATION_URL: postgres://versammlung:${POSTGRES_PASSWORD}@postgres:5432/versammlung
+      # Migration 002 legt die Anwendungsrolle ohne Kennwort an — eines gehört
+      # nicht in eine Datei des Repositorys. Der Lauf setzt es aus dieser
+      # Variablen. Fehlt sie, setzt er nichts: Ein Wartungsaufruf von Hand darf
+      # kein bestehendes Kennwort überschreiben und die laufende Anwendung
+      # aussperren.
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?APP_DB_PASSWORD fehlt}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    image: ${VERSAMMLUNG_ABBILD:-versammlung}:${VERSAMMLUNG_TAG:?VERSAMMLUNG_TAG fehlt — siehe scripts/abbild-bauen.sh}
+    restart: unless-stopped
+    # Speicherdeckel: Jede gleichzeitige Anfrage bis BODY_SIZE_LIMIT hält
+    # einige Dutzend MiB. Ohne Deckel könnten viele grosse Anfragen dem ganzen
+    # Host den Speicher nehmen; mit ihm trifft es nur diesen Container, und er
+    # kommt über `restart` zurück. `memswap_limit` gleich hoch, sonst setzt
+    # Docker das Doppelte, und der Container lagert erst in den Swap des Hosts
+    # aus. Eine Grenze gleichzeitiger Anfragen gehört zusätzlich in den Proxy
+    # davor (docs/installation.md).
+    mem_limit: 1g
+    memswap_limit: 1g
+    # Härtung wie bei `migrate`.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      # Die eingeschränkte Rolle, nie die privilegierte: Ein Superuser umgeht
+      # den Zeilenschutz immer, auch bei FORCE ROW LEVEL SECURITY (AD-6).
+      DATABASE_URL: postgres://versammlung_app:${APP_DB_PASSWORD}@postgres:5432/versammlung
+      VERSAMMLUNG_OFFLINE: ${VERSAMMLUNG_OFFLINE:-false}
+      VERSAMMLUNG_DATEIEN: /daten/dateien
+      # Grösste Anfrage, die der Server annimmt. Ohne Eintrag gilt die Vorgabe
+      # von adapter-node, 512 KB, und dann scheiterte am Betrieb jedes
+      # Abschlusspaket am Prüfwerkzeug mit 413, ebenso jede Ablage über 512 KB
+      # (gefunden 15.10.2026, Auftrag F2, `durchspielen` Schritt 136). Der
+      # Entwicklungsserver kennt die Grenze nicht. 52M fasst das grösste
+      # Abschlusspaket (`PAKET_HOECHSTGROESSE`, 50 MB), den Zeitstempel daneben
+      # (1 MB) und die Hülle des Formulars; `tests/domain/anfragegrenze.test.ts`
+      # wird rot, wenn die Grenze das Paket oder eine Ablagedatei nicht mehr
+      # fasst. Mehrere Nachweise in einer Anfrage (Einlass, Vollmachten) sind
+      # auf fünf je Absenden begrenzt, je bis 10 MB (`src/lib/nachweisgrenze.ts`,
+      # seit 16.10.2026); der Browser hält mehr vor dem Absenden an, und
+      # derselbe Test wird rot, wenn fünf volle Dateien nicht mehr hineinpassen.
+      BODY_SIZE_LIMIT: 52M
+      # Der Zeitgeber im Dienst (stuendlich, Erinnerung an den
+      # Einladungsversand). `docs/dienste.md` verspricht seit dem 01.09.2026,
+      # er lasse sich mit `VERSAMMLUNG_ERINNERUNG=aus` abschalten, «ohne
+      # Neubau» — nur reichte ihn keine Compose-Datei durch, und Compose gibt
+      # nur weiter, was hier steht. Gemessen am 03.09.2026 im laufenden
+      # Container: nicht gesetzt. Der versprochene Ausschalter gab es also
+      # nicht; wer den Zeitgeber anhalten wollte, musste den Container anhalten.
+      #
+      # Dieselbe Falle wie bei den AUTHENTIK_-Zeilen weiter unten. Ein Eintrag,
+      # den die Anwendung liest und die Doku beschreibt, muss auch ankommen.
+      VERSAMMLUNG_ERINNERUNG: ${VERSAMMLUNG_ERINNERUNG:-}
+      # Verschlüsselt die in der GUI hinterlegten Zugänge äusserer Dienste
+      # (KI, Zeitstempel). Fehlte hier, obwohl der Entwicklungsaufbau es seit
+      # dem 14.08.2026 durchreicht — ohne den Schlüssel kann der Betrieb
+      # GUI-hinterlegte Zugänge nicht entschlüsseln (gefunden beim ersten
+      # Aufsetzen des Betriebsstapels am 15.08.2026).
+      VERSAMMLUNG_GEHEIMNIS: ${VERSAMMLUNG_GEHEIMNIS:-}
+      # Zeitstempel nach RFC 3161 (FR-53). Ohne URL wird versiegelt, aber
+      # nicht von aussen bezeugt; die Lücke steht sichtbar am Paket.
+      VERSAMMLUNG_ZEITSTEMPEL_URL: ${VERSAMMLUNG_ZEITSTEMPEL_URL:-}
+      VERSAMMLUNG_ZEITSTEMPEL_NAME: ${VERSAMMLUNG_ZEITSTEMPEL_NAME:-}
+      VERSAMMLUNG_ZEITSTEMPEL_FINGERABDRUECKE: ${VERSAMMLUNG_ZEITSTEMPEL_FINGERABDRUECKE:-}
+      # KI-Unterstützung (FR-58 bis FR-63): eine Kette von Stufen, jede
+      # OpenAI-kompatibel. Ohne Eintrag bleibt die Anwendung ohne KI benutzbar.
+      VERSAMMLUNG_KI_1_NAME: ${VERSAMMLUNG_KI_1_NAME:-}
+      VERSAMMLUNG_KI_1_URL: ${VERSAMMLUNG_KI_1_URL:-}
+      VERSAMMLUNG_KI_1_MODELL: ${VERSAMMLUNG_KI_1_MODELL:-}
+      VERSAMMLUNG_KI_1_SCHLUESSEL: ${VERSAMMLUNG_KI_1_SCHLUESSEL:-}
+      VERSAMMLUNG_KI_1_GEDULD: ${VERSAMMLUNG_KI_1_GEDULD:-}
+      VERSAMMLUNG_KI_2_NAME: ${VERSAMMLUNG_KI_2_NAME:-}
+      VERSAMMLUNG_KI_2_URL: ${VERSAMMLUNG_KI_2_URL:-}
+      VERSAMMLUNG_KI_2_MODELL: ${VERSAMMLUNG_KI_2_MODELL:-}
+      VERSAMMLUNG_KI_2_SCHLUESSEL: ${VERSAMMLUNG_KI_2_SCHLUESSEL:-}
+      VERSAMMLUNG_KI_2_GEDULD: ${VERSAMMLUNG_KI_2_GEDULD:-}
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID:-}
+      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET:-}
+      # Übernahme der Stammdaten aus immotool (FR-7). Auf dem Notebook im
+      # Versammlungsraum bleibt das leer — dort ist immotool ohnehin nicht
+      # erreichbar, und die Übernahme geschieht vorher.
+      VERSAMMLUNG_IMMOTOOL_URL: ${VERSAMMLUNG_IMMOTOOL_URL:-}
+      VERSAMMLUNG_IMMOTOOL_TOKEN: ${VERSAMMLUNG_IMMOTOOL_TOKEN:-}
+      # Mailausgang (PRD §13). Ohne Eintrag erscheint der Versandknopf nicht;
+      # das Versandpaket und die Karten entstehen unverändert.
+      VERSAMMLUNG_SMTP_HOST: ${VERSAMMLUNG_SMTP_HOST:-}
+      VERSAMMLUNG_SMTP_PORT: ${VERSAMMLUNG_SMTP_PORT:-587}
+      VERSAMMLUNG_SMTP_BENUTZER: ${VERSAMMLUNG_SMTP_BENUTZER:-}
+      VERSAMMLUNG_SMTP_KENNWORT: ${VERSAMMLUNG_SMTP_KENNWORT:-}
+      VERSAMMLUNG_SMTP_ABSENDER: ${VERSAMMLUNG_SMTP_ABSENDER:-}
+      VERSAMMLUNG_SMTP_ABSENDERNAME: ${VERSAMMLUNG_SMTP_ABSENDERNAME:-}
+      ORIGIN: ${ORIGIN:?ORIGIN fehlt — die Adresse, unter der die Anwendung erreichbar ist}
+      # Hinter genau einem Reverse Proxy, der die Adresse hinten anhängt, die
+      # Kopfzeile mit der Adresse des Aufrufers (`x-forwarded-for`); sonst zählt
+      # die Sperre nach Fehlanmeldungen alle Aufrufer als den Proxy. Nur setzen,
+      # wenn die Anwendung ausschliesslich über diesen Proxy erreichbar ist:
+      # Wer sie direkt erreicht, wählt die Zeile selbst. Einzelheiten in
+      # .env.example und docs/installation.md.
+      VERSAMMLUNG_ADRESSKOPFZEILE: ${VERSAMMLUNG_ADRESSKOPFZEILE:-}
+    volumes:
+      # Dateiablage nach AD-17: zusammen mit der Datenbank zu sichern, nie
+      # getrennt — sonst verweist das Manifest eines Abschlusspakets auf
+      # Dateien, die es nicht mehr gibt.
+      - dateien:/daten
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      # Voreingestellt nur auf dem Wirt: Davor gehört ein Proxy mit TLS, und der
+      # darf den Ereignisstrom nicht puffern (siehe docs/installation.md).
+      #
+      # Für das Notebook im Versammlungsraum, das sein eigenes WLAN aufspannt
+      # und keinen Proxy hat: VERSAMMLUNG_BIND=0.0.0.0
+      - '${VERSAMMLUNG_BIND:-127.0.0.1}:${VERSAMMLUNG_PORT:-3000}:3000'
+
+volumes:
+  postgres_data:
+  dateien:

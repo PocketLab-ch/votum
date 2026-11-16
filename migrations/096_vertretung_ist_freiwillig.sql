@@ -1,0 +1,25 @@
+-- Die Bezeichnung der Vertretung wird freiwillig (Produktentscheid 27.08.2026).
+--
+-- **Rechtlich.** Ist nur einer der Mitberechtigten anwesend, darf die
+-- Sitzungsleitung annehmen, dass er die Gemeinschaft gültig vertritt, und zwar
+-- ohne Vollmacht (Wermelinger, Rz. 19 ad Art. 712o). Die Bezeichnung im Voraus
+-- ist eine Klarstellung, keine Voraussetzung. Bis hierher erzwang sie die
+-- Datenbank, und damit musste die Bewirtschaftung etwas erfinden, wenn sie es
+-- nicht wusste: Der eingetragene Name behauptete eine Ordnung, die niemand
+-- getroffen hatte.
+--
+-- **Praktisch.** Am Einlass entscheidet der Zugangscode, nicht der gedruckte
+-- Name. Ein Pflichtfeld behauptet also eine Schranke, die es nicht gibt, und
+-- setzt den zweiten Miteigentümer ins Kleingedruckte.
+--
+-- **Was bleibt.** `party_vertretung_bei_juristisch` (Migration 025, Fassung
+-- `kind = 'natural' OR …`) wird NICHT angefasst. Eine AG, ein Verein und eine
+-- Mitgliedsgemeinschaft handeln nie selbst; dort ist die handelnde Person eine
+-- andere Frage und weiterhin Pflicht. Die beiden Schranken sehen ähnlich aus
+-- und meinen Verschiedenes.
+--
+-- **`party_vertreter_ist_mitglied` (Migration 095) bleibt ebenfalls** und
+-- wirkt weiter: Ein zusammengesetzter Fremdschlüssel ist bei `NULL` in einer
+-- Spalte erfüllt (MATCH SIMPLE). «Niemand bezeichnet» geht damit von selbst
+-- durch, «jemand Fremdes bezeichnet» weiterhin nicht.
+ALTER TABLE party DROP CONSTRAINT IF EXISTS party_vertreter_bei_gemeinschaft;

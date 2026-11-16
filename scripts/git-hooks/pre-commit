@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+#
+# Prüflauf vor jedem Commit.
+#
+# **Warum als Hook und nicht als gute Absicht.** Der Prüflauf lief bisher von
+# Hand. Das hält, solange jemand daran denkt — und genau dann nicht mehr, wenn
+# es eilt. Hier hängt er an der einen Stelle, an der ohnehin jede Änderung
+# vorbeikommt.
+#
+# **Was er prüft:** Schichtenwächter (AD-1), Typen, Kerntests, Datenbanktests.
+# Die Datenbanktests bauen je Lauf eine frische Datenbank aus den Migrationen;
+# deshalb dauert das Ganze rund sechs Minuten (gemessen 14.10.2026) und läuft
+# im Container, nicht auf dem Wirt: seit dem 14.10.2026 in einem Einmalcontainer
+# aus diesem Baum (scripts/pruefen.sh).
+#
+# **Was er nicht prüft:** den Browserdurchlauf (`e2e/durchspielen.mjs`). Er
+# braucht einen laufenden Anwendungsserver und Playwright, legt echte Daten an
+# und dauert Minuten. Das gehört vor eine Auslieferung, nicht vor jeden Commit.
+#
+# **Eine Ungenauigkeit, bewusst in Kauf genommen:** Geprüft wird der
+# Arbeitsstand, nicht die Staging-Fläche. Wer nur einen Teil seiner Änderungen
+# einträgt, prüft trotzdem alles. Das mit `git stash --keep-index` sauber zu
+# trennen, hiesse, vor jedem Commit an fremden Dateien zu hantieren — ein
+# abgebrochener Lauf könnte Arbeit verlieren. Der Preis wäre höher als der
+# Gewinn.
+#
+# Umgehen (für den Notfall, nicht für den Alltag):
+#   git commit --no-verify        oder        OHNE_PRUEFLAUF=1 git commit
+set -euo pipefail
+
+if [ "${OHNE_PRUEFLAUF:-}" = "1" ]; then
+	echo "Prüflauf übersprungen (OHNE_PRUEFLAUF=1)."
+	exit 0
+fi
+
+WURZEL="$(git rev-parse --show-toplevel)"
+cd "$WURZEL"
+
+GEAENDERT="$(git diff --cached --name-only --diff-filter=ACMR)"
+[ -n "$GEAENDERT" ] || exit 0
+
+# Reine Doku-Änderungen brechen den Bau nicht. Eine Minute Wartezeit für einen
+# Tippfehler im Handbuch wäre der sicherste Weg, den Hook abzuschalten.
+#
+# **Mit einer Ausnahme:** `docs/` ist die Quelle des Handbuchs, und
+# `handbuch-bauen.mjs` bricht ab, wenn ein Kapitel- oder Ankerverweis ins Leere
+# zeigt. Genau dieser Fall ist ein reiner .md-Commit — er wäre also der einzige,
+# den niemand prüft (26.08.2026, aus dem Code-Review). Der Bau dauert
+# Millisekunden; dafür lohnt das Warten.
+if ! printf '%s\n' "$GEAENDERT" | grep -qvE '\.md$'; then
+	if printf '%s\n' "$GEAENDERT" | grep -qE '^docs/'; then
+		if ! node scripts/handbuch-bauen.mjs; then
+			echo "Handbuch: Der Bau bricht ab (Meldung oben) — Commit abgebrochen."
+			exit 1
+		fi
+	fi
+	echo "Nur Doku geändert — Prüflauf übersprungen."
+	exit 0
+fi
+
+# **Der Hinweis auf eine Kollision gehört VOR den Lauf, nicht hinein.**
+# Hier arbeiten mehrere Sitzungen an derselben Maschine, und zwei volle Läufe
+# gleichzeitig messen die Last statt des Blocks. Am 22.09.2026 fiel deshalb
+# zweimal ein Commit an einer Zeitüberschreitung statt an einem Befund.
+#
+# Ein erster Entwurf hängte den Hinweis an das erste Glied der Prüfkette. Dort
+# erreichte er niemanden: Die Zeile darunter leitet die ganze Ausgabe in eine
+# Datei, im guten Fall wird sie verworfen, im schlechten zeigt `tail -n 40` das
+# Ende. Der Hinweis stünde als erster von achtunddreissig Schritten am Anfang
+# und wäre nie darunter (Code-Review 23.09.2026).
+#
+# `|| true`, weil ein Hinweis keinen Commit aufhalten darf.
+node scripts/kollisionshinweis.mjs >&2 || true
+
+BERICHT="$(mktemp)"
+trap 'rm -f "$BERICHT"' EXIT
+
+printf 'Prüflauf … '
+# Im Einmalcontainer aus DIESEM Baum, nicht mehr per `compose exec` im
+# Dev-Container: Der hat das Hauptverzeichnis eingehängt, und aus einem
+# Worktree prüfte der Hook so still einen fremden Baum (Arbeitsbaum-Vertrag,
+# 14.10.2026). Ob der Dev-Stapel läuft, prüft scripts/pruefen.sh.
+if bash scripts/pruefen.sh >"$BERICHT" 2>&1; then
+	# Im guten Fall bleibt es bei einer Zeile: Wer jeden Tag committet, will
+	# nicht jeden Tag tausend Zeilen lesen. Die Zahl gehört trotzdem hin — eine
+	# blosse Bestätigung «in Ordnung» sagt nicht, ob überhaupt etwas lief.
+	#
+	# **Das `|| true` ist kein Schlamperei-Schutz, sondern Absicht.** Ein
+	# geglückter Prüflauf darf nicht daran scheitern, dass sich das Zählen
+	# verschluckt. Die erste Fassung tat genau das: `set -e` beendete den Hook
+	# stumm, weil `grep` nichts fand — vitest schreibt Farbcodes zwischen «Tests»
+	# und die Zahl. Deshalb werden sie hier zuerst entfernt.
+	ANZAHL="$(sed -e 's/\x1b\[[0-9;]*m//g' "$BERICHT" |
+		grep -oE 'Tests +[0-9]+ passed' | grep -oE '^[^0-9]*[0-9]+' |
+		grep -oE '[0-9]+' | awk '{summe += $1} END {print summe}')" || true
+	printf 'in Ordnung — %s Tests\n' "${ANZAHL:-alle grün}"
+	exit 0
+fi
+
+printf 'GESCHEITERT\n\n'
+# Nur das Ende: Dort steht, was nicht stimmt.
+tail -n 40 "$BERICHT" >&2
+cat >&2 <<'MELDUNG'
+
+  Der Commit ist nicht zustande gekommen. Vollständige Ausgabe:
+
+      scripts/pruefen.sh
+
+MELDUNG
+exit 1
