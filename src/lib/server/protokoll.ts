@@ -1080,6 +1080,18 @@ export async function stelleEntwurfZusammen(
 							auszaehlung: z.auszaehlung
 						})
 					: null,
+			// L16 (Migration 194): je Beschluss an einer zweiten nach der Einstellung.
+			...(versammlung.stufeNachLesart
+				? {
+						nachLesartErsteFehlte: ersteFehlteAmBeschluss({
+							stimmkraft,
+							anwesende: z.durchgangId ? anwesendeJeDurchgang.get(z.durchgangId) : null,
+							regelErste: regeln.erste ?? null,
+							auszaehlung: z.auszaehlung
+						}),
+						nachLesartAngenommen: z.auszaehlung?.angenommen === true
+					}
+				: {}),
 			// Nur der Grund: Der Satz im Entwurf sagt «zurückgezogen» schon selbst,
 			// mit `rueckzugInWorten` stand «zurückgezogen: Zurückgezogen: …» da
 			// (gefunden in H7, Teil D).
@@ -1295,6 +1307,7 @@ export async function stelleEntwurfZusammen(
 		ort: versammlung.ort,
 		art: versammlung.art,
 		stufe: versammlung.stufe,
+		...(versammlung.stufeNachLesart ? { stufeNachLesart: true } : {}),
 		fristvermerk: versammlung.fristvermerk ?? null,
 		universaleinstellung,
 		schlusszeit,

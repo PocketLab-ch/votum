@@ -901,7 +901,8 @@
 			<span class="hilfe">
 				Nicht mitgezählt werden Organvertreter von Firmen, gesetzliche Vertretungen und
 				Mitberechtigte derselben Einheit. Sie handeln nicht kraft Vollmacht. Beim Erfassen
-				wird das je Vollmacht gewählt.
+				wird das je Vollmacht gewählt. Die Mitberechtigten zählen mit, wenn Sie bei den
+				Lesarten (L15) «Zählt mit» einstellen.
 			</span>
 		</label>
 		<label class="fundstelle">

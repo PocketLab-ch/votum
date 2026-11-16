@@ -121,7 +121,7 @@ describe('Vorgabe und Umstellen (Kriterien 1 und 2)', () => {
 	it('hält die Umstellung im Verlauf fest, mit Frage und Werten in Worten', async () => {
 		const g = await gemeinschaft('L2 Verlauf');
 		await speichereLesarten(handelnder(betreiber), 'admin', g.id, { L2: 'qualifiziert' });
-		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'qualifiziert', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'qualifiziert', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		const eintraege = await imKontext(betreiber, (tx) =>
 			tx<{ detail: Record<string, unknown> }[]>`
 				SELECT detail FROM audit_entry

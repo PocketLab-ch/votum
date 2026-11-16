@@ -39,6 +39,8 @@ export interface Vollmachtsrahmen {
 	stufe: 'erste' | 'zweite';
 	/** Wie viele Vollmachten eine Person höchstens ausüben darf, wenn geregelt. */
 	vollmachtsgrenze?: number | null;
+	/** L15 «mitzaehlen» (Migration 194): für `vertretungssatz`. */
+	stimmfuehrungZaehlt?: boolean;
 	vollmachtsgrenzeQuelle?: string | null;
 }
 
@@ -149,7 +151,7 @@ export async function erzeugeVollmachtsformular(
 
 		// ── Was dabei gilt ───────────────────────────────────────────────────
 		y -= mm(14);
-		y = zeichneText(seite, vertretungssatz(rahmen.vollmachtsgrenze, rahmen.vollmachtsgrenzeQuelle), rand, y, breite, klein);
+		y = zeichneText(seite, vertretungssatz(rahmen.vollmachtsgrenze, rahmen.vollmachtsgrenzeQuelle, rahmen.stimmfuehrungZaehlt), rand, y, breite, klein);
 
 		/*
 		 * **Nur ein Satz zur Vorlage am Einlass** (Code-Review 07.09.2026).

@@ -89,6 +89,8 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
 			datum: heute,
 			vollmachtsgrenze: gemeinschaft.proxyLimit,
 			vollmachtsgrenzeQuelle: gemeinschaft.proxyLimitRuleSource ?? null,
+			stimmfuehrungZaehlt:
+				(await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id })).L15 === 'mitzaehlen',
 			beschlussfaehigkeit: anwesenheitsregeln[versammlung.stufe] ?? null,
 			gemeinschaftlichesEigentum: stimmkraft.zeilen.some(
 				(z) => z.isCommunity && z.einheiten.length > 0

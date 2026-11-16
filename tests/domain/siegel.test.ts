@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { manifestAlsJson, manifestInWorten, pruefe, zeitstempelInWorten, type Manifest } from '$lib/domain/siegel';
+import { L16_SIEGELZEILE } from '$lib/domain/lesarten';
 
 /**
  * Das Manifest und die Prüfung.
@@ -35,6 +36,16 @@ function manifest(u: Partial<Manifest> = {}): Manifest {
 }
 
 describe('Das Manifest', () => {
+	it('nennt eine zweite nach L16 und lässt alle anderen Manifeste unverändert (Migration 194)', () => {
+		const ohne = manifest();
+		expect(manifestAlsJson(ohne)).not.toContain('stufeNachLesart');
+		expect(manifestInWorten(ohne, 'c'.repeat(64))).not.toContain(L16_SIEGELZEILE);
+		const mit = manifest({
+			versammlung: { ...ohne.versammlung, stufe: 'zweite', stufeNachLesart: true }
+		});
+		expect(manifestInWorten(mit, 'c'.repeat(64))).toContain(L16_SIEGELZEILE);
+	});
+
 	it('ordnet die Einträge, damit dieselben Daten dieselben Bytes ergeben', () => {
 		// Ohne feste Ordnung liesse sich ein Siegel nicht nachrechnen — und genau
 		// das Nachrechnen ist sein Zweck.

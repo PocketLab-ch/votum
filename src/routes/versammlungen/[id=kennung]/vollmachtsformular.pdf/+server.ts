@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { holeGemeinschaft } from '$lib/server/gemeinschaften';
+import { holeLesarten } from '$lib/server/lesarten';
 import { stimmkraftAnsicht } from '$lib/server/eigentuemer';
 import { holeVersammlung } from '$lib/server/versammlungen';
 import { holeMomentaufnahme } from '$lib/server/freigabe';
@@ -81,7 +82,9 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 			ort: versammlung.ort,
 			stufe: versammlung.stufe,
 			vollmachtsgrenze: gemeinschaft.proxyLimit,
-			vollmachtsgrenzeQuelle: gemeinschaft.proxyLimitRuleSource ?? null
+			vollmachtsgrenzeQuelle: gemeinschaft.proxyLimitRuleSource ?? null,
+			stimmfuehrungZaehlt:
+				(await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id })).L15 === 'mitzaehlen'
 		},
 		geber
 	);

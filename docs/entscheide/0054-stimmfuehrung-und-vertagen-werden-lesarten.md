@@ -59,11 +59,19 @@ meint; mit «alle Eigentümer» zählt sie zu streng. Auf die Fragen dazu:
    mit» für Reglemente, die sie einbeziehen. Organ und gesetzliche Vertretung
    bleiben in beiden Wahlen ausserhalb.
 
+7. **Zuschnitt von L16 nach der Fachprüfung** (16.11.2026, `quellen/pruefung/berichte/
+   2026-11-16-votum-l15-l16-frage93-fach.md`, F-1; der Auftrag lässt die Wahl zu, «so wie die
+   Fachprüfung sie trägt»): Die Wahl «Zweite Versammlung» greift nur, wenn die Versammlung
+   beim Vertagen nicht mehr beschlussfähig ist. Ist sie noch beschlussfähig, folgt in beiden
+   Wahlen eine neue erste; Art. 712p Abs. 2 verlangt eine ungenügende Beteiligung.
+8. **Kennungen:** L15 (Stimmführung) und L16 (Vertagen), Migration 194. L14 bleibt für den
+   Vorschlag H1 frei. Keine neue Regelwerksfassung: Keine der beiden ändert ein Mehr.
+
 Bis 2 und 3 gebaut sind, sagt das Handbuch, welcher Lesart Votum folgt, ohne
 Anwältin. Bau, Prüfung und Messung stehen in einem gemeinsamen Auftrag
 (`.auftraege/2026-11-16-votum-lesarten-stimmfuehrung-vertagen.md`).
 
 ## Verwandt
 
-- Entscheide 0017, 0039, 0044, 0052
+- Entscheide 0017, 0039, 0040 (Vertagen ergibt eine neue erste: jetzt die Vorgabe von L16), 0044, 0052
 - `docs/pendenzen.md`, «Stimmführung, Vertagen und Reglementsmehr»

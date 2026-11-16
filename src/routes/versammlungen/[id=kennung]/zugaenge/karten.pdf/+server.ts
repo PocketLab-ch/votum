@@ -122,7 +122,9 @@ export const POST: RequestHandler = async ({ locals, params, request, url }) => 
 				ort: versammlung.ort,
 				stufe: versammlung.stufe,
 				vollmachtsgrenze: satz.gemeinschaft.proxyLimit,
-				vollmachtsgrenzeQuelle: satz.gemeinschaft.proxyLimitRuleSource ?? null
+				vollmachtsgrenzeQuelle: satz.gemeinschaft.proxyLimitRuleSource ?? null,
+				stimmfuehrungZaehlt:
+					(await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id })).L15 === 'mitzaehlen'
 			},
 			inhalte.map((i) => ({ name: i.name, einheiten: i.einheiten.map((e) => e.label) }))
 		);

@@ -16,6 +16,7 @@ import { anteilInWorten, GESETZLICH } from './beschlussfaehigkeit';
 import type { Beschlussfaehigkeitsregel } from './beschlussfaehigkeit';
 import { mitQuelle } from './gemeinschaft';
 import { datumLang } from './datum';
+import { L16_EINLADUNG } from './lesarten';
 import type { Schwelle } from './mehrheit';
 
 /** «zwei» statt «2» für kleine Zahlen im Fliesstext. */
@@ -55,14 +56,30 @@ export function einberufungssatz(e: Einberufung): string {
  * dort erfährt, steht mit einer Vollmacht da, die er nicht mehr ausüben darf —
  * und der Vollmachtgeber ist dann weder anwesend noch vertreten.
  */
-export function vertretungssatz(grenze?: number | null, quelle?: string | null): string {
+export function vertretungssatz(
+	grenze?: number | null,
+	quelle?: string | null,
+	/** L15 «mitzaehlen» (Migration 194; Featureprüfung): Die Stimmführung belegt einen Platz. */
+	stimmfuehrungZaehlt = false
+): string {
 	const anfang = 'Wer nicht selbst teilnehmen kann, kann sich schriftlich vertreten lassen.';
 	const schluss = 'Die Vollmacht ist beim Einlass vorzuweisen.';
 	if (!grenze || grenze <= 0) return `${anfang} ${schluss}`;
 	const mitte =
 		`Eine Person darf höchstens ${grenze} Vollmacht${grenze === 1 ? '' : 'en'} ausüben` +
 		// `mitQuelle`: «(Art. 18)» allein liesse den Leser im ZGB suchen.
-		`${quelle ? ` (${mitQuelle(quelle)})` : ''}.`;
+		`${quelle ? ` (${mitQuelle(quelle)})` : ''}.` +
+		// Codeprüfung Fixblock M2; Laien- und Fachprüfung Runde 4 (R4-L-1, R4-L-2, R4-F-1, R4-F-2):
+		// nur neben einer eigenen Einheit, je Partei einmal, ohne Vollmacht nur wem sie mitgehört.
+		// Runde 5: «Hat sie keine eigene Einheit» (R5-L-1), «wem sie nicht mitgehört» statt «Miteigentümer» (R5-F-1).
+		(stimmfuehrungZaehlt
+			? ' Nach der Einstellung der Gemeinschaft zählt dazu auch die Stimme für eine Einheit, die jemandem ' +
+				'mit anderen zusammen gehört, etwa einer Miterbin, wenn sie daneben für eine eigene Einheit stimmt. ' +
+				'Mehrere Einheiten derselben Personen zählen dabei zusammen einmal. Hat sie keine eigene Einheit, ' +
+				'zählen allein die Vollmachten anderer. Wem die Einheit mitgehört und wer als einzige der ' +
+				'Mitberechtigten kommt, braucht dafür keine schriftliche Vollmacht; wem sie nicht mitgehört, braucht ' +
+				'sie.'
+			: '');
 	return `${anfang} ${mitte} ${schluss}`;
 }
 
@@ -262,9 +279,14 @@ export function zweitversammlungssatz(
  */
 export function beschlussfaehigkeitssatz(
 	stufe: 'erste' | 'zweite',
-	regel?: Beschlussfaehigkeitsregel | null
+	regel?: Beschlussfaehigkeitsregel | null,
+	/** Die zweite nur nach L16 (Migration 194, `stufeNachLesart`). */
+	stufeNachLesart = false
 ): string | null {
-	if (stufe === 'zweite') return zweitversammlungssatz(stufe, regel);
+	if (stufe === 'zweite') {
+		const satz = zweitversammlungssatz(stufe, regel);
+		return satz && stufeNachLesart ? `${satz} ${L16_EINLADUNG}` : satz;
+	}
 
 	const gilt = regel ?? GESETZLICH.erste;
 	const woher = regel

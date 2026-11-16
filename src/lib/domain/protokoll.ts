@@ -70,7 +70,7 @@ import {
 	verwaltungsangabeProtokollsatz,
 	neuAnZweiterProtokoll
 } from './mehrhinweise';
-import type { Ausstandsbeschlussfaehigkeit, Neutraktandenwahl } from './lesarten';
+import { L16_PROTOKOLLSTUFE, type Ausstandsbeschlussfaehigkeit, type Neutraktandenwahl } from './lesarten';
 import { pendenzSatz, type Pendenzangabe } from './pendenz';
 import { ruegeSatz, type Ruegeangabe } from './ruege';
 import { stimmabgabeabschnitt } from './stimmabgabe';
@@ -326,6 +326,16 @@ export interface Protokollzeile {
 	 * (`ersteFehlteAmBeschluss`); `null`, wo es sich nicht bestimmen lässt.
 	 */
 	neuAnZweiterErsteFehlte?: ErsteFehlte;
+	/**
+	 * An einer zweiten nur nach L16 (Migration 194): ob bei diesem Beschluss
+	 * die Beschlussfähigkeit einer ersten fehlte (`ersteFehlteAmBeschluss`).
+	 * `undefined` an jeder anderen Versammlung; der Satz dazu steht am
+	 * Beschluss, weil nur er sagt, ob die Einstellung ihn trägt (Laienprüfung
+	 * 16.11.2026, Runde 2, R2-L-1).
+	 */
+	nachLesartErsteFehlte?: ErsteFehlte;
+	/** Ob der Beschluss angenommen ist, für `l16Beschlusssatz`, wo sich das Fehlen nicht bestimmen lässt. */
+	nachLesartAngenommen?: boolean;
 	/**
 	 * Vor der Abstimmung zurückgezogen (FR-45), mit Grund.
 	 *
@@ -832,6 +842,8 @@ export interface Protokolleingabe {
 	ort: string;
 	art: string;
 	stufe: string;
+	/** Die zweite nur nach L16 (Migration 194): Die Stufenzeile sagt es. */
+	stufeNachLesart?: boolean;
 	/**
 	 * Der Vermerk zur Zehntagesfrist, wenn sie nicht eingehalten ist
 	 * (Befund R-2b, Produktentscheid vom 23.09.2026); sonst `null`.
@@ -1599,7 +1611,7 @@ export function protokollentwurf(e: Protokolleingabe): string {
 	z.push(`| Datum, Beginn | ${datumLang(e.datum)}, ${uhrzeit(e.uhrzeit)} Uhr |`);
 	z.push(`| Ort | ${e.ort} |`);
 	if (e.stufe === 'zweite') {
-		z.push('| Stufe | Zweite Versammlung nach ZGB 712p Abs. 3 |');
+		z.push(`| Stufe | ${e.stufeNachLesart ? L16_PROTOKOLLSTUFE : 'Zweite Versammlung nach ZGB 712p Abs. 3'} |`);
 	}
 	/*
 	 * Unmittelbar unter der Stufe, weil er nur dort eine Bedeutung hat und die
@@ -2048,6 +2060,13 @@ export function protokollentwurf(e: Protokolleingabe): string {
 			if (t.beschlussfaehigkeitFehlte) {
 				z.push(beschlussfaehigkeitFehlteSatz(t.beschlussfaehigkeitFehlte));
 			}
+			// L16 (Migration 194): nicht neben dem Satz zu L5 und nicht, wo die
+			// Beschlussfähigkeit selbst fehlte; der Satz darüber sagt dann mehr.
+			const l16 =
+				t.neuAnZweiterVersammlung || t.beschlussfaehigkeitFehlte
+					? null
+					: l16Beschlusssatz(t.nachLesartErsteFehlte, t.nachLesartAngenommen === true);
+			if (l16) z.push(l16);
 			/*
 			 * **L7, die Vorgabe am Beschluss** (Migration 183): Hing die
 			 * Beschlussfähigkeit an den Personen im Ausstand, steht die
@@ -3311,6 +3330,36 @@ export function beschlussfaehigkeitFehlteAmBeschluss(e: {
  * die Angaben fehlen; dann nennt das Protokoll nur die Einstellung.
  */
 export type ErsteFehlte = false | { angenommen: boolean; vonHand: boolean } | null;
+
+/**
+ * Der Satz am Beschluss einer zweiten nach L16 (Migration 194): ob die
+ * Beschlussfähigkeit einer ersten erreicht war. Nur nach einer Annahme, die
+ * ohne sie zustande kam, der Weg zur Anfechtung; eine Ablehnung ändert nichts,
+ * was die Abwesenden vollziehen müssten.
+ *
+ * **Ohne Angaben nach einer Annahme kein Schweigen** (Laienprüfung Runde 3,
+ * R3-L-1): Fehlte der Satz, läse die Abwesende das als Entwarnung.
+ */
+export function l16Beschlusssatz(fehlte: ErsteFehlte | undefined, angenommen = false): string | null {
+	if (fehlte === undefined) return null;
+	if (fehlte === null) {
+		return angenommen
+			? 'Ob bei diesem Beschluss die Beschlussfähigkeit einer ersten Versammlung erreicht war, lässt sich aus ' +
+					'den erfassten Angaben nicht bestimmen. Fehlte sie, beruht er auf der Einstellung zum Vertagen und ' +
+					'kann angreifbar sein; wie und bis wann, steht unter «Anfechtung».'
+			: null;
+	}
+	if (fehlte === false) {
+		return (
+			'Bei diesem Beschluss war die Beschlussfähigkeit einer ersten Versammlung erreicht; die Einstellung zum ' +
+			'Vertagen wirkt sich auf ihn nicht aus.'
+		);
+	}
+	return fehlte.angenommen
+		? 'Bei diesem Beschluss war die Beschlussfähigkeit einer ersten Versammlung nicht erreicht. Er beruht auf ' +
+				'der Einstellung zum Vertagen und kann deshalb angreifbar sein; wie und bis wann, steht unter «Anfechtung».'
+		: null;
+}
 
 export function ersteFehlteAmBeschluss(e: {
 	stimmkraft: Stimmkraftliste | null;

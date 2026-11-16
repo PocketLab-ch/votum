@@ -18,6 +18,7 @@ import type { Versammlungsstufe } from './beschlussfaehigkeit';
 import { EREIGNISARTEN, ereignis, uebergang, type Uebergang } from './verlauf';
 import { zeichenzahl } from './zeichenzahl';
 import { datumLang, istKalendertag } from './datum';
+import { L16_FOLGE, type Vertagungswahl } from './lesarten';
 
 /** Zustände nach AD-10. Die Reihenfolge ist die des Ablaufs. */
 export type Versammlungszustand =
@@ -321,6 +322,12 @@ export interface VersammlungEingabe {
 	vorgaengerId?: Id | null;
 	/** Datum der ersten Versammlung, für die Fristprüfung. */
 	vorgaengerDatum?: string | null;
+	/**
+	 * Die zweite ist nur nach Lesart L16 eine zweite: Die vertagte war schon
+	 * beschlussfähig (Migration 194, `meeting.tier_by_reading`). Gesetzt beim
+	 * Vertagen; Einladung, Protokoll und Nachweis sagen es.
+	 */
+	stufeNachLesart?: boolean;
 }
 
 /**
@@ -972,7 +979,10 @@ export function pruefeVersammlung(eingabe: VersammlungEingabe): VersammlungEinga
 		// erschiene doch in der Einladung.
 		anlass: eingabe.art === 'ausserordentlich' ? anlass : undefined,
 		vorgaengerId: eingabe.stufe === 'zweite' ? (eingabe.vorgaengerId ?? null) : null,
-		vorgaengerDatum: eingabe.stufe === 'zweite' ? (eingabe.vorgaengerDatum ?? null) : null
+		vorgaengerDatum: eingabe.stufe === 'zweite' ? (eingabe.vorgaengerDatum ?? null) : null,
+		// L16 (Migration 194): nur an einer zweiten; ohne diese Zeile schrieb
+		// `legeVersammlungAn` das Merkmal nie (gefunden vom Datenbanktest).
+		...(eingabe.stufe === 'zweite' && eingabe.stufeNachLesart ? { stufeNachLesart: true } : {})
 	};
 }
 
@@ -1031,7 +1041,9 @@ export function folgeversammlung(
 	 * erste hat keine Vorgängerin: Art. 712p Abs. 2 und die Zehntagesfrist
 	 * gelten nur für die zweite (C3, F4c).
 	 */
-	stufe: Versammlungsstufe = 'zweite'
+	stufe: Versammlungsstufe = 'zweite',
+	/** Ob die zweite nur nach L16 eine zweite ist (`zweiteNachLesart`). */
+	stufeNachLesart = false
 ): VersammlungEingabe {
 	return {
 		stwegId: vorgaengerin.stwegId,
@@ -1046,7 +1058,11 @@ export function folgeversammlung(
 		betriebsart: vorgaengerin.betriebsart,
 		anlass: vorgaengerin.anlass ?? undefined,
 		...(stufe === 'zweite'
-			? { vorgaengerId: vorgaengerin.id, vorgaengerDatum: vorgaengerin.datum }
+			? {
+					vorgaengerId: vorgaengerin.id,
+					vorgaengerDatum: vorgaengerin.datum,
+					...(stufeNachLesart ? { stufeNachLesart: true } : {})
+				}
 			: {})
 	};
 }
@@ -1111,15 +1127,31 @@ export function aendereVersammlung(
 	verlangeZustand(bisher, ['entwurf'], 'ändern');
 	const geprueft = pruefeVersammlung({ ...eingabe, stwegId: bisher.stwegId });
 
+	/*
+	 * **L16 bleibt nur an derselben zweiten auf dieselbe Vorgängerin**
+	 * (Migration 194; Codeprüfung N8): Das Formular kennt das Merkmal nicht, es
+	 * kommt aus `bisher`. Wechselt die Stufe oder die Vorgängerin, ist die
+	 * Versammlung keine Folge der Vertagung mehr.
+	 */
+	const { stufeNachLesart: nachLesartBisher, ...ohneMerkmal } = bisher;
+	const bleibt =
+		nachLesartBisher === true &&
+		geprueft.stufe === 'zweite' &&
+		(geprueft.vorgaengerId ?? null) === (bisher.vorgaengerId ?? null);
+	// Auch aus der Eingabe nicht, wo ein Aufrufer es je mitgäbe (Codeprüfung Durchgang 2).
+	const gepruefteAngaben: VersammlungEingabe = { ...geprueft };
+	delete gepruefteAngaben.stufeNachLesart;
+
 	// Der Vermerk wird mitgerechnet, nicht mitgeschleppt: Wer das Datum korrigiert
 	// und damit die Frist wieder einhält, soll den Vermerk loswerden — und wer sie
 	// dabei erst verletzt, soll ihn bekommen. Ein Wert aus `bisher` täte weder das
 	// eine noch das andere.
 	const neu: Versammlung = {
-		...bisher,
-		...geprueft,
+		...ohneMerkmal,
+		...gepruefteAngaben,
 		vorgaengerId: geprueft.vorgaengerId ?? null,
-		fristvermerk: fristvermerk(geprueft.vorgaengerDatum, geprueft.datum, reglement)
+		fristvermerk: fristvermerk(geprueft.vorgaengerDatum, geprueft.datum, reglement),
+		...(bleibt ? { stufeNachLesart: true } : {})
 	};
 	const felder: Record<string, { vorher: unknown; nachher: unknown }> = {};
 	for (const feld of [
@@ -1400,9 +1432,44 @@ const NEUE_ERSTE_TERMIN =
 	'Vorschlag hält nur den elften Tag sicher ein; Votum prüft beides nicht, auch nicht nach einer Änderung. ' +
 	'Reicht die Frist nicht, verschieben Sie das Datum im Entwurf.';
 
-/** Die Überschrift des Ausklappers «Vertagen», nach der Stufe der Folgeversammlung (C3, F4c). */
-export function vertagenUeberschrift(zeitweiseBeschlussfaehig: boolean): string {
-	return zeitweiseBeschlussfaehig
+/**
+ * Der Satz im Ausklapper «Vertagen», wenn die Versammlung schon beschlussfähig
+ * war und die Gemeinschaft bei L16 «Zweite Versammlung» gewählt hat (Migration
+ * 194). **Mit der Folge** nach Entscheid 0044, zweiter Nachtrag (`L16_FOLGE`),
+ * und dem Auftrag, sie der Versammlung zu sagen, wie bei L5.
+ */
+export function vertagenZweiteNachLesartSatz(datum: string): string {
+	return (
+		// Fachprüfung F-1: nur nach verlorener Beschlussfähigkeit. Laienprüfung L-8: das
+		// Datum als Vorschlag, und der Satz an die Versammlung am Schluss, zum Vorlesen.
+		'Die Versammlung war heute schon beschlussfähig und ist es jetzt nicht mehr. Was beschlossen ist, bleibt ' +
+		'gültig. Nach der Einstellung Ihrer Gemeinschaft legt Votum eine zweite Versammlung an (ZGB Art. 712p ' +
+		`Abs. 3). ${ZWEITE_HUERDE.replace('dort', 'Dort')} ${L16_FOLGE} Die zweite entsteht sofort als Entwurf, ` +
+		'mit den Traktanden aus der Einladung, über die nicht verbindlich abgestimmt wurde. Votum schlägt ' +
+		// Featureprüfung: Votum sperrt ein früheres Datum nicht, es vermerkt die Frist.
+		// Codeprüfung Fixblock M1: der vorgeschlagene Tag folgt der Reglementsfrist, der Vermerk auch.
+		// Laien- und Fachprüfung Runde 4 (R4-L-3, R4-F-3): die Folge eines früheren Datums.
+		`dieselbe Uhrzeit, denselben Ort und den ${datum} vor, den frühesten Tag nach der Frist. Sie können das ` +
+		'Datum auf später verschieben, nicht aber davor. Eine früher angesetzte Versammlung darf keine Beschlüsse ' +
+		'fassen (ZGB Art. 712p Abs. 2; SVIT-Kommentar Rz. 39 ad Art. 712p). Votum sperrt ein früheres Datum nicht; ' +
+		'es vermerkt dann in Einladung und Protokoll, dass die Frist nicht eingehalten ist. ' +
+		// Laienprüfung Runde 2, R2-L-3: der Wortlaut der Einladung, nicht «Einstellung der Gemeinschaft».
+		'Sagen Sie der Versammlung vor dem Vertagen: «An der nächsten Versammlung ' +
+		'genügt ein Drittel; so hat die Verwaltung es für die Gemeinschaft eingestellt. Gesetz und Gerichte regeln ' +
+		'den Fall nicht ausdrücklich. Ein Beschluss, für den nicht so viele da oder vertreten sind wie heute nötig, ' +
+		'könnte deshalb angefochten werden. Kommen Sie selbst oder geben Sie eine Vollmacht.»'
+	);
+}
+
+/**
+ * Die Überschrift des Ausklappers «Vertagen», nach der Stufe der
+ * Folgeversammlung (C3, F4c; L16, Migration 194).
+ */
+export function vertagenUeberschrift(
+	zeitweiseBeschlussfaehig: boolean,
+	vertagung: Vertagungswahl = 'neue_erste'
+): string {
+	return zeitweiseBeschlussfaehig && vertagung === 'neue_erste'
 		? 'Vertagen und neue Versammlung ansetzen'
 		: 'Vertagen und zweite Versammlung ansetzen';
 }
@@ -1411,6 +1478,8 @@ export function vertagenUeberschrift(zeitweiseBeschlussfaehig: boolean): string 
 export interface Folgestufe {
 	gemeinschaft: string;
 	folgestufe: Versammlungsstufe;
+	/** Die zweite nur nach L16: Das Haus war am vertagten Abend schon beschlussfähig (Migration 194). */
+	nachLesart?: boolean;
 }
 
 /**
@@ -1430,6 +1499,13 @@ export function folgestufenSatz(haeuser: readonly Folgestufe[]): string {
 		saetze.push(
 			`Als zweite Versammlung ${anzahl('zweite') === 1 ? 'tagt' : 'tagen'} ${liste('zweite')}. ` +
 				ZWEITE_HUERDE.replace('dort', 'Dort')
+		);
+	}
+	// L16 (Migration 194): je Haus, dessen zweite nur der Einstellung folgt.
+	for (const h of haeuser.filter((x) => x.folgestufe === 'zweite' && x.nachLesart)) {
+		saetze.push(
+			`«${h.gemeinschaft}» war am vertagten Abend schon beschlussfähig; dass dort eine zweite Versammlung ` +
+				`folgt, ist in dieser Gemeinschaft so eingestellt. ${L16_FOLGE}`
 		);
 	}
 	if (anzahl('erste') > 0) {
@@ -1459,11 +1535,19 @@ const ZWEITE_HUERDE =
 export function vertagtMeldung(
 	folge: { datum: string; uhrzeit: string; ort: string },
 	folgestufe: Versammlungsstufe,
-	datumText: string
+	datumText: string,
+	/** Die zweite nur nach L16 (Migration 194, `zweiteNachLesart`). */
+	nachLesart = false
 ): string {
 	return folgestufe === 'zweite'
 		? `Vertagt. Die zweite Versammlung steht als Entwurf bereit: ${datumText}, ${folge.uhrzeit} Uhr, ` +
-				`${folge.ort}. ${ZWEITE_HUERDE.replace('dort', 'Dort')}`
+				`${folge.ort}. ${ZWEITE_HUERDE.replace('dort', 'Dort')}` +
+				(nachLesart
+					? ' Die Versammlung war schon beschlussfähig; dass die Folgeversammlung eine zweite ist, folgt ' +
+						'der Einstellung Ihrer Gemeinschaft. Nach der Vorgabe wäre sie eine neue erste. Die Einladung ' +
+						// Laienprüfung Runde 2, R2-L-4.
+						'nennt die Einstellung und ihre mögliche Folge; lassen Sie diesen Hinweis stehen.'
+					: '')
 		: 'Vertagt. Die Versammlung war schon beschlussfähig; die Folgeversammlung steht deshalb als neue erste ' +
 				`Versammlung im Entwurf bereit: ${datumText}, ${folge.uhrzeit} Uhr, ${folge.ort}. Votum rechnet dort ` +
 				`mit der Beschlussfähigkeit einer ersten. ${NEUE_ERSTE_HUERDE} ${NEUE_ERSTE_TERMIN}`;

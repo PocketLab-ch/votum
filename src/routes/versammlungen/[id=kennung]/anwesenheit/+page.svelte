@@ -3,12 +3,12 @@
 	import { enhance } from '$app/forms';
 	import { absenden } from '$lib/absenden';
 	import { nachziehen } from '$lib/nachziehen';
-	import { fruehesterZweitTermin, vertagenNeueErsteSatz, vertagenUeberschrift, zustandsname } from '$lib/domain/versammlung';
+	import { fruehesterZweitTermin, vertagenNeueErsteSatz, vertagenUeberschrift, vertagenZweiteNachLesartSatz, zustandsname } from '$lib/domain/versammlung';
 	import { datumLang, uhrzeit } from '$lib/domain/datum';
 	import Beamerfenster from '$lib/components/Beamerfenster.svelte';
 	import Wandbild from '$lib/components/Wandbild.svelte';
 	import VollmachtFuer from '$lib/components/VollmachtFuer.svelte';
-	import { GRUNDFRAGE, GRUNDHILFE, GRUNDHILFE_DRITTE, GRUNDWAHL, gleicheDrittePerson } from '$lib/domain/vollmacht';
+	import { GRUNDFRAGE, grundhilfe, GRUNDHILFE_DRITTE, GRUNDWAHL, gleicheDrittePerson } from '$lib/domain/vollmacht';
 	import { VERWALTUNG_HAKEN_HILFE_LEITUNG } from '$lib/domain/mehrhinweise';
 	import Einlass from '$lib/components/Einlass.svelte';
 	import Rueckfrage from '$lib/components/Rueckfrage.svelte';
@@ -462,9 +462,16 @@
 				Knopf sein soll, den man aus Versehen trifft.
 			-->
 			<details class="vertagen">
-				<summary>{vertagenUeberschrift(data.zeitweiseBeschlussfaehig)}</summary>
+				<summary>{vertagenUeberschrift(data.zeitweiseBeschlussfaehig, data.vertagung)}</summary>
 				<form method="POST" action="?/vertagen">
-					{#if data.zeitweiseBeschlussfaehig}
+					<!-- L16 (Migration 194): schon beschlussfähig und «Zweite Versammlung» gewählt. -->
+					{#if data.zeitweiseBeschlussfaehig && data.vertagung === 'zweite'}
+						<p class="klein">
+							{vertagenZweiteNachLesartSatz(
+								datumLang(fruehesterZweitTermin(v.datum, data.gemeinschaft?.zweitversammlungsfristTage))
+							)}
+						</p>
+					{:else if data.zeitweiseBeschlussfaehig}
 						<p class="klein">
 							{vertagenNeueErsteSatz(
 								datumLang(fruehesterZweitTermin(v.datum, data.gemeinschaft?.zweitversammlungsfristTage))
@@ -495,7 +502,8 @@
 						<span class="hilfe">
 							Zwei verschiedene Sachverhalte; der Grund steht im Protokoll. Ob danach
 							eine zweite Versammlung nach Abs. 3 oder eine neue erste entsteht, richtet
-							sich danach, ob die Versammlung heute beschlussfähig war.
+							sich danach, ob die Versammlung heute beschlussfähig war. Ist sie es nicht mehr,
+							zählt auch, wie die Gemeinschaft die Lesart L16 eingestellt hat.
 						</span>
 					</label>
 					<button type="submit">Vertagen</button>
@@ -877,7 +885,7 @@
 							<option value="mitberechtigt" selected={grundEinlass === 'mitberechtigt'}>{GRUNDWAHL[3].text}</option>
 						</select>
 					</label>
-					<p class="klein">{GRUNDHILFE}</p>
+					<p class="klein">{grundhilfe(data.stimmfuehrung)}</p>
 					{#if data.papierfrage}
 						<!--
 							**Hier ein Haken und nicht zwei Knöpfe.** An der gescannten Karte

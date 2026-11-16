@@ -1,5 +1,6 @@
 import { error, fail } from '@sveltejs/kit';
 import { fragtNachPapier, fristKurz, vertagtMeldung } from '$lib/domain/versammlung';
+import { holeLesarten } from '$lib/server/lesarten';
 import { holeBeantwortete, holePapierabgaben } from '$lib/server/papierabgabe';
 import { nichtGefragte } from '$lib/domain/stimmabgabe';
 import { holeTagDerVersammlung } from '$lib/server/versammlungstag';
@@ -162,6 +163,8 @@ export const load: PageServerLoad = async ({ cookies, locals, params, url }) => 
 		}
 	}
 
+	// L15 und L16 (Migration 194), ab der Freigabe aus der Momentaufnahme.
+	const lesarten = await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id });
 	// Die Feststellung läuft über dieselbe Funktion wie der Rechner aus Story 2.6
 	// — nur speist sie sich jetzt aus der festgeschriebenen Anwesenheit statt aus
 	// eingetippten Zahlen (AD-16).
@@ -236,6 +239,19 @@ export const load: PageServerLoad = async ({ cookies, locals, params, url }) => 
 			versammlung.zustand === 'laufend' && versammlung.stufe === 'erste'
 				? await warVersammlungZeitweiseBeschlussfaehig(locals.benutzer.operatorId, params.id)
 				: false,
+		/**
+		 * L16 (Migration 194): «zweite» nur, wo die Wahl greift, also wenn die
+		 * Beschlussfähigkeit jetzt fehlt (`zweiteNachLesart`, Fachprüfung F-1).
+		 */
+		vertagung:
+			versammlung.zustand === 'laufend' &&
+			versammlung.stufe === 'erste' &&
+			beschlussfaehigkeit !== null &&
+			!beschlussfaehigkeit.beschlussfaehig
+				? lesarten.L16
+				: ('neue_erste' as const),
+		/** L15 (Migration 194): für die Hilfe am Grund der Vertretung. */
+		stimmfuehrung: lesarten.L15,
 		/** Ob der Einlass hier fragt, wer von Hand abstimmt (Migration 108). */
 		papierfrage: fragtNachPapier(versammlung),
 		/**
@@ -551,7 +567,7 @@ export const actions: Actions = {
 				grund: text(daten.get('grund'))
 			});
 			await verkuendeStand(locals.benutzer.operatorId, params.id);
-			return { hinweis: vertagtMeldung(e.folge, e.folgestufe, datumLang(e.folge.datum)) };
+			return { hinweis: vertagtMeldung(e.folge, e.folgestufe, datumLang(e.folge.datum), e.nachLesart) };
 		} catch (fehler) {
 			return fachlich(fehler);
 		}

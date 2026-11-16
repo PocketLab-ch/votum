@@ -26,6 +26,7 @@ import { FachlicherFehler } from './gemeinschaft';
 import { zeichenzahl } from './zeichenzahl';
 import { schwelle, type Schwelle } from './mehrheit';
 import { FRIST_KURZ } from './versammlung';
+import type { Vertagungswahl } from './lesarten';
 
 /**
  * Erste oder zweite Versammlung im Sinne von Art. 712p — die **Stufe**, nicht
@@ -865,13 +866,41 @@ export function warZeitweiseBeschlussfaehig(spur: Beschlussfaehigkeitsspur): boo
 }
 
 /**
- * Die Stufe der Folgeversammlung: die zweite nur, wenn die vertagte eine erste
- * war und an diesem Abend nie beschlussfähig. Sonst eine neue erste, mit der
- * Beschlussfähigkeit einer ersten (C3; Rz. 20 und 34 ad Art. 712p).
+ * Die Stufe der Folgeversammlung: die zweite, wenn die vertagte eine erste
+ * war und an diesem Abend nie beschlussfähig. War sie es, eine neue erste, mit
+ * der Beschlussfähigkeit einer ersten (C3; Rz. 20 und 34 ad Art. 712p), ausser
+ * nach `zweiteNachLesart`.
  */
 export function folgestufeNachVertagung(
 	stufe: Versammlungsstufe,
-	zeitweiseBeschlussfaehig: boolean
+	zeitweiseBeschlussfaehig: boolean,
+	vertagung: Vertagungswahl = 'neue_erste',
+	jetztBeschlussfaehig = true
 ): Versammlungsstufe {
-	return stufe === 'erste' && !zeitweiseBeschlussfaehig ? 'zweite' : 'erste';
+	if (stufe !== 'erste') return 'erste';
+	return !zeitweiseBeschlussfaehig || zweiteNachLesart(stufe, zeitweiseBeschlussfaehig, vertagung, jetztBeschlussfaehig)
+		? 'zweite'
+		: 'erste';
+}
+
+/**
+ * Ob die Folgeversammlung **nur nach L16** eine zweite ist (Migration 194,
+ * Entscheid 0054 Punkt 3): Die vertagte war eine erste, an diesem Abend schon
+ * beschlussfähig, **ist es beim Vertagen nicht mehr**, und die Gemeinschaft
+ * hat «zweite» gewählt. Das hält `meeting.tier_by_reading` fest.
+ *
+ * **Nur, wenn die Beschlussfähigkeit weggefallen ist** (Fachprüfung
+ * 16.11.2026, F-1): Art. 712p Abs. 2 verlangt eine ungenügende Beteiligung,
+ * Handschin/Wyttenbach S. 65 und BGer 5A_865/2011 E. 5.1 tragen nur den Fall,
+ * dass sie im Lauf des Abends verloren geht. Vertagt eine Versammlung, die
+ * noch beschlussfähig ist, folgt in beiden Wahlen eine neue erste. Ohne Angabe
+ * gilt sie als beschlussfähig, die vorsichtige Seite.
+ */
+export function zweiteNachLesart(
+	stufe: Versammlungsstufe,
+	zeitweiseBeschlussfaehig: boolean,
+	vertagung: Vertagungswahl,
+	jetztBeschlussfaehig = true
+): boolean {
+	return stufe === 'erste' && zeitweiseBeschlussfaehig && !jetztBeschlussfaehig && vertagung === 'zweite';
 }

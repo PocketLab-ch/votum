@@ -123,8 +123,8 @@ describe('Katalog', () => {
 	it('weist eine unbekannte Wahl ab und lässt Fehlendes weg', () => {
 		expect(pruefeLesartenwahl({})).toEqual({});
 		expect(
-			pruefeLesartenwahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' })
-		).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+			pruefeLesartenwahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })
+		).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(pruefeLesartenwahl({ L6: 'gesetz' })).toEqual({ L6: 'gesetz' });
 		expect(() => pruefeLesartenwahl({ L1: 'bleibt', L2: 'einfach', L4: 'zwei_drittel' })).toThrow(/Unbekannte Wahl/);
 		expect(() => pruefeLesartenwahl({ L1: 'halb' })).toThrow(/Unbekannte Wahl «halb» für die Lesart L1/);
@@ -252,7 +252,7 @@ describe('Am Erfordernis', () => {
 
 	it('tauscht nach der anderen Wahl Mehr und Gegenstück', () => {
 		const e = hergeleitet();
-		const q = wendeLesartAn(e, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const q = wendeLesartAn(e, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(q.typ).toBe('qualifiziertes_mehr');
 		expect(q.quotenbasis).toBe('alle_quoten');
 		expect(q.rechtsgrundlage).toBe('ZGB Art. 647b Abs. 1');
@@ -283,13 +283,13 @@ describe('Am Erfordernis', () => {
 		const rw = holeRegelwerk();
 		const e = erfordernisAusKnoten(rw, rw.knoten.find((k) => k.id === 'k-bewirtschaftung-abberufen')!);
 		expect(e.gemeinschaftslesart).toBeUndefined();
-		expect(wendeLesartAn(e, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' })).toBe(e);
+		expect(wendeLesartAn(e, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })).toBe(e);
 	});
 });
 
 describe('Über wendeReglementAn', () => {
 	it('wendet die Wahl an, wo keine Regel gilt', () => {
-		const a = wendeReglementAn(hergeleitet(), [], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const a = wendeReglementAn(hergeleitet(), [], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(a.erfordernis.typ).toBe('qualifiziertes_mehr');
 		expect(a.erfordernis.gemeinschaftslesart?.wahl).toBe('qualifiziert');
 	});
@@ -307,7 +307,7 @@ describe('Über wendeReglementAn', () => {
 			fundstelle: 'Reglement Art. 9',
 			enthaltungZaehltMit: true
 		};
-		const a = wendeReglementAn(hergeleitet(), [regel], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const a = wendeReglementAn(hergeleitet(), [regel], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(a.erfordernis.quelle).toBe('reglement');
 		expect(a.erfordernis.gemeinschaftslesart).toBeUndefined();
 	});
@@ -315,7 +315,7 @@ describe('Über wendeReglementAn', () => {
 	it('trägt die Lesart auch am Knoten, den die Leitung wählt', () => {
 		const rw = mitL4();
 		const gewaehlt = waehleErfordernis(rw, KNOTEN).ergebnis;
-		const a = wendeReglementAn(gewaehlt, [], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const a = wendeReglementAn(gewaehlt, [], null, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(a.erfordernis.typ).toBe('qualifiziertes_mehr');
 	});
 
@@ -341,7 +341,7 @@ describe('Befunde der Codeprüfung, Teil 1', () => {
 	});
 
 	it('ebenso umgekehrt (andere Wahl gewählt)', () => {
-		const e = wendeReglementAn(hergeleitet(), [], EINSTELLUNG, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' }).erfordernis;
+		const e = wendeReglementAn(hergeleitet(), [], EINSTELLUNG, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }).erfordernis;
 		expect(e.typ).toBe('qualifiziertes_mehr');
 		expect(e.enthaltungZaehltMit).toBeUndefined();
 		const anders = erfordernisNachAndererLesart(e)!;
@@ -360,8 +360,8 @@ describe('Befunde der Codeprüfung, Teil 1', () => {
 
 	it('tauscht ein schon eigens gebildetes anderes Mehr samt Enthaltungen', () => {
 		const vorgabe = wendeReglementAn(hergeleitet(), [], EINSTELLUNG, EINFACH_L4).erfordernis;
-		const direkt = wendeReglementAn(hergeleitet(), [], EINSTELLUNG, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' }).erfordernis;
-		const getauscht = wendeLesartAn(vorgabe, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const direkt = wendeReglementAn(hergeleitet(), [], EINSTELLUNG, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }).erfordernis;
+		const getauscht = wendeLesartAn(vorgabe, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(getauscht.typ).toBe('qualifiziertes_mehr');
 		expect(getauscht.enthaltungZaehltMit).toBeUndefined();
 		expect(getauscht.gemeinschaftslesart?.andere).toMatchObject({

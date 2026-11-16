@@ -37,7 +37,7 @@
 	} from '$lib/domain/ausnahmen';
 	import Wahlliste from '$lib/components/Wahlliste.svelte';
 	import { datumLang, uhrzeit } from '$lib/domain/datum';
-	import { fruehesterZweitTermin, vertagenNeueErsteSatz, vertagenUeberschrift } from '$lib/domain/versammlung';
+	import { fruehesterZweitTermin, vertagenNeueErsteSatz, vertagenUeberschrift, vertagenZweiteNachLesartSatz } from '$lib/domain/versammlung';
 	import { rueckkommensvorbehalt } from '$lib/domain/rueckkommen';
 	import { angekreuzt } from '$lib/felder';
 	import { stelltBeschlussfaehigkeitFest } from '$lib/domain/traktandenvorlage';
@@ -1611,9 +1611,16 @@
 						class:dringend={data.beschlussfaehigkeit &&
 							!data.beschlussfaehigkeit.beschlussfaehig}
 					>
-						<summary>{vertagenUeberschrift(data.zeitweiseBeschlussfaehig)}</summary>
+						<summary>{vertagenUeberschrift(data.zeitweiseBeschlussfaehig, data.vertagung)}</summary>
 						<form method="POST" action="?/vertagen" use:enhance={absenden()}>
-							{#if data.zeitweiseBeschlussfaehig}
+							<!-- L16 (Migration 194): schon beschlussfähig und «Zweite Versammlung» gewählt. -->
+							{#if data.zeitweiseBeschlussfaehig && data.vertagung === 'zweite'}
+								<p class="klein">
+									{vertagenZweiteNachLesartSatz(
+										datumLang(fruehesterZweitTermin(v.datum, data.gemeinschaft?.zweitversammlungsfristTage))
+									)}
+								</p>
+							{:else if data.zeitweiseBeschlussfaehig}
 								<p class="klein">
 									{vertagenNeueErsteSatz(
 										datumLang(fruehesterZweitTermin(v.datum, data.gemeinschaft?.zweitversammlungsfristTage))
@@ -1650,7 +1657,8 @@
 								<span class="hilfe">
 									Zwei verschiedene Sachverhalte; der Grund steht im Protokoll. Ob danach
 									eine zweite Versammlung nach Abs. 3 oder eine neue erste entsteht, richtet
-									sich danach, ob die Versammlung heute beschlussfähig war.
+									sich danach, ob die Versammlung heute beschlussfähig war. Ist sie es nicht mehr,
+									zählt auch, wie die Gemeinschaft die Lesart L16 eingestellt hat.
 								</span>
 							</label>
 							<!--

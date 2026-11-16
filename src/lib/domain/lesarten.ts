@@ -40,7 +40,8 @@ import type { Rolle } from './rollen';
 /**
  * Die Kennungen der Lesarten. Block 1 baut L4, Block 2 L1, Block 3 L2, Block 5
  * L3, Block 7 L5, F4c L6, L7 und L8, E1 L11, L12, L9 und L10, Entscheid 0048
- * (Block C) L13.
+ * (Block C) L13, Entscheid 0054 L15 und L16. L14 ist für den Vorschlag H1
+ * vorgesehen, noch nicht vergeben (`.auftraege/2026-11-16-votum-h1-lesart-vorschlag.md`).
  */
 export type LesartKennung =
 	| 'L1'
@@ -55,7 +56,9 @@ export type LesartKennung =
 	| 'L10'
 	| 'L11'
 	| 'L12'
-	| 'L13';
+	| 'L13'
+	| 'L15'
+	| 'L16';
 
 /** Die Wahl je Lesart, wie sie an `stweg` und `snapshot` steht. */
 export interface Lesartenwahl {
@@ -72,6 +75,8 @@ export interface Lesartenwahl {
 	L11: 'qualifiziert' | 'einfach';
 	L12: 'alle' | 'anwesende';
 	L13: Kopfzaehlweise;
+	L15: Stimmfuehrungswahl;
+	L16: Vertagungswahl;
 }
 
 /**
@@ -128,6 +133,21 @@ export type Angehoerigenlesart = 'bleiben' | 'fallen_heraus';
  * Vertretenen (Vorgabe, herrschende Lehre) oder die aller Eigentümer (Wortlaut)?
  */
 export type Kopfzaehlweise = 'anwesende' | 'alle';
+
+/**
+ * Die Wahl zu L15 (Migration 194, Entscheid 0054 Punkte 2 und 6): ob die
+ * Stimmführung einer Mitberechtigten für die eigene gemeinsame Partei zur
+ * Höchstzahl der Vollmachten zählt. Organ und gesetzliche Vertretung bleiben in
+ * beiden Wahlen ausserhalb (`zaehltZurHoechstzahl`).
+ */
+export type Stimmfuehrungswahl = 'ausserhalb' | 'mitzaehlen';
+
+/**
+ * Die Wahl zu L16 (Migration 194, Entscheid 0054 Punkt 3): was das Vertagen
+ * einer ersten Versammlung anlegt, die an diesem Abend schon beschlussfähig war
+ * und es beim Vertagen nicht mehr ist (`zweiteNachLesart`; Fachprüfung F-1).
+ */
+export type Vertagungswahl = 'neue_erste' | 'zweite';
 
 export interface Lesartwahlmoeglichkeit {
 	wert: string;
@@ -318,6 +338,56 @@ export const L5_DRITTEL_KERN =
 
 /** S15, F4a (L5; Endfassung), Ort 2: der Einschub zur Nichtigkeit in `warumVorgabe`. */
 export const L5_NICHTIG_UNTER_UMSTAENDEN = 'unter Umständen sogar nichtig sein (Rz. 33 ad Art. 712p)';
+
+/** Die Frage zu L15, auch für den Wächter am Handbuch (Migration 194). */
+export const L15_FRAGE =
+	'Zählt die Stimme, die eine Mitberechtigte für ihre eigene gemeinsame Einheit führt, zur Höchstzahl der ' +
+	'Vollmachten, die Ihr Reglement erlaubt?';
+
+/** Die Frage zu L16 (Migration 194). */
+export const L16_FRAGE =
+	'Verliert eine erste Versammlung ihre Beschlussfähigkeit, nachdem sie schon beschlussfähig war, und wird ' +
+	'vertagt: Ist die nächste Versammlung eine neue erste oder eine zweite?';
+
+/**
+ * Der Zusatz in der Einladung zu einer zweiten Versammlung, die nur nach L16
+ * eine zweite ist (Migration 194; `beschlussfaehigkeitssatz`).
+ */
+export const L16_EINLADUNG =
+	// Laienprüfung 16.11.2026, L-11: wer gewählt hat, was es heisst, was zu tun ist.
+	'Die vertagte Versammlung war schon beschlussfähig und hat die Beschlussfähigkeit danach verloren. Dass ' +
+	'trotzdem ein Drittel genügt, beruht auf einer Einstellung, die die Verwaltung für die Gemeinschaft gewählt ' +
+	'hat. Gesetz und Gerichte regeln den Fall nicht ausdrücklich. Erreichen die Anwesenden und Vertretenen nicht, ' +
+	// Laienprüfung Runde 2, R2-L-5: die Schwelle einer ersten in Worten; Fachprüfung R2-F-3.
+	'was eine erste Versammlung braucht, könnte ein Beschluss deshalb angefochten werden. Nach Gesetz braucht eine ' +
+	'erste die Hälfte aller Eigentümer, mindestens zwei, mit zusammen der Hälfte der Wertquoten. Kommen Sie ' +
+	'selbst oder lassen Sie sich vertreten.';
+
+/** Die Stufe im Kopf des Protokolls einer solchen zweiten (Migration 194). */
+export const L16_PROTOKOLLSTUFE =
+	// Laienprüfung 16.11.2026, L-12: «Standardeinstellung» wie im übrigen Protokoll, mit dem Weg zur Anfechtung.
+	'Zweite Versammlung nach ZGB 712p Abs. 3. Die vertagte Versammlung war schon beschlussfähig; dass trotzdem ' +
+	'ein Drittel genügte, beruht auf einer Einstellung, die die Verwaltung für die Gemeinschaft gewählt hat ' +
+	'(Standardeinstellung wäre eine neue erste Versammlung). Bei jedem angenommenen Beschluss steht, ob die ' +
+	'Beschlussfähigkeit einer ersten Versammlung erreicht war.';
+
+/** Die Zeile im Nachweis (Siegel) einer solchen zweiten (Migration 194). */
+export const L16_SIEGELZEILE = 'Folgeversammlung (Lesart L16): Zweite Versammlung; die vertagte war schon beschlussfähig.';
+
+/**
+ * Die mögliche Folge der Wahl «Zweite Versammlung» (Entscheid 0044, zweiter
+ * Nachtrag; Entscheid 0054 Punkt 3). Steht auf der Seite «Lesarten» unter der
+ * Wahl und im Ausklapper «Vertagen», wenn sie wirkt.
+ */
+export const L16_FOLGE =
+	// Laienprüfung L-7 (ohne «Vorgabe»), L-8 (der Ausweg); Fachprüfung F2 und F-6: Nichtigkeit wie
+	// bei L5 eingeordnet, mit Rz. 31 und 33 ad Art. 712p.
+	// Fachprüfung Runde 2, R2-F-3 (die Wertquoten gehören zur Hürde) und R2-F-4 (Rz. 32).
+	'Sieht ein Gericht die Folgeversammlung als neue erste an, kann ein Beschluss angefochten werden, für den ' +
+	'nicht so viele Eigentümer mit so vielen Wertquoten da oder vertreten waren, wie eine erste braucht. Ob er ' +
+	'sogar nichtig sein kann, also ungültig auch ohne Anfechtung, beurteilt die Lehre verschieden; im Zweifel ' +
+	'gilt ein solcher Beschluss als anfechtbar (SVIT-Kommentar Rz. 31 bis 33 ad Art. 712p). Erreicht die ' +
+	'Folgeversammlung, was eine erste braucht, stellt sich die Frage nicht.';
 
 export const LESARTEN: readonly Lesart[] = [
 	{
@@ -1601,6 +1671,155 @@ export const LESARTEN: readonly Lesart[] = [
 		protokollNachAblehnungBeiNotwendigenArbeiten:
 			'Bei notwendigen Arbeiten kann zudem jeder Eigentümer beim Gericht verlangen, dass sie angeordnet ' +
 			'werden (ZGB Art. 647 Abs. 2 Ziff. 1).'
+	},
+	{
+		/*
+		 * **L15 zählt an der Höchstzahl, nicht am Mehr** (Migration 194; Entscheid
+		 * 0054, Punkte 2 und 6). Kein Knoten trägt sie. Sie wirkt in
+		 * `zaehltZurHoechstzahl` (Warnung) und in `verlangeVollmachtsgrenze`
+		 * (Sperre am Einlass, `server/vollmacht.ts`), und nur an der Stimmführung
+		 * mit dem Grund `mitberechtigt`. Die Vorgabe ist die fachgeprüfte
+		 * Folgerung aus Frage 77 (Rz. 24 und 31 ad Art. 712m); streng ist hier
+		 * nicht sicherer, deshalb nennt die Seite die Folge der anderen Wahl.
+		 */
+		kennung: 'L15',
+		frage: L15_FRAGE,
+		gegenstand:
+			'ob die Stimme, die eine Mitberechtigte, etwa eine Miterbin, für ihre eigene gemeinsame Einheit führt, ' +
+			'zur Höchstzahl der Vollmachten zählt',
+		wahlen: [
+			{
+				wert: 'ausserhalb',
+				bezeichnung: 'Zählt nicht mit',
+				imSatz: 'die Höchstzahl ohne die Stimmführung für die eigene gemeinsame Einheit',
+				imSatzDativ: 'der Höchstzahl ohne die Stimmführung für die eigene gemeinsame Einheit',
+				wirkung:
+					// Laienprüfung L-1: nur wem die Wohnung mitgehört.
+					'Wer als Mitberechtigte die Stimme der eigenen gemeinsamen Einheit führt, etwa als Miterbin oder ' +
+					'als Ehepartner, dem die Wohnung mitgehört, braucht dafür keinen Platz in der Höchstzahl. Beispiel: Erlaubt das Reglement drei ' +
+					'Vollmachten, vertritt eine Eigentümerin neben ihrer eigenen Wohnung die Wohnung, die ihr mit ' +
+					'ihrem Bruder gehört, und dazu drei Nachbarn.',
+				// Fachprüfung F-5: die vermutete Vollmacht genannt, die Stütze Rz. 5 ad Art. 712o zitiert.
+				fundstelle:
+					'Ist eine Mitberechtigte allein da, führt sie die eine Stimme der Einheit auch ohne ausdrückliche ' +
+					'Vollmacht; der Kommentar spricht von einer vermuteten Vollmacht (ZGB Art. 712o Abs. 1; ' +
+					'SVIT-Kommentar Rz. 19 und 24 ad Art. 712o). Sie ist selbst Eigentümerin (Rz. 5 ad Art. 712o). Ein ' +
+					'Reglement darf die Zahl der Vertretungsmandate beschränken (Rz. 31 ad Art. 712m). Dass diese ' +
+					'Stimmführung kein solches Mandat ist, sagt keine Stelle; das folgert Votum.'
+			},
+			{
+				wert: 'mitzaehlen',
+				bezeichnung: 'Zählt mit',
+				imSatz: 'die Höchstzahl mit der Stimmführung für die eigene gemeinsame Einheit',
+				imSatzDativ: 'der Höchstzahl mit der Stimmführung für die eigene gemeinsame Einheit',
+				wirkung:
+					'Die Stimmführung für die eigene gemeinsame Einheit belegt einen Platz in der Höchstzahl, wie eine ' +
+					'gewöhnliche Vollmacht. Im selben Beispiel vertritt die Eigentümerin dann nur noch zwei Nachbarn. ' +
+					'Ist die Zahl erreicht, nimmt Votum keine weitere Vollmacht an und nennt den Grund.',
+				// Laienprüfung L-2 (wann wählen), Fachprüfung F-5 (was für diese Wahl spricht).
+				fundstelle:
+					'Diese Wahl passt, wenn Ihr Reglement die Stimmführung von Mitberechtigten ausdrücklich zur ' +
+					'Höchstzahl zählt; sagt es nichts dazu, bleiben Sie bei der Vorgabe. Für sie spricht, dass das ' +
+					'Gesetz die Stimme durch einen «Vertreter» abgeben lässt (ZGB Art. 712o Abs. 1). Ob ein Reglement ' +
+					'die Stimmführung einbeziehen darf, sagt keine Stelle; Rz. 31 ad Art. 712m spricht nur von ' +
+					'Vertretungsmandaten.'
+			}
+		],
+		vorgabe: 'ausserhalb',
+		vorgabeGrund: 'Die Mitberechtigte ist selbst Eigentümerin der Einheit, deren Stimme sie führt.',
+		warumVorgabe:
+			'Keine Stelle sagt, ob die Höchstzahl diese Stimmführung erfasst. Beide Fehler machen einen Beschluss ' +
+			'angreifbar: Zählt Votum zu wenig, gilt eine Vollmacht zu viel. Zählt es zu viel, weist es eine gültige ' +
+			'Stimme ab. Mitzählen ist hier deshalb nicht die sicherere Wahl. Vorgabe ist die Folgerung, dass die ' +
+			'Mitberechtigte selbst Eigentümerin der Einheit ist, deren Stimme sie führt.',
+		geltung:
+			'Die Einstellung betrifft nur die Stimme für eine gemeinsame Einheit, an der die Person selbst ' +
+			'beteiligt ist. Wer für eine juristische Person als ihr Organ handelt oder von Gesetzes wegen vertritt, ' +
+			'etwa als Beiständin, zählt in beiden Wahlen nicht zur Höchstzahl. Unter «Zählt mit» bleibt die erste ' +
+			// Fachprüfung F1 und F-4: die Regel mit ihrem Grund, und wo sie nicht reicht.
+			'Stimme einer Person frei: Kommt eine Mitberechtigte ohne eigene Einheit nur für die gemeinsame ' +
+			'Einheit, zählt diese nicht, nur ihre Vollmachten für andere. Zählt Ihr Reglement jede Stimmführung ' +
+			'für eine gemeinsame Einheit als Vollmacht, auch in diesem Fall, prüfen Sie die Zahl am Einlass ' +
+			// Laienprüfung Runde 2, R2-L-8: was bei voller Zahl zu tun ist.
+			'selbst; ist sie voll, lassen Sie die weiteren Einheiten von einer anderen Person vertreten. Ohne ' +
+			'Höchstzahl im Reglement wirkt die Einstellung nicht.',
+		folgeMilderWahl:
+			'Darf das Reglement die Stimmführung nicht einbeziehen, weist Votum eine Vollmacht ab, die gültig ' +
+			'wäre. Auch dieser Fehler macht einen Beschluss angreifbar, wie umgekehrt eine Vollmacht zu viel.'
+	},
+	{
+		/*
+		 * **L16 wählt die Stufe der Folgeversammlung, nicht ein Mehr** (Migration
+		 * 194; Entscheid 0054, Punkt 3). Kein Knoten trägt sie. Sie wirkt nur in
+		 * `folgestufeNachVertagung`, wenn die vertagte erste an diesem Abend schon
+		 * beschlussfähig war und es beim Vertagen nicht mehr ist
+		 * (`zweiteNachLesart`, Fachprüfung F-1). War sie es nie, folgt in beiden
+		 * Wahlen eine zweite; ist sie es noch, eine neue erste. Die
+		 * zweite nach dieser Wahl trägt `tierByReading` (Migration 194), und
+		 * Einladung, Protokoll und Nachweis sagen es.
+		 */
+		kennung: 'L16',
+		frage: L16_FRAGE,
+		gegenstand:
+			// Laienprüfung L-13: kürzer; Fachprüfung F-1: nur nach verlorener Beschlussfähigkeit.
+			'ob die nächste Versammlung als zweite gilt, wenn die vertagte schon beschlussfähig war und es beim ' +
+			'Vertagen nicht mehr ist',
+		wahlen: [
+			{
+				wert: 'neue_erste',
+				bezeichnung: 'Neue erste Versammlung',
+				imSatz: 'die neue erste Versammlung',
+				imSatzDativ: 'der neuen ersten Versammlung',
+				wirkung:
+					'Votum legt beim Vertagen eine neue erste Versammlung an. Dort gilt die Beschlussfähigkeit einer ' +
+					'ersten: nach Gesetz die Hälfte aller Eigentümer, mindestens zwei, mit zusammen der Hälfte der ' +
+					'Wertquoten. Wird auch sie nicht beschlussfähig, folgt ihr eine zweite. Was beschlossen ist, bleibt ' +
+					'gültig.',
+				fundstelle:
+					'Eine zweite Versammlung folgt auf eine erste, die nicht durchgeführt werden konnte (SVIT-Kommentar ' +
+					'Rz. 20 und 34 ad Art. 712p). Den Fall einer Versammlung, die schon beschlussfähig war, regelt keine ' +
+					'Stelle ausdrücklich.'
+			},
+			{
+				wert: 'zweite',
+				bezeichnung: 'Zweite Versammlung',
+				imSatz: 'die zweite Versammlung nach Art. 712p Abs. 3',
+				imSatzDativ: 'der zweiten Versammlung nach Art. 712p Abs. 3',
+				wirkung:
+					'Hat die Versammlung ihre Beschlussfähigkeit verloren und wird vertagt, legt Votum eine zweite ' +
+					'Versammlung an (ZGB Art. 712p Abs. 3). Dort genügt nach ' +
+					'Gesetz ein Drittel aller Eigentümer, mindestens zwei, für die Geschäfte aus der Einladung zur ' +
+					'vertagten Versammlung. Der Termin liegt frühestens am elften Tag nach ihr. Was beschlossen ist, ' +
+					'bleibt gültig.',
+				fundstelle:
+					'Handschin/Wyttenbach (S. 65) und das Bundesgericht zum Zweck von Abs. 3 (BGer 5A_865/2011 E. 5.1) ' +
+					'lassen sich so lesen, dass auch dann eine zweite folgt, wenn die Beschlussfähigkeit im Lauf des ' +
+					'Abends wegfällt. Ausdrücklich entschieden hat das kein Gericht.'
+			}
+		],
+		vorgabe: 'neue_erste',
+		// Laienprüfung L-10: mit seiner Bedingung.
+		vorgabeGrund: 'Nach dem Vertagen einer schon beschlussfähigen Versammlung ist ein Beschluss mit nur einem Drittel angreifbar.',
+		warumVorgabe:
+			// Fachprüfung F-8.
+			'Keine Stelle regelt den Fall ausdrücklich, und die Stellen, die es gibt, lassen beide Lesarten zu. Die Folgen sind ' +
+			'ungleich: Unter der neuen ersten braucht es am neuen Termin mehr Anwesende, und kommen nicht genug, ' +
+			'folgt eine zweite. Ein Beschluss mit nur einem Drittel kann dagegen angefochten werden und ist oft ' +
+			'schon ausgeführt, wenn ein Gericht ihn aufhebt. Deshalb ist die strengere Wahl die Vorgabe.',
+		geltung:
+			'Die Einstellung wirkt nur, wenn eine erste Versammlung vertagt wird, die an diesem Abend schon ' +
+			'beschlussfähig war (festgehalten oder verbindlich abgestimmt) und es beim Vertagen nicht mehr ist. ' +
+			// Fachprüfung F-1: Abs. 2 verlangt eine ungenügende Beteiligung.
+			'Ist sie beim Vertagen noch beschlussfähig, etwa weil die Zeit nicht reicht, folgt in beiden Wahlen ' +
+			'eine neue erste: Eine zweite setzt nach Gesetz eine ungenügende Beteiligung voraus (ZGB Art. 712p ' +
+			// Fachprüfung Runde 2, R2-F-1 und R2-F-6: woraus Votum beides liest.
+			// Fachprüfung Runde 3, R3-F-1: was ohne Feststellung geschieht, und bis wann sie geht.
+			'Abs. 2). Ob sie beschlussfähig war, liest Votum aus der Feststellung und den verbindlichen ' +
+			'Abstimmungen, ob sie es noch ist, aus der Anwesenheit. Fehlt beides, legt Votum beim Vertagen eine ' +
+			'zweite an, auch wenn genug da sind. Halten Sie die Beschlussfähigkeit deshalb fest, spätestens vor ' +
+			'dem Vertagen, und tragen Sie aus, wer gegangen ist. Massgebend ist die Wahl, die bei der Freigabe der ' +
+			'vertagten Versammlung galt.',
+		folgeMilderWahl: L16_FOLGE
 	}
 ];
 
@@ -1618,7 +1837,9 @@ export const LESARTEN_VORGABE: Lesartenwahl = {
 	L10: 'bleiben',
 	L11: 'qualifiziert',
 	L12: 'alle',
-	L13: 'anwesende'
+	L13: 'anwesende',
+	L15: 'ausserhalb',
+	L16: 'neue_erste'
 };
 
 /**

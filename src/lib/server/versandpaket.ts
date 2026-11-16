@@ -158,7 +158,8 @@ export async function erzeugeVersandpaket(
 			ort: versammlung.ort,
 			stufe: versammlung.stufe,
 			vollmachtsgrenze: satz.gemeinschaft.proxyLimit,
-			vollmachtsgrenzeQuelle: satz.gemeinschaft.proxyLimitRuleSource ?? null
+			vollmachtsgrenzeQuelle: satz.gemeinschaft.proxyLimitRuleSource ?? null,
+			stimmfuehrungZaehlt: (await holeLesarten(handelnder.operatorId, { meetingId })).L15 === 'mitzaehlen'
 		},
 		satz.inhalte.map((i) => ({ name: i.name, einheiten: i.einheiten.map((e) => e.label) }))
 	);

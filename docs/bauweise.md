@@ -636,6 +636,7 @@ node e2e/lesarten-l10.mjs                  # Lesart L10: Angehörige im Ausstand
 node e2e/lesarten-l11.mjs                  # Lesart L11: Ermächtigung zur Prozessführung, qualifiziertes Mehr eingefroren, Satz vor der Abstimmung, zweites Ergebnis nach dem einfachen Mehr, Protokoll
 node e2e/lesarten-l12.mjs                  # Lesart L12: luxuriöse bauliche Massnahme, unter «anwesende» angenommen, obwohl ein Eigentümer fehlt, Rat und zweites Ergebnis nach «alle», Protokoll
 node e2e/lesarten-l13.mjs                  # Lesart L13: Zählweise der Köpfe, Art. 647b mit Ausstand unter «anwesende» angenommen, unter «alle» abgelehnt, zweites Ergebnis im Protokoll, keine Wirkung an 647d, Reglement und Klausel, Rückkommen, Auszählmappe mit 9 und 7; Sätze aus dem Wächter, braucht soffice und python3
+node e2e/lesarten-l15-l16.mjs              # Lesarten L15 und L16 in fünf Fällen: Vertagen nach verlorener Beschlussfähigkeit ergibt unter der Vorgabe eine neue erste, unter «zweite» eine zweite mit Vorgängerin, elftem Tag, Ausklappersatz und Einladungszusatz, noch beschlussfähig eine neue erste; Einlass einer Mitberechtigten über der Höchstzahl angenommen, unter «Zählt mit» abgewiesen; ROTPROBE=L15 oder L16 lässt die Wahl weg; braucht pdftotext
 node e2e/lesarten-1a-a.mjs                 # 1a und Anhang A: Ausschlussklage nach den Anwesenden, Mehr aus Gesetz und Reglement nach einer Abweichung, nur in der Leitung
 node e2e/statt-versammlung.mjs             # C1 und C2: drei Traktanden über den Baum (Einstimmigkeit, Einstimmigkeit, einfaches Mehr), Gegenproben Nein und Ausgabenrahmen, im Saal 2 von 3 Ja scheitert nur an der Einstimmigkeit
 ```
@@ -1745,6 +1746,22 @@ Traktandum mit Häkchen abgestimmt wird.
   zeigt dasselbe Traktandum (`zaehlweiseVeraltet`). Die Ergebniskarte tauscht
   Kopfbasis, Formel und «Wortlaut und Rechtsprechung» (`knotenNachZaehlweise`,
   Fassung 4c).
+- **L15: Wirkung an der Höchstzahl der Vollmachten** (Migration 194, Entscheid
+  0054). Kein Knoten, kein Mehr, keine Fassung. Unter «mitzaehlen» zählt die
+  Vertretung mit dem Grund `mitberechtigt` an allen drei Stellen der Regel
+  (`zaehltZurHoechstzahl` mit `ueberschreitungen`, die frühe Rückkehr und die
+  Abfrage über den Bestand in `verlangeVollmachtsgrenze`), Organ und gesetzlich
+  nie; die Wahl kommt ab der Freigabe aus der Momentaufnahme. Eine Mitberechtigte,
+  die nur mit der Karte der gemeinsamen Einheit kommt, ist die Partei selbst und
+  hält keine Vollmacht dafür: Ihre erste Stimme bleibt frei.
+- **L16: Wirkung an der Stufe der Folgeversammlung** (Migration 194, Entscheid
+  0054 Punkte 3 und 7). Nur in `vertageVersammlung`: zeitweise beschlussfähig
+  (`warZeitweiseBeschlussfaehigIn`), jetzt nicht mehr (`jetztBeschlussfaehig`,
+  dieselbe Rechnung wie Leitung und Feststellung) und «zweite» gewählt ergibt
+  eine zweite mit `meeting.tier_by_reading` (`zweiteNachLesart`). Einladung,
+  Protokoll (Kopf und `l16Beschlusssatz` je angenommenem Beschluss), Siegel
+  und Verlauf lesen das Merkmal, statt es neu herzuleiten; `aendereVersammlung`
+  behält es nur an derselben zweiten auf dieselbe Vorgängerin.
 - **Von Hand gesetzte Kopfbasis «aller Eigentümer», ab Fassung 2026-11-16**
   (Entscheid 0050, Antwort 1, «Angleichen»): Unter einem Mehr, das die Leitung
   in «Anderes Erfordernis setzen» oder ohne Herleitung gesetzt hat (`quelle

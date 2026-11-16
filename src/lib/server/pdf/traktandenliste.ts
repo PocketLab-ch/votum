@@ -116,6 +116,8 @@ export interface Einladungsangaben {
 	 * am Einlass erfährt, hat die Vollmacht schon dabei.
 	 */
 	vollmachtsgrenze?: number | null;
+	/** L15 «mitzaehlen» (Migration 194): für `vertretungssatz`. */
+	stimmfuehrungZaehlt?: boolean;
 	/** Woher die Grenze stammt, etwa «Reglement Ziff. 8.2». */
 	vollmachtsgrenzeQuelle?: string | null;
 	/**
@@ -389,7 +391,7 @@ export async function erzeugeTraktandenliste(
 		 */
 		y = zeichneText(
 			seite,
-			vertretungssatz(e.vollmachtsgrenze, e.vollmachtsgrenzeQuelle),
+			vertretungssatz(e.vollmachtsgrenze, e.vollmachtsgrenzeQuelle, e.stimmfuehrungZaehlt),
 			m.rand,
 			y,
 			inhaltsbreite,
@@ -424,7 +426,7 @@ export async function erzeugeTraktandenliste(
 		const mitNeuen = angaben.traktanden.some(
 			(t) => !t.knoten.aufgenommenAm && angaben.neutraktanden?.traktanden.has(t.knoten.id)
 		);
-		const satz = beschlussfaehigkeitssatz(v.stufe, e.beschlussfaehigkeit);
+		const satz = beschlussfaehigkeitssatz(v.stufe, e.beschlussfaehigkeit, v.stufeNachLesart === true);
 		const zweite = satz && mitNeuen ? `${satz} ${NEUTRAKTANDUM_VERWEIS}` : satz;
 		if (zweite) {
 			/*

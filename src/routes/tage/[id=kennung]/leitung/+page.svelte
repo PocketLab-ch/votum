@@ -1445,10 +1445,19 @@
 			</p>
 			<!-- C3, F4c: eine neue erste statt einer zweiten (`folgestufeNachVertagung`). -->
 			<p class="klein">
-				War eine Gemeinschaft heute schon beschlussfähig, legt Votum für sie keine zweite,
-				sondern eine neue erste Versammlung an. Für deren Einladung gilt die Frist einer ersten.
+				War eine Gemeinschaft heute schon beschlussfähig, legt Votum für sie nach der Vorgabe
+				keine zweite, sondern eine neue erste Versammlung an. Für deren Einladung gilt die Frist einer ersten.
 				Prüfen Sie vor dem Versand, ob der gemeinsame Termin sie einhält und frühestens am elften
 				Tag nach heute liegt.
+			</p>
+			<!-- L16 (Migration 194; Codeprüfung M2): je Haus nach dessen Einstellung. -->
+			<p class="klein">
+				Ist eine solche Gemeinschaft jetzt nicht mehr beschlussfähig und hat sie bei den Lesarten
+				«Zweite Versammlung» eingestellt, legt Votum für sie eine zweite an. Dort genügt ein
+				Drittel; ob das genügt, wenn sie schon beschlussfähig war, regeln Gesetz und Gerichte
+				nicht ausdrücklich. Sagen Sie das der Versammlung vor dem Vertagen, und bitten Sie, selbst
+				zu kommen oder eine Vollmacht zu geben. Die Meldung danach nennt je Gemeinschaft, was
+				entstanden ist.
 			</p>
 
 			<fieldset>
@@ -1484,7 +1493,8 @@
 					<span class="hilfe">
 						Zwei verschiedene Sachverhalte; der Grund steht im Protokoll jeder Gemeinschaft.
 						Ob danach eine zweite Versammlung nach Abs. 3 oder eine neue erste entsteht,
-						richtet sich je Gemeinschaft danach, ob sie heute beschlussfähig war.
+						richtet sich je Gemeinschaft danach, ob sie heute beschlussfähig war. Ist sie es
+						nicht mehr, zählt auch, wie sie die Lesart L16 eingestellt hat.
 					</span>
 				</label>
 

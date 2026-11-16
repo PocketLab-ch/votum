@@ -7,6 +7,7 @@ import {
 	ohneErgebnis,
 	ANFECHTUNG_IM_PROTOKOLL,
 	protokollentwurf,
+	l16Beschlusssatz,
 	ergebnissatzDerAuswertung,
 	rueckzugInDerAuswertung,
 	rueckzugssatz,
@@ -19,6 +20,7 @@ import {
 	type Protokollzeile
 } from '$lib/domain/protokoll';
 import { FRISTFOLGE, fristvermerk } from '$lib/domain/versammlung';
+import { L16_PROTOKOLLSTUFE } from '$lib/domain/lesarten';
 import { ergebniswertung, zaehleAus } from '$lib/domain/auszaehlung';
 import {
 	AUSSTAND_UNGEKLAERT,
@@ -950,6 +952,23 @@ describe('Der Protokollentwurf', () => {
 		expect(protokollentwurf(eingabe({ stufe: 'zweite' }))).toContain(
 			'| Stufe | Zweite Versammlung nach ZGB 712p Abs. 3 |'
 		);
+	});
+
+	it('sagt an einer zweiten nach L16, dass sie auf der Einstellung beruht (Migration 194)', () => {
+		const text = protokollentwurf(eingabe({ stufe: 'zweite', stufeNachLesart: true }));
+		expect(text).toContain(`| Stufe | ${L16_PROTOKOLLSTUFE} |`);
+		expect(text).not.toContain('| Stufe | Zweite Versammlung nach ZGB 712p Abs. 3 |');
+		expect(L16_PROTOKOLLSTUFE).toContain('Standardeinstellung wäre eine neue erste Versammlung');
+		expect(L16_PROTOKOLLSTUFE).toContain('Bei jedem angenommenen Beschluss steht');
+	});
+
+	it('sagt an jedem Beschluss einer zweiten nach L16, ob die erste Beschlussfähigkeit erreicht war', () => {
+		expect(l16Beschlusssatz(undefined)).toBeNull();
+		expect(l16Beschlusssatz(null)).toBeNull();
+		expect(l16Beschlusssatz(null, true)).toContain('lässt sich aus den erfassten Angaben nicht bestimmen');
+		expect(l16Beschlusssatz(false)).toContain('wirkt sich auf ihn nicht aus');
+		expect(l16Beschlusssatz({ angenommen: true, vonHand: false })).toContain('steht unter «Anfechtung»');
+		expect(l16Beschlusssatz({ angenommen: false, vonHand: false })).toBeNull();
 	});
 
 	/*

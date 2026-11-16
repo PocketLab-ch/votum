@@ -4,6 +4,7 @@
 	import { tick, untrack } from 'svelte';
 	import { anfangswert, angekreuzt } from '$lib/felder';
 	import { weisungsregelInWorten } from '$lib/domain/weisungsregel';
+	import { KOPFBASIS_HINWEIS } from '$lib/domain/reglement';
 	import Meldung from '$lib/components/Meldung.svelte';
 	import Suchauswahl from '$lib/components/Suchauswahl.svelte';
 	import Rueckfrage from '$lib/components/Rueckfrage.svelte';
@@ -812,6 +813,8 @@
 					«mindestens zwei Drittel» und «mehr als zwei Drittel» sind nicht dasselbe: Bei 6 Stimmen
 					sind es 4 oder 5. Reglemente meinen in aller Regel «mindestens».
 				</p>
+				<!-- Entscheid 0054, Punkt 5 (Frage 93): welche Bezugsgrösse zur Klausel gehört. -->
+				<p class="hilfe">{KOPFBASIS_HINWEIS}</p>
 			</fieldset>
 
 			<label class="kasten-label">

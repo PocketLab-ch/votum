@@ -203,6 +203,8 @@ Die Gemeinschaft kann jede Vorgabe umstellen.
 | L11 | Welches Mehr braucht der Beschluss, der die Bewirtschaftung ermächtigt, für die Gemeinschaft einen Prozess zu führen? | Qualifiziertes Mehr | Einfaches Mehr |
 | L12 | Wessen Zustimmung braucht eine luxuriöse bauliche Massnahme: die aller eingetragenen Eigentümer oder die aller Anwesenden und Vertretenen? | Alle eingetragenen Eigentümer | Alle Anwesenden und Vertretenen |
 | L13 | Zählen bei Beschlüssen, für die das Gesetz die «Mehrheit aller Miteigentümer» verlangt, nur die Köpfe der Anwesenden und Vertretenen oder die aller Eigentümer? | Anwesende und Vertretene | Alle Eigentümer |
+| L15 | Zählt die Stimme, die eine Mitberechtigte für ihre eigene gemeinsame Einheit führt, zur Höchstzahl der Vollmachten, die Ihr Reglement erlaubt? | Zählt nicht mit | Zählt mit |
+| L16 | Verliert eine erste Versammlung ihre Beschlussfähigkeit, nachdem sie schon beschlussfähig war, und wird vertagt: Ist die nächste Versammlung eine neue erste oder eine zweite? | Neue erste Versammlung | Zweite Versammlung |
 
 Bei L4 ist die Vorgabe seit der Fassung 2026-11-13 das qualifizierte Mehr nach
 dem Wortlaut von Art. 647b Abs. 1 ZGB, vorher war es das einfache (Entscheid
@@ -249,7 +251,10 @@ unter den Jahresgeschäften). L12 wirkt an der Karte «Luxuriöse bauliche
 Massnahme» (Schritt 6, unter den baulichen Massnahmen). L9 wirkt an der Karte
 «Ermächtigung zur Ausschlussklage» (Schritt 6, unter «Sonderfälle»). L10 wirkt
 an derselben Karte, wenn die Mehrheit dort an allen Eigentümern ohne den
-Beklagten gemessen wird.
+Beklagten gemessen wird. L15 wirkt an der Höchstzahl der Vollmachten (Schritt
+11a, «Vollmachten»). L16 wirkt nur beim Vertagen einer ersten Versammlung, die
+schon beschlussfähig war und es beim Vertagen nicht mehr ist (Schritt 12).
+L14 ist für eine weitere Frage vorgesehen und noch nicht vergeben.
 Eine strengere Regel, die auf der Seite
 «Reglement und Quoren» für «Reglement ändern, gewöhnliche Bestimmung»
 hinterlegt ist, rechnet unabhängig von L6 weiter nach dieser Regel. Auch die Universalversammlung hängt an einer solchen Einstellung;
@@ -904,6 +909,25 @@ Erfassen müssen Sie nur, wo Ihr Reglement **abweicht**. Wo nichts hinterlegt
 ist, gilt das Gesetz — es ist kein Feld auszufüllen, damit «nichts Besonderes»
 dasteht.
 
+**Welche Bezugsgrösse zu «Mehrheit der Stockwerkeigentümer» gehört.** Steht im
+Reglement «Mehrheit der Stockwerkeigentümer» oder, wie im Gesetz, «Mehrheit
+aller Stockwerkeigentümer», wählen Sie bei den Kopfstimmen «anwesende und
+vertretene Stimmen». So zählt die herrschende Lehre die Köpfe auch dort, wo
+das Gesetz «aller» sagt (SVIT-Kommentar Rz. 181 und 190 f. ad Art. 712m;
+Lesart L13). Das Bundesgericht hat eine fast gleichlautende Klausel nicht als
+Mehrheit aller Eigentümer gelesen (BGE 144 III 510 E. 2.2.4). Bei den
+Wertquoten (Häkchen «Zusätzlich eine Wertquotenschwelle») wählen Sie in beiden
+Fällen «alle Wertquoten der Gemeinschaft»,
+ausser Ihr Reglement misst das Wertquotenmehr ausdrücklich an den Anwesenden
+und Vertretenen (Rz. 191 und 192a ad Art. 712m). «Alle
+Eigentümer, auch die abwesenden» passt bei den Köpfen nur, wo das Reglement
+sagt, dass auch die Abwesenden mitzählen, die sich nicht vertreten lassen.
+Wer sich enthält, zählt
+nach herrschender Lehre bei den Köpfen mit und wirkt wie ein Nein; lassen Sie
+dafür «Enthaltungen bleiben in der Bezugsgrösse» angekreuzt. Mit dieser
+Erfassung rechnet Votum wie bei der Reglementsänderung nach dem Gesetz (ZGB
+Art. 712g Abs. 3).
+
 **Eine hinterlegte Abweichung berichtigen Sie mit «Ändern»** in ihrer Zeile.
 Das Formular unten holt die Werte der Regel herein, und beim Speichern bleibt
 es dieselbe Regel: Im Verlauf steht danach eine Änderung samt dem, was vorher
@@ -1119,8 +1143,7 @@ Anwendung sagt es, Sie entscheiden.
     Solange die Beschlussfähigkeit einer ersten fehlt, zeigt Votum der
     Sitzungsleitung vor dem Eröffnen einen Hinweis auf die offene Frage und
     darauf, dass ein solcher Beschluss unter Umständen nichtig sein kann; sie
-    sagt ihn der Versammlung. Die Wahl bleibt, bis die Anwältin die Frage
-    beantwortet hat (Entscheid 0039).
+    sagt ihn der Versammlung.
 
   Im Protokoll steht beim Beschluss, dass das Traktandum neu war, und nach
   welcher Einstellung abgestimmt wurde; nach der Vorgabe auch, ob die
@@ -2526,10 +2549,19 @@ Mitberechtigte ohne eigene Einheit kommen mit der Karte der gemeinsamen Einheit
 herein und brauchen gar keine Vollmacht (Schritt 3, «Am Einlass entscheidet
 die Karte, nicht die Person»).
 
-**Ob ein Reglement diese Stimmführung mitzählen darf, ist nicht geklärt.**
-Votum zählt sie nicht mit. Das ist eine Regel der Anwendung, keine gesicherte
-Rechtslage; die Frage liegt bei der Anwältin. Bezieht Ihr Reglement die
-Stimmführung ausdrücklich in die Höchstzahl ein, erkennt Votum das nicht.
+**Ob die Stimmführung zur Höchstzahl zählt, stellt die Gemeinschaft ein**
+(Lesart L15, [«Lesarten der Gemeinschaft»](#lesarten-der-gemeinschaft)). Nach
+der Vorgabe zählt sie nicht mit: Die Mitberechtigte ist selbst Eigentümerin
+der Einheit, deren Stimme sie führt. Das ist eine Folgerung, keine gesicherte
+Rechtslage. Bezieht Ihr Reglement die Stimmführung ausdrücklich in die
+Höchstzahl ein, stellen Sie vor der Freigabe auf «Zählt mit» um. Dann nimmt
+Votum am Einlass keine Vollmacht über der Höchstzahl an und sagt, dass die
+Stimmführung mitgezählt ist. Die erste Stimme einer Person bleibt frei: Kommt
+eine Mitberechtigte ohne eigene Einheit nur für die gemeinsame Einheit, zählt
+diese nicht. Zählt Ihr Reglement auch das als Vollmacht, prüfen Sie die Zahl
+am Einlass selbst; ist sie voll, lassen Sie die weiteren Einheiten von einer
+anderen Person vertreten. Organ und gesetzliche Vertretung zählen in beiden Wahlen
+nicht mit.
 
 **Sind mehrere Mitberechtigte da**, bestimmen die anwesenden Mitberechtigten,
 wer die eine Stimme führt; bei Miteigentum genügt die Mehrheit (Rz. 18 ad
@@ -2784,10 +2816,13 @@ Traktanden aus der Einladung, über die nicht beschlossen wurde, nicht die im
 Saal aufgenommenen. Das gilt auch nach einem Beschluss von Hand, den Sie ohne
 Beschlussfähigkeit festgehalten haben. Haben Sie die Beschlussfähigkeit als
 gegeben festgehalten oder verbindlich abstimmen lassen, rät Votum nicht dazu:
-Vertagen ergäbe dann keine zweite, sondern eine neue erste Versammlung (unten,
-«Vertagen nach erreichter Beschlussfähigkeit»). War sie ohne beides zeitweise
-gegeben, merkt Votum das nicht und legt beim Vertagen eine zweite an; nach der
-vorsichtigen Lesart gehörte auch dann eine neue erste dazu. Schliessen Sie,
+Vertagen ergäbe dann eine neue erste Versammlung, nach der Lesart L16 «Zweite
+Versammlung» und verlorener Beschlussfähigkeit eine zweite (unten, «Vertagen
+nach erreichter Beschlussfähigkeit»). War sie ohne beides zeitweise
+gegeben, merkt Votum das nicht und legt beim Vertagen eine zweite an. Ist sie
+beim Vertagen noch beschlussfähig, setzt das Gesetz keine zweite voraus;
+halten Sie die Beschlussfähigkeit vor dem Vertagen fest, dann legt Votum eine
+neue erste an. Schliessen Sie,
 traktandieren Sie die Geschäfte für die neue Versammlung selbst. Ist verbindlich
 abgestimmt, ob angenommen oder abgelehnt, geht von alledem nichts mehr; dann
 führt der Weg über das Rückkommen.
@@ -2808,16 +2843,35 @@ der 12. Der Terminvorschlag beim Vertagen rechnet das für Sie.
 **Vertagen nach erreichter Beschlussfähigkeit.** War die Versammlung an diesem
 Abend schon beschlussfähig (Sie haben es festgehalten, oder es wurde
 verbindlich abgestimmt; ein Beschluss von Hand ohne Beschlussfähigkeit zählt
-nicht), legt Votum beim Vertagen keine zweite, sondern eine
-**neue erste Versammlung** an, ohne Vorgängerin und mit der Beschlussfähigkeit
-einer ersten. Was beschlossen ist, bleibt gültig; mit kommen die Traktanden
-aus der Einladung, über die nicht verbindlich abgestimmt wurde. Ausdrücklich
-geregelt ist der Fall nicht: Nach Wermelinger folgt die zweite auf eine erste,
-die nicht durchgeführt werden konnte (SVIT-Kommentar, Rz. 20 und 34 ad
-Art. 712p); Handschin/Wyttenbach (S. 65) und das Bundesgericht zum Zweck von
-Abs. 3 (BGer 5A_865/2011 E. 5.1) lassen sich auch milder lesen. Votum nimmt
-die vorsichtige Lesart, und die Frage geht an die Anwältin; eine Wahl «ein
-Drittel genügt» bietet Votum hier bis zur Antwort nicht an.
+nicht), legt Votum beim Vertagen eine **neue erste Versammlung** an, ohne
+Vorgängerin und mit der Beschlussfähigkeit einer ersten. Was beschlossen ist,
+bleibt gültig; mit kommen die Traktanden aus der Einladung, über die nicht
+verbindlich abgestimmt wurde. Ausdrücklich geregelt ist der Fall nicht: Nach
+Wermelinger folgt die zweite auf eine erste, die nicht durchgeführt werden
+konnte (SVIT-Kommentar, Rz. 20 und 34 ad Art. 712p); Handschin/Wyttenbach
+(S. 65) und das Bundesgericht zum Zweck von Abs. 3 (BGer 5A_865/2011 E. 5.1)
+lassen sich auch milder lesen, wenn die Beschlussfähigkeit im Lauf des Abends
+wegfällt.
+
+Deshalb hängt dieser eine Fall an der Lesart L16
+([«Lesarten der Gemeinschaft»](#lesarten-der-gemeinschaft)): Ist die
+Versammlung beim Vertagen **nicht mehr** beschlussfähig, legt Votum nach der
+Wahl «Zweite Versammlung» eine zweite nach Art. 712p Abs. 3 an, mit der
+vertagten als Vorgängerin. Ist sie noch beschlussfähig, etwa weil die Zeit
+nicht reicht, folgt in beiden Wahlen eine neue erste: Eine zweite setzt nach
+Gesetz eine ungenügende Beteiligung voraus (Art. 712p Abs. 2). Ob die
+Versammlung beschlussfähig war, liest Votum aus der Feststellung und den
+verbindlichen Abstimmungen, ob sie es noch ist, aus der Anwesenheit. Fehlt
+beides, legt Votum beim Vertagen eine zweite an, auch wenn genug da sind.
+Halten Sie die Beschlussfähigkeit deshalb fest, spätestens vor dem Vertagen,
+und tragen Sie aus, wer gegangen ist. Unter der Wahl
+«Zweite Versammlung» nennt der Ausklapper «Vertagen» auf den Seiten «Leitung»
+und «Anwesenheit» die mögliche Folge und einen Satz, den Sie der Versammlung sagen. Am
+gemeinsamen Abend mehrerer Gemeinschaften steht der Hinweis allgemein im
+Ausklapper, und die Meldung nach dem Vertagen nennt je Gemeinschaft, was
+entstanden ist. Einladung und Protokoll der zweiten
+halten fest, dass sie auf der Einstellung beruht; das Protokoll sagt bei jedem
+angenommenen Beschluss, ob die Beschlussfähigkeit einer ersten erreicht war.
 
 Den Termin schlägt Votum wie für eine zweite vor, frühestens am elften Tag.
 Prüfen Sie vor dem Versand zwei Dinge: ob zwischen Versand und Termin die
@@ -6311,7 +6365,7 @@ Beim Blättern bleibt er erhalten.
 | Beamer und Telefone hinken hinterher | Der Datenstrom hängt. Die Seiten verbinden von selbst neu; sonst genügt ein Neuladen. |
 | Es wird falsch abgestimmt | Läuft die Abstimmung noch: **Ohne Ergebnis abbrechen** mit Begründung, Grundlage berichtigen, neu freigeben. Ist das Ergebnis verkündet, ändert es nur die Versammlung: **Nochmals abstimmen** (Rückkommen) beantragen. Nur beim offenen Gleichstand **Durchgang überholen** mit Begründung, dann neu freigeben. Der frühere bleibt einsehbar. |
 | Ein Traktandum fehlt in der Liste | **Eine weitere Sache aufnehmen** am Fuss der Liste. War die Sache nicht angekündigt, geht heute nur die Kenntnisnahme, ausser das Reglement gestattet den Beschluss oder die Versammlung tagt als Universalversammlung. |
-| Die Versammlung ist nicht beschlussfähig | Abgestimmt wird nicht. Fehlt jemand, der da ist, **Anwesenheit** berichtigen; sonst warten oder **vertagen**: Votum setzt eine zweite Versammlung an, oder eine neue erste, wenn die Versammlung heute schon beschlussfähig war. Hat der Saal ohne Votum doch beschlossen: siehe «Beschluss von Hand festhalten». |
+| Die Versammlung ist nicht beschlussfähig | Abgestimmt wird nicht. Fehlt jemand, der da ist, **Anwesenheit** berichtigen; sonst warten oder **vertagen**: Votum setzt eine zweite Versammlung an, oder eine neue erste, wenn die Versammlung heute schon beschlussfähig war (nach der Lesart L16 «Zweite Versammlung» auch dann eine zweite, wenn sie es jetzt nicht mehr ist). Hat der Saal ohne Votum doch beschlossen: siehe «Beschluss von Hand festhalten». |
 
 ## Begriffe
 

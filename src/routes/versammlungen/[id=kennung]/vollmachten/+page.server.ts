@@ -14,6 +14,7 @@ import { empfehlungInWorten } from '$lib/domain/empfehlung';
 import { standVon } from '$lib/domain/anwesenheit';
 import { text } from '$lib/server/formular';
 import { holeGemeinschaft } from '$lib/server/gemeinschaften';
+import { holeLesarten } from '$lib/server/lesarten';
 import { holeVersammlung } from '$lib/server/versammlungen';
 import { bestaetigeAnwesenheit, holeAnwesenheitsereignisse } from '$lib/server/anwesenheit';
 import { verkuendeStand } from '$lib/server/versammlungsstand';
@@ -49,12 +50,14 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 
 	// Ohne Momentaufnahme gibt es niemanden zu vertreten. Die Seite sagt das und
 	// zeigt kein Formular, das ins Leere liefe.
-	const [gemeinschaft, parteien, vollmachten, nachweise, ereignisse] = await Promise.all([
+	const [gemeinschaft, parteien, vollmachten, nachweise, ereignisse, lesarten] = await Promise.all([
 		holeGemeinschaft(operatorId, versammlung.stwegId),
 		holeParteien(operatorId, params.id),
 		holeVollmachten(operatorId, params.id),
 		holeNachweise(operatorId, params.id),
-		holeAnwesenheitsereignisse(operatorId, params.id)
+		holeAnwesenheitsereignisse(operatorId, params.id),
+		// L15 (Migration 194): ab der Freigabe aus der Momentaufnahme, wie die Sperre.
+		holeLesarten(operatorId, { meetingId: params.id })
 	]);
 
 	/*
@@ -166,13 +169,15 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		anzahlWirksam: u.anzahlWirksam,
 		schranke: {
 			hoechstzahl: gemeinschaft?.proxyLimit ?? null,
-			fundstelle: gemeinschaft?.proxyLimitRuleSource ?? null
+			fundstelle: gemeinschaft?.proxyLimitRuleSource ?? null,
+			stimmfuehrung: lesarten.L15
 		},
 		warnungen: ueberschreitungen(
 			vollmachten,
 			{
 				hoechstzahl: gemeinschaft?.proxyLimit ?? null,
-				fundstelle: gemeinschaft?.proxyLimitRuleSource ?? null
+				fundstelle: gemeinschaft?.proxyLimitRuleSource ?? null,
+				stimmfuehrung: lesarten.L15
 			},
 			namen
 		),

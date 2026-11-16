@@ -172,7 +172,7 @@ describe('Vorgaben (Kriterium 1)', () => {
 	it('eine neue Gemeinschaft rechnet nach den Vorgaben, nur die Verwaltung stellt um', async () => {
 		const g = await gemeinschaft('Lesarten neu');
 		const e = await holeLesarteneinstellung(betreiber, g.id);
-		expect(e.wahl).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(e.wahl).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(e.recht).toBe('verwaltung');
 		expect(e.geaendert).toEqual({});
 		expect(e.rechtGeaendert).toBeNull();
@@ -192,8 +192,8 @@ describe('Vorgaben (Kriterium 1)', () => {
 describe('Umstellen mit Verlauf (Kriterium 2)', () => {
 	it('hält Person, Rolle, Vorzustand und neuen Wert in Worten fest', async () => {
 		const g = await gemeinschaft('Lesarten Verlauf');
-		await speichereLesarten(handelnder(betreiber), 'admin', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
-		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
+		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		const eintraege = await verlaufVon(g.id, EREIGNISARTEN.lesartGesetzt);
 		expect(eintraege).toHaveLength(1);
@@ -212,7 +212,7 @@ describe('Umstellen mit Verlauf (Kriterium 2)', () => {
 
 	it('schreibt nichts, wenn sich nichts ändert', async () => {
 		const g = await gemeinschaft('Lesarten unverändert');
-		await speichereLesarten(handelnder(betreiber), 'admin', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		await speichereLesarten(handelnder(betreiber), 'admin', g.id, {});
 		expect(await verlaufVon(g.id, EREIGNISARTEN.lesartGesetzt)).toHaveLength(0);
 	});
@@ -229,16 +229,16 @@ describe('Rechte (Kriterium 17)', () => {
 	it('ohne Umstellung erhält die Sitzungsleitung eine Absage', async () => {
 		const g = await gemeinschaft('Lesarten Leitung gesperrt');
 		await expect(
-			speichereLesarten(handelnder(betreiber), 'chair', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' })
+			speichereLesarten(handelnder(betreiber), 'chair', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })
 		).rejects.toThrow(/nur die Verwaltung/);
-		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 	});
 
 	it('mit «Verwaltung und Sitzungsleitung» stellt sie um, aber nicht das Recht selbst', async () => {
 		const g = await gemeinschaft('Lesarten Leitung erlaubt');
 		await speichereLesartenrecht(handelnder(betreiber), 'admin', g.id, 'verwaltung_und_leitung');
-		await speichereLesarten(handelnder(betreiber), 'chair', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
-		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'chair', g.id, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
+		expect(await holeLesarten(betreiber, { stwegId: g.id })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		const [eintrag] = await verlaufVon(g.id, EREIGNISARTEN.lesartGesetzt);
 		expect(eintrag.detail.rolle).toBe('chair');
@@ -260,10 +260,10 @@ describe('Einfrieren bei der Freigabe (Kriterium 3)', () => {
 		const a = await versammlung('Lesarten eingefroren', '2027-11-03');
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
 
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
-		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
-		expect((await holeMomentaufnahme(betreiber, a.versammlung))?.lesarten).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
+		expect((await holeMomentaufnahme(betreiber, a.versammlung))?.lesarten).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		const [t] = (await holeTraktanden(betreiber, a.versammlung)).filter(
 			(x) => x.knoten.id === a.traktandum
@@ -274,18 +274,18 @@ describe('Einfrieren bei der Freigabe (Kriterium 3)', () => {
 
 	it('friert auch die andere Wahl ein, nicht nur die Vorgabe', async () => {
 		const a = await versammlung('Lesarten qualifiziert eingefroren', '2027-11-07');
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		await haltErfordernisAmTraktandumFest(
 			handelnder(betreiber),
 			a.versammlung,
 			a.traktandum,
-			wendeLesartAn(L4_EINFACH, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' })
+			wendeLesartAn(L4_EINFACH, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })
 		);
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
-		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
-		expect(await holeLesarten(betreiber, { stwegId: a.gemeinschaft })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
+		expect(await holeLesarten(betreiber, { stwegId: a.gemeinschaft })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 	});
 
 	it('beide Leser der Momentaufnahme liefern denselben Kopf, samt Ausnahmen', async () => {
@@ -298,7 +298,7 @@ describe('Einfrieren bei der Freigabe (Kriterium 3)', () => {
 		const kopf = (s: typeof aussen) => s && { ...s, parties: undefined };
 		expect(kopf(innen)).toEqual(kopf(aussen));
 		expect(innen?.ausnahmen?.universalvariante).toBe('vertreten');
-		expect(innen?.lesarten).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(innen?.lesarten).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 	});
 
 	/*
@@ -307,16 +307,16 @@ describe('Einfrieren bei der Freigabe (Kriterium 3)', () => {
 	 */
 	it('sagt ab, solange ein Traktandum nach einer anderen Wahl rechnet', async () => {
 		const a = await versammlung('Lesarten veraltet', '2027-11-05');
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		await expect(gibVersammlungFrei(handelnder(betreiber), a.versammlung)).rejects.toThrow(
 			/das Mehr auf der Seite «Lesarten» der Gemeinschaft/
 		);
 
 		// Dieselbe Versammlung gibt frei, sobald die Wahl wieder zum Traktandum passt.
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
-		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		expect(await holeLesarten(betreiber, { meetingId: a.versammlung })).toEqual({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'einfach', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 	});
 });
 
@@ -341,7 +341,7 @@ describe('Befunde der Codeprüfung, Teil 1', () => {
 			UPDATE agenda_item SET requirement_reading = ${tx.json(L4_EINFACH.gemeinschaftslesart as never)}
 			 WHERE id = ${a.traktandum}
 		`);
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
 	});
 
@@ -425,7 +425,7 @@ describe('Mit dem Knoten der Fassung 2026-10-24', () => {
 			'k-bewirtschaftung-waehlen-erweitert',
 			null
 		);
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		const [v] = (await veralteteErfordernisse(betreiber, a.gemeinschaft)).filter(
 			(x) => x.traktandumId === a.traktandum
@@ -458,7 +458,7 @@ describe('Mit dem Knoten der Fassung 2026-10-24', () => {
 			null
 		);
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 
 		expect(
 			(await veralteteErfordernisse(betreiber, a.gemeinschaft)).filter((x) => x.traktandumId === a.traktandum)
@@ -484,7 +484,7 @@ describe('Mit dem Knoten der Fassung 2026-10-24', () => {
 		);
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);
 		// Nach der Freigabe umgestellt: wirkt erst für die nächste Versammlung (Kriterium 3).
-		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		await speichereLesarten(handelnder(betreiber), 'admin', a.gemeinschaft, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		await eroeffneVersammlung(handelnder(betreiber), a.versammlung);
 		for (const p of a.parteien) {
 			await bestaetigeAnwesenheit(handelnder(betreiber), a.versammlung, p, 'von_hand');

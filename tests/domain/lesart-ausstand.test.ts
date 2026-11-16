@@ -352,7 +352,7 @@ describe('L4 und L1 an einem Traktandum (Codeprüfung Teil 2, H1)', () => {
 		const rw = holeRegelwerk('2026-10-25');
 		const e = wendeLesartAn(
 			waehleErfordernis(rw, 'k-bewirtschaftung-waehlen-erweitert').ergebnis!,
-			{ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' }
+			{ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }
 		);
 		expect(e.quotenbasis).toBe('alle_quoten');
 		const a = zaehleAus({

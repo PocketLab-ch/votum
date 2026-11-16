@@ -47,6 +47,8 @@
 			nach. Bei der Wertquote im Ausstand, der Zählung an der Einsprache, neuen Geschäften
 			an der zweiten Versammlung und dem Ausstand bei der Beschlussfähigkeit müssen Sie nichts
 			nachziehen. Dasselbe gilt für die Vollmachten der Verwaltung bei ihren eigenen Geschäften.
+			Auch die Stimmführung von Mitberechtigten in der Höchstzahl und das Vertagen nach
+			erreichter Beschlussfähigkeit brauchen kein Nachziehen.
 			Bei den Angehörigen des Beklagten im Ausstand erscheint unten nur ein Traktandum aus einer
 			früheren Fassung.
 			Für eine schon freigegebene Einladung gilt die bisherige Einstellung.

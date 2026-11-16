@@ -8,6 +8,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import type postgres from 'postgres';
 import { alsBetreiber, sql } from './db';
 import { schreibeUebergang, schreibeVerlauf, type Handelnder } from './audit';
+import { holeLesartenIn } from './lesarten';
 import { legePflichttraktandenAn, uebertrageOffeneTraktanden } from './vorlagen';
 import { schliesseOffeneAbstimmungen, warZeitweiseBeschlussfaehigIn } from './abstimmung';
 import { entwerteInTransaktion } from './zugaenge';
@@ -42,7 +43,14 @@ import {
 	LEITUNGSFELDER,
 	pruefeLeitungsnamen
 } from '$lib/domain/versammlung';
-import { folgestufeNachVertagung, type Versammlungsstufe } from '$lib/domain/beschlussfaehigkeit';
+import {
+	folgestufeNachVertagung,
+	stelleBeschlussfaehigkeitFest,
+	zweiteNachLesart,
+	type Versammlungsstufe
+} from '$lib/domain/beschlussfaehigkeit';
+import { holeUebersicht } from './anwesenheit';
+import { holeAnwesenheitsregeln } from './reglement';
 import { pruefeLoeschung } from '$lib/domain/loeschung';
 import { datumLang, kalendertag, zeitpunktKurz } from '$lib/domain/datum';
 import { FachlicherFehler } from '$lib/domain/gemeinschaft';
@@ -74,6 +82,7 @@ interface MeetingZeile {
 	occasion: string | null;
 	tier: Versammlungsstufe;
 	previous_meeting_id: string | null;
+	tier_by_reading: boolean;
 	interval_note: string | null;
 	operation_mode: Betriebsart;
 	ask_paper_ballot: boolean;
@@ -126,6 +135,7 @@ function ausDb(z: MeetingZeile): Versammlung {
 		anlass: z.occasion ?? undefined,
 		stufe: z.tier,
 		vorgaengerId: z.previous_meeting_id,
+		...(z.tier_by_reading ? { stufeNachLesart: true } : {}),
 		fristvermerk: z.interval_note,
 		betriebsart: z.operation_mode,
 		papierfrage: z.ask_paper_ballot,
@@ -512,11 +522,12 @@ export async function erstelleVersammlung(
 
 		await tx`
 			INSERT INTO meeting (id, operator_id, stweg_id, state, meeting_date, start_time, location,
-			                     kind, occasion, tier, previous_meeting_id, interval_note,
+			                     kind, occasion, tier, previous_meeting_id, tier_by_reading, interval_note,
 			                     operation_mode)
 			VALUES (${v.id}, ${handelnder.operatorId}, ${v.stwegId}, ${v.zustand}, ${v.datum},
 			        ${v.uhrzeit}, ${v.ort}, ${v.art}, ${v.anlass ?? null}, ${v.stufe},
-			        ${v.vorgaengerId}, ${v.fristvermerk ?? null}, ${v.betriebsart})
+			        ${v.vorgaengerId}, ${v.stufe === 'zweite' && v.stufeNachLesart === true},
+			        ${v.fristvermerk ?? null}, ${v.betriebsart})
 		`;
 
 		// In derselben Transaktion: Eine Vorlage, die erst «angewandt» werden
@@ -558,6 +569,8 @@ export async function bearbeiteVersammlung(
 				occasion = ${v.anlass ?? null},
 				tier = ${v.stufe},
 				previous_meeting_id = ${v.vorgaengerId},
+				-- L16 (Migration 194): die Regel steht in aendereVersammlung im Kern.
+				tier_by_reading = ${v.stufeNachLesart === true},
 				interval_note = ${v.fristvermerk ?? null},
 				operation_mode = ${v.betriebsart}
 			WHERE id = ${id}
@@ -1271,7 +1284,7 @@ export async function vertageVersammlung(
 		 */
 		datum?: string;
 	}
-): Promise<{ vertagt: Versammlung; folge: Versammlung; folgestufe: Versammlungsstufe }> {
+): Promise<{ vertagt: Versammlung; folge: Versammlung; folgestufe: Versammlungsstufe; nachLesart: boolean }> {
 	const grund = eingabe.grund?.trim() ?? '';
 	if (zeichenzahl(grund) < 3) {
 		throw new FachlicherFehler(
@@ -1310,13 +1323,23 @@ export async function vertageVersammlung(
 
 	/*
 	 * **War sie an diesem Abend schon beschlussfähig, wird die Folgeversammlung
-	 * eine neue erste** (C3, F4c; `folgestufeNachVertagung`). Gelesen vor dem
-	 * Schliessen, das offene Durchgänge aufräumt.
+	 * nach der Vorgabe von L16 eine neue erste** (C3, F4c;
+	 * `folgestufeNachVertagung`), nach der Wahl «zweite» eine zweite (Migration
+	 * 194). Gelesen vor dem Schliessen, das offene Durchgänge aufräumt; die
+	 * Wahl aus der Momentaufnahme der vertagten, die laufende hat eine.
 	 */
-	const folgestufe = folgestufeNachVertagung(
-		alt.stufe,
-		await alsBetreiber(handelnder.operatorId, (tx) => warZeitweiseBeschlussfaehigIn(tx, id))
-	);
+	const { zeitweise, vertagung } = await alsBetreiber(handelnder.operatorId, async (tx) => ({
+		zeitweise: await warZeitweiseBeschlussfaehigIn(tx, id),
+		vertagung: (await holeLesartenIn(tx, { meetingId: id })).L16
+	}));
+	// L16 nur, wenn die Beschlussfähigkeit jetzt fehlt (`zweiteNachLesart`,
+	// Fachprüfung F-1); dieselbe Rechnung wie das Tor beim Eröffnen.
+	const jetzt =
+		alt.stufe === 'erste' && zeitweise && vertagung === 'zweite'
+			? await jetztBeschlussfaehig(handelnder.operatorId, alt)
+			: true;
+	const folgestufe = folgestufeNachVertagung(alt.stufe, zeitweise, vertagung, jetzt);
+	const nachLesart = zweiteNachLesart(alt.stufe, zeitweise, vertagung, jetzt);
 
 	// Eine neue erste hat keine Vorgängerin, also prüft `pruefeVersammlung` die
 	// Reihenfolge nicht. Die Schranke steht deshalb hier, vor dem Schliessen,
@@ -1342,7 +1365,7 @@ export async function vertageVersammlung(
 			ereignis(
 				EREIGNISARTEN.versammlungVertagt,
 				{ art: 'meeting', id },
-				{ grund, stufe: alt.stufe, folgestufe }
+				{ grund, stufe: alt.stufe, folgestufe, ...(nachLesart ? { nachLesart: true } : {}) }
 			)
 		]);
 		return { vertagt: alt };
@@ -1374,7 +1397,8 @@ export async function vertageVersammlung(
 			// Auch eine neue erste bekommt diesen Vorschlag, denn die Maske zeigt
 			// ihn vorab (`fruehesterZweitTermin`). Ein Termin nach der
 			// Einladungsfrist einer ersten ist Pendenz.
-			folgestufe
+			folgestufe,
+			nachLesart
 		);
 		if (eingabe.datum) entwurf.datum = eingabe.datum;
 
@@ -1390,8 +1414,38 @@ export async function vertageVersammlung(
 			 */
 			vertagt.id
 		);
-		return { vertagt, folge, folgestufe };
+		return { vertagt, folge, folgestufe, nachLesart };
 	});
+}
+
+/**
+ * Ob die Versammlung in diesem Augenblick beschlussfähig ist, nach der
+ * Anwesenheit und den Regeln ihrer Stufe (`stelleBeschlussfaehigkeitFest`,
+ * dieselbe Rechnung wie Leitung und Feststellung). Ohne Anwesenheitsliste:
+ * beschlussfähig, die Seite, auf der L16 nicht greift.
+ */
+export async function jetztBeschlussfaehig(
+	operatorId: Id,
+	v: Pick<Versammlung, 'id' | 'stwegId' | 'stufe'>
+): Promise<boolean> {
+	const [uebersicht, regeln] = await Promise.all([
+		holeUebersicht(operatorId, v.id),
+		holeAnwesenheitsregeln(operatorId, v.stwegId)
+	]);
+	if (!uebersicht) return true;
+	return stelleBeschlussfaehigkeitFest(
+		v.stufe,
+		{
+			eigentuemerGesamt: uebersicht.eigentuemerGesamt,
+			eigentuemerAnwesend: uebersicht.eigentuemerAnwesend,
+			kopfstimmenGesamt: uebersicht.kopfstimmenGesamt,
+			kopfstimmenAnwesend: uebersicht.kopfstimmenAnwesend,
+			gesamtquote: uebersicht.gesamtquote,
+			quotenAnwesend: uebersicht.quotenAnwesend,
+			einzigeParteiGemeinsam: uebersicht.einzigeParteiGemeinsam
+		},
+		regeln[v.stufe] ?? null
+	).beschlussfaehig;
 }
 
 /** Stellt die Versammlung auf ein Traktandum — die eine Wahrheit nach AD-10. */

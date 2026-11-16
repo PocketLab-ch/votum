@@ -31,6 +31,33 @@ import {
 	type Lesartenwahl
 } from './lesarten';
 
+/**
+ * Der Hinweis an der Bezugsgrösse der Kopfstimmen, wenn eine Klausel
+ * «Mehrheit der Stockwerkeigentümer» hinterlegt wird (Entscheid 0054, Nachtrag,
+ * Punkt 5; `quellen` Frage 93). Gemessen am 16.11.2026: Mit «anwesende und
+ * vertretene» rechnet die Regel wie Frage 93, mit «alle Eigentümer» zu streng.
+ *
+ * **Abgegrenzt an den Abwesenden, nicht am Wort «aller»** (Fachprüfung
+ * 16.11.2026, F-2): Das Gesetz sagt selbst «Mehrheit aller Miteigentümer», und
+ * die herrschende Lehre zählt trotzdem die Anwesenden (Rz. 181 ad Art. 712m,
+ * Lesart L13). Je Wortlaut eine Wahl (Laienprüfung L-14).
+ */
+export const KOPFBASIS_HINWEIS =
+	'Steht im Reglement «Mehrheit der Stockwerkeigentümer» oder, wie im Gesetz, «Mehrheit aller ' +
+	'Stockwerkeigentümer», wählen Sie bei den Köpfen «anwesende und vertretene Stimmen». So zählt die herrschende ' +
+	'Lehre die Köpfe auch dort, wo das Gesetz «aller» sagt (SVIT-Kommentar Rz. 181 und 190 f. ad Art. 712m; ' +
+	'Lesart L13). Das Bundesgericht hat eine fast gleichlautende Klausel nicht als Mehrheit aller Eigentümer ' +
+	// Laienprüfung Runde 2, R2-L-2: die Wertquoten für beide Fälle, vor dem seltenen.
+	// Fachprüfung Runde 3, R3-F-2: ausser das Reglement misst ausdrücklich an den Anwesenden (Rz. 192a).
+	// Codeprüfung N6: das Feld erscheint erst mit dem Häkchen.
+	'gelesen (BGE 144 III 510 E. 2.2.4). Bei den Wertquoten (Häkchen «Zusätzlich eine Wertquotenschwelle») ' +
+	'wählen Sie in beiden Fällen «alle Wertquoten der ' +
+	'Gemeinschaft», ausser Ihr Reglement misst das Wertquotenmehr ausdrücklich an den Anwesenden und ' +
+	'Vertretenen (Rz. 191 und 192a ad Art. 712m). «Alle Eigentümer, auch die abwesenden» passt bei den Köpfen nur, wo das Reglement sagt, ' +
+	'dass auch die Abwesenden mitzählen, die sich nicht vertreten lassen. Wer sich enthält, zählt nach ' +
+	'herrschender Lehre bei den Köpfen mit und wirkt wie ein Nein; lassen Sie dafür «Enthaltungen bleiben in der ' +
+	'Bezugsgrösse» angekreuzt.';
+
 export interface ReglementsregelEingabe {
 	/**
 	 * Auf welchen Fall des Entscheidbaums die Regel beschränkt ist (22.08.2026).

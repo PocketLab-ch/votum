@@ -50,6 +50,8 @@ interface Lesartenzeile {
 	reading_l11: Lesartenwahl['L11'];
 	reading_l12: Lesartenwahl['L12'];
 	reading_l13: Lesartenwahl['L13'];
+	reading_l15: Lesartenwahl['L15'];
+	reading_l16: Lesartenwahl['L16'];
 	reading_changer: Lesartenrecht;
 }
 
@@ -68,6 +70,8 @@ type Wahlspalten = Pick<
 	| 'reading_l11'
 	| 'reading_l12'
 	| 'reading_l13'
+	| 'reading_l15'
+	| 'reading_l16'
 >;
 
 function wahlAus(z: Wahlspalten): Lesartenwahl {
@@ -84,7 +88,9 @@ function wahlAus(z: Wahlspalten): Lesartenwahl {
 		L10: z.reading_l10,
 		L11: z.reading_l11,
 		L12: z.reading_l12,
-		L13: z.reading_l13
+		L13: z.reading_l13,
+		L15: z.reading_l15,
+		L16: z.reading_l16
 	};
 }
 
@@ -102,17 +108,17 @@ export async function holeLesartenIn(
 ): Promise<Lesartenwahl> {
 	if ('meetingId' in wo) {
 		const [s] = await tx<Wahlspalten[]>`
-			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13 FROM snapshot WHERE meeting_id = ${wo.meetingId}
+			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16 FROM snapshot WHERE meeting_id = ${wo.meetingId}
 		`;
 		if (s) return wahlAus(s);
 		const [g] = await tx<Wahlspalten[]>`
-			SELECT g.reading_l1, g.reading_l2, g.reading_l3, g.reading_l4, g.reading_l5, g.reading_l6, g.reading_l7, g.reading_l8, g.reading_l9, g.reading_l10, g.reading_l11, g.reading_l12, g.reading_l13 FROM meeting m JOIN stweg g ON g.id = m.stweg_id WHERE m.id = ${wo.meetingId}
+			SELECT g.reading_l1, g.reading_l2, g.reading_l3, g.reading_l4, g.reading_l5, g.reading_l6, g.reading_l7, g.reading_l8, g.reading_l9, g.reading_l10, g.reading_l11, g.reading_l12, g.reading_l13, g.reading_l15, g.reading_l16 FROM meeting m JOIN stweg g ON g.id = m.stweg_id WHERE m.id = ${wo.meetingId}
 		`;
 		if (!g) throw new FachlicherFehler('unbekannt', 'Versammlung nicht gefunden.', 'meetingId');
 		return wahlAus(g);
 	}
 	const [g] = await tx<Wahlspalten[]>`
-		SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13 FROM stweg WHERE id = ${wo.stwegId}
+		SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16 FROM stweg WHERE id = ${wo.stwegId}
 	`;
 	if (!g) throw new FachlicherFehler('unbekannt', 'Gemeinschaft nicht gefunden.', 'stwegId');
 	return wahlAus(g);
@@ -143,7 +149,7 @@ export interface Lesarteneinstellung {
 export async function holeLesarteneinstellung(operatorId: Id, stwegId: Id): Promise<Lesarteneinstellung> {
 	return alsBetreiber(operatorId, async (tx) => {
 		const [z] = await tx<Lesartenzeile[]>`
-			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_changer FROM stweg WHERE id = ${stwegId}
+			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16, reading_changer FROM stweg WHERE id = ${stwegId}
 		`;
 		if (!z) throw new FachlicherFehler('unbekannt', 'Gemeinschaft nicht gefunden.', 'stwegId');
 
@@ -198,7 +204,7 @@ export async function speichereLesarten(
 
 	return alsBetreiber(handelnder.operatorId, async (tx) => {
 		const [vorher] = await tx<Lesartenzeile[]>`
-			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_changer FROM stweg WHERE id = ${stwegId} FOR UPDATE
+			SELECT reading_l1, reading_l2, reading_l3, reading_l4, reading_l5, reading_l6, reading_l7, reading_l8, reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16, reading_changer FROM stweg WHERE id = ${stwegId} FOR UPDATE
 		`;
 		if (!vorher) throw new FachlicherFehler('unbekannt', 'Gemeinschaft nicht gefunden.', 'stwegId');
 		if (!darfLesartenUmstellen(rolle, vorher.reading_changer)) {
@@ -208,7 +214,7 @@ export async function speichereLesarten(
 		const bisher = wahlAus(vorher);
 		const neu: Lesartenwahl = { ...bisher, ...aenderung };
 
-		await tx`UPDATE stweg SET reading_l1 = ${neu.L1}, reading_l2 = ${neu.L2}, reading_l3 = ${neu.L3}, reading_l4 = ${neu.L4}, reading_l5 = ${neu.L5}, reading_l6 = ${neu.L6}, reading_l7 = ${neu.L7}, reading_l8 = ${neu.L8}, reading_l9 = ${neu.L9}, reading_l10 = ${neu.L10}, reading_l11 = ${neu.L11}, reading_l12 = ${neu.L12}, reading_l13 = ${neu.L13} WHERE id = ${stwegId}`;
+		await tx`UPDATE stweg SET reading_l1 = ${neu.L1}, reading_l2 = ${neu.L2}, reading_l3 = ${neu.L3}, reading_l4 = ${neu.L4}, reading_l5 = ${neu.L5}, reading_l6 = ${neu.L6}, reading_l7 = ${neu.L7}, reading_l8 = ${neu.L8}, reading_l9 = ${neu.L9}, reading_l10 = ${neu.L10}, reading_l11 = ${neu.L11}, reading_l12 = ${neu.L12}, reading_l13 = ${neu.L13}, reading_l15 = ${neu.L15}, reading_l16 = ${neu.L16} WHERE id = ${stwegId}`;
 
 		for (const lesart of LESARTEN) {
 			const k = lesart.kennung;

@@ -1013,6 +1013,16 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			? await warVersammlungZeitweiseBeschlussfaehig(op, params.id)
 			: true;
 	const nieBeschlussfaehig = !zeitweiseBeschlussfaehig;
+	// L16 (Migration 194): «zweite» nur, wo die Wahl greift, also wenn die
+	// Beschlussfähigkeit jetzt fehlt (`zweiteNachLesart`, Fachprüfung F-1).
+	const vertagung =
+		versammlung.stufe === 'erste' &&
+		versammlung.zustand === 'laufend' &&
+		zeitweiseBeschlussfaehig &&
+		beschlussfaehigkeit !== null &&
+		!beschlussfaehigkeit.beschlussfaehig
+			? (await holeLesarten(op, { meetingId: params.id })).L16
+			: 'neue_erste';
 
 	/*
 	 * **L7, der Satz vor dem Eröffnen** (Migration 183), nur wo die
@@ -1070,6 +1080,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		nutzniessungen,
 		// Für den Ausklapper «Vertagen»: eine neue erste statt einer zweiten (C3, F4c).
 		zeitweiseBeschlussfaehig,
+		vertagung,
 		// Die Maske des Beschlusses von Hand, oder ihr Absagesatz, oder nichts.
 		vonHand,
 		/**
@@ -2253,7 +2264,7 @@ export const actions: Actions = {
 				grund: text(daten.get('grund'))
 			});
 			await verkuendeStand(locals.benutzer.operatorId, params.id);
-			return { hinweis: vertagtMeldung(e.folge, e.folgestufe, datumLang(e.folge.datum)) };
+			return { hinweis: vertagtMeldung(e.folge, e.folgestufe, datumLang(e.folge.datum), e.nachLesart) };
 		} catch (fehler) {
 			return fachlich(fehler);
 		}

@@ -25,6 +25,7 @@
 // hielte den Nachbarn im selben Kern für Aussenwelt (AD-1, gemessen 22.09.2026).
 import { zeichenzahl } from './zeichenzahl';
 import { anwendungInWorten } from './version';
+import { L16_SIEGELZEILE } from './lesarten';
 
 export interface Manifesteintrag {
 	/** Pfad im Paket, mit Schrägstrichen. */
@@ -46,6 +47,11 @@ export interface Manifest {
 		ort: string;
 		art: string;
 		stufe: string;
+		/**
+		 * Nur an einer zweiten nach L16 (Migration 194). Fehlt sonst, damit
+		 * Manifeste ohne diese Lage Byte für Byte gleich bleiben.
+		 */
+		stufeNachLesart?: true;
 		geschlossenAm: string | null;
 	};
 	versiegeltAm: string;
@@ -208,6 +214,7 @@ export function manifestInWorten(m: Manifest, siegel: string): string {
 	z.push(`Gemeinschaft:   ${m.gemeinschaft}`);
 	z.push(`Versammlung:    ${m.versammlung.datum}, ${m.versammlung.uhrzeit} Uhr, ${m.versammlung.ort}`);
 	z.push(`Art:            ${m.versammlung.art}, ${m.versammlung.stufe} Versammlung`);
+	if (m.versammlung.stufeNachLesart) z.push(`                ${L16_SIEGELZEILE}`);
 	if (m.versammlung.geschlossenAm) z.push(`Geschlossen am: ${m.versammlung.geschlossenAm}`);
 	z.push(`Versiegelt am:  ${m.versiegeltAm} durch ${m.versiegeltDurch}`);
 	z.push(`Zeitquelle:     ${m.zeitquelle}`);

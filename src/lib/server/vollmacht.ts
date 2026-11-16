@@ -19,17 +19,19 @@ import { abgeschlossen, type Versammlungszustand } from '$lib/domain/versammlung
 import { FachlicherFehler } from '$lib/domain/gemeinschaft';
 import { VERWALTUNG_KENNZEICHNUNG_GESPERRT } from '$lib/domain/mehrhinweise';
 import { EREIGNISARTEN, ereignis } from '$lib/domain/verlauf';
+import { holeLesartenIn } from './lesarten';
 import {
 	bestimmeVertretungsgrund,
 	brauchtNachweis,
-	GRUNDFRAGE,
 	MITBERECHTIGUNGEN,
 	pruefeEingabe,
 	verlangeEinGrundEinePartei,
 	verlangeBeendbar,
 	verlangeBestaetigbar,
 	verlangeGrund,
+	vollmachtsgrenzeSatz,
 	vollmachtsschluessel,
+	zaehltZurHoechstzahl,
 	type GepruefteEingabe,
 	type Mitberechtigung,
 	type Vertretungsgrund,
@@ -573,8 +575,13 @@ async function verlangeVollmachtsgrenze(
 	 * gesetzliche Vertreter und Mitberechtigte von der Höchstzahl aus. Ohne
 	 * diese Zeile wiese die Sperre eine rechtlich einwandfreie Vertretung ab,
 	 * und es gäbe keinen Weg daran vorbei.
+	 *
+	 * **L15** (Migration 194): Unter «mitzaehlen» zählt die Stimmführung als
+	 * Mitberechtigte doch mit, ab der Freigabe nach der Momentaufnahme. Dieselbe
+	 * Regel wie `zaehltZurHoechstzahl` und die Abfrage über den Bestand unten.
 	 */
-	if (geprueft.vertretungsgrund) return;
+	const stimmfuehrung = (await holeLesartenIn(tx, { meetingId })).L15;
+	if (!zaehltZurHoechstzahl({ vertretungsgrund: geprueft.vertretungsgrund ?? null }, stimmfuehrung)) return;
 
 	const [grenze] = await tx<{ proxy_limit: number | null; proxy_limit_rule_source: string | null }[]>`
 		SELECT g.proxy_limit, g.proxy_limit_rule_source
@@ -611,35 +618,36 @@ async function verlangeVollmachtsgrenze(
 	 */
 	await tx`SELECT id FROM meeting WHERE id = ${meetingId} FOR UPDATE`;
 
-	const bestand = await tx<{ name: string | null }[]>`
-		SELECT coalesce(h.display_name, p.holder_name) AS name
+	const bestand = await tx<{ name: string | null; grund: string | null }[]>`
+		SELECT coalesce(h.display_name, p.holder_name) AS name, p.representation_basis AS grund
 		FROM proxy p LEFT JOIN snapshot_party h ON h.id = p.holder_id
 		WHERE p.meeting_id = ${meetingId}
 		  AND p.state IN ('erfasst', 'bestaetigt')
 		  -- Ä-28, dieselbe Ausnahme wie oben: Was von Gesetzes wegen vertritt,
-		  -- zählt auch im Bestand nicht zur Höchstzahl.
-		  AND p.representation_basis IS NULL
+		  -- zählt auch im Bestand nicht zur Höchstzahl; die Stimmführung als
+		  -- Mitberechtigte nur nach L15 «mitzaehlen» (Migration 194).
+		  AND (p.representation_basis IS NULL
+		       OR (${stimmfuehrung === 'mitzaehlen'} AND p.representation_basis = 'mitberechtigt'))
 	`;
-	const waere =
-		bestand.filter((b) => b.name && vollmachtsschluessel(b.name) === schluessel).length + 1;
+	const gezaehlt = bestand.filter((b) => b.name && vollmachtsschluessel(b.name) === schluessel);
+	const waere = gezaehlt.length + 1;
 	if (waere <= grenze.proxy_limit) return;
 
-	const quelle = grenze.proxy_limit_rule_source ? ` (${grenze.proxy_limit_rule_source})` : '';
 	throw new FachlicherFehler(
 		'vollmachtsgrenze',
-		geprueft.herkunft === 'zugang'
-			? 'Diese Person hat die Zahl von Vollmachten erreicht, die Ihr Reglement zulässt' +
-				`${quelle}. Lassen Sie sich von jemand anderem vertreten.`
-			: `Diese Vollmacht wäre die ${waere}. für ${name}; das Reglement lässt ` +
-				`${grenze.proxy_limit} zu${quelle}. Lassen Sie die weiteren Einheiten von einer ` +
-				'anderen Person vertreten. Wird die Grenze überschritten, zählt die Stimme ' +
-				'trotzdem mit, und der Beschluss wäre angreifbar. ' +
-				// **Der zweite Ausweg gehört genannt** (Code-Review vom 24.09.2026, B2).
-				// Seit Ä-28 steht er auf demselben Formular zwei Zeilen über der
-				// Meldung. Wer eine einwandfreie Organvertretung erfasst und den Grund
-				// zu wählen vergisst, wurde vorher in die falsche Richtung geschickt.
-				'Handelt die Person nicht kraft Vollmacht? Dann wählen Sie den Grund bei ' +
-				`«${GRUNDFRAGE}». Solche Vertretungen zählen nicht mit.`,
+		vollmachtsgrenzeSatz({
+			herkunft: geprueft.herkunft === 'zugang' ? 'zugang' : 'leitung',
+			waere,
+			name,
+			hoechstzahl: grenze.proxy_limit,
+			fundstelle: grenze.proxy_limit_rule_source,
+			// Wer eine einwandfreie Organvertretung erfasst und den Grund zu wählen
+			// vergisst, wurde vor B2 in die falsche Richtung geschickt; der Satz
+			// nennt den Ausweg über den Grund (`vollmachtsgrenzeSatz`).
+			stimmfuehrungGezaehlt:
+				geprueft.vertretungsgrund === 'mitberechtigt' || gezaehlt.some((b) => b.grund === 'mitberechtigt'),
+			stimmfuehrung
+		}),
 		// Das Feld folgt der Eingabeart, wie in `pruefeEingabe`: Wer den Namen
 		// getippt hat, soll die Markierung am Namensfeld bekommen und nicht an
 		// einer Auswahl, die er gar nicht benutzt hat. Heute wertet keine Seite

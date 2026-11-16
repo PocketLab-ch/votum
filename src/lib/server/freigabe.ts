@@ -150,13 +150,15 @@ async function baueMomentaufnahme(
 			reading_l11: Lesartenwahl['L11'];
 			reading_l12: Lesartenwahl['L12'];
 			reading_l13: Lesartenwahl['L13'];
+			reading_l15: Lesartenwahl['L15'];
+			reading_l16: Lesartenwahl['L16'];
 		}[]
 	>`
 		SELECT head_count_mode, parking_counts_as_head, head_count_rule_source, tie_break,
 		       quota_denominator, unannounced_bylaw_allowed, unannounced_bylaw_source,
 		       universal_meeting_mode, universal_meeting_source, universal_chair_proxies_count,
 		       reading_l4, reading_l1, reading_l2, reading_l3, reading_l5, reading_l6, reading_l7, reading_l8,
-		       reading_l9, reading_l10, reading_l11, reading_l12, reading_l13
+		       reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16
 		FROM stweg WHERE id = ${versammlung.stwegId}
 	`;
 	if (!gemeinschaft) {
@@ -294,7 +296,9 @@ async function baueMomentaufnahme(
 			L10: gemeinschaft.reading_l10,
 			L11: gemeinschaft.reading_l11,
 			L12: gemeinschaft.reading_l12,
-			L13: gemeinschaft.reading_l13
+			L13: gemeinschaft.reading_l13,
+			L15: gemeinschaft.reading_l15,
+			L16: gemeinschaft.reading_l16
 		},
 		parties: parteien
 	};
@@ -550,7 +554,7 @@ export async function gibVersammlungFrei(
 			                      total_quota, unannounced_bylaw_allowed, unannounced_bylaw_source,
 			                      universal_meeting_mode, universal_meeting_source,
 			                      universal_chair_proxies_count, reading_l4, reading_l1, reading_l2, reading_l3, reading_l5, reading_l6, reading_l7, reading_l8,
-			                      reading_l9, reading_l10, reading_l11, reading_l12, reading_l13)
+			                      reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16)
 			VALUES (${meetingId}, ${handelnder.operatorId}, ${versammlung.datum},
 			        ${momentaufnahme.headCountMode}, ${momentaufnahme.parkingCountsAsHead},
 			        ${momentaufnahme.headCountRuleSource}, ${momentaufnahme.tieBreak},
@@ -558,7 +562,7 @@ export async function gibVersammlungFrei(
 			        ${ausnahmen.reglementFundstelle}, ${ausnahmen.universalvariante},
 			        ${ausnahmen.universalFundstelle}, ${ausnahmen.leitungsvollmachtenZaehlen},
 			        ${lesarten.L4}, ${lesarten.L1}, ${lesarten.L2}, ${lesarten.L3}, ${lesarten.L5}, ${lesarten.L6}, ${lesarten.L7}, ${lesarten.L8},
-			        ${lesarten.L9}, ${lesarten.L10}, ${lesarten.L11}, ${lesarten.L12}, ${lesarten.L13})
+			        ${lesarten.L9}, ${lesarten.L10}, ${lesarten.L11}, ${lesarten.L12}, ${lesarten.L13}, ${lesarten.L15}, ${lesarten.L16})
 		`;
 
 		/*

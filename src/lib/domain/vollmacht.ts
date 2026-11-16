@@ -32,6 +32,7 @@
  * davon.
  */
 import { FachlicherFehler } from './gemeinschaft';
+import type { Stimmfuehrungswahl } from './lesarten';
 import type { Id, Zeitpunkt } from './types';
 import { zeichenzahl } from './zeichenzahl';
 
@@ -242,12 +243,34 @@ export const GRUNDWAHL: readonly { wert: '' | Vertretungsgrund; text: string }[]
  * **Auch für eine Einzelperson** (C6): Stirbt die Alleineigentümerin, gehört
  * die Einheit den Erben gemeinsam, bevor das Register es weiss.
  */
-export const GRUNDHILFE =
-	'Mitberechtigte, die im Register von Votum stehen, erkennt Votum selbst: Für ihre gemeinsame ' +
-	'Partei zählt Votum die Stimme nicht zur Höchstzahl, und es braucht keinen Nachweis. Ein ' +
-	'Grund gilt nur für eine einzige Partei. «Nicht im Register» geht nur mit Nachweis der ' +
-	'Mitberechtigung: bei Erben die Erbbescheinigung, sonst etwa ein Grundbuchauszug. Das gilt auch für ' +
-	'die Partei einer verstorbenen Alleineigentümerin.';
+export function grundhilfe(stimmfuehrung: Stimmfuehrungswahl = 'ausserhalb'): string {
+	// L15 (Migration 194; Codeprüfung M1): die Höchstzahl nach der Wahl der Gemeinschaft.
+	return (
+		(stimmfuehrung === 'mitzaehlen'
+			? 'Mitberechtigte, die im Register von Votum stehen, erkennt Votum selbst, und es braucht keinen ' +
+				'Nachweis. Ihre Stimme für die gemeinsame Partei zählt nach der Einstellung Ihrer Gemeinschaft zur ' +
+				'Höchstzahl. Ein '
+			: 'Mitberechtigte, die im Register von Votum stehen, erkennt Votum selbst: Für ihre gemeinsame ' +
+				'Partei zählt Votum die Stimme nicht zur Höchstzahl, und es braucht keinen Nachweis. Ein ') +
+		'Grund gilt nur für eine einzige Partei. «Nicht im Register» geht nur mit Nachweis der ' +
+		'Mitberechtigung: bei Erben die Erbbescheinigung, sonst etwa ein Grundbuchauszug. Das gilt auch für ' +
+		'die Partei einer verstorbenen Alleineigentümerin.'
+	);
+}
+
+/**
+ * Der Vermerk an einer Vertretung mit Grund (Seite «Vollmachten»), nach L15
+ * (Codeprüfung M1): Unter «mitzaehlen» zählt die Stimmführung als
+ * Mitberechtigte mit, Organ und gesetzliche Vertretung nicht.
+ */
+export function grundvermerk(
+	v: Pick<Vollmacht, 'vertretungsgrund'>,
+	stimmfuehrung: Stimmfuehrungswahl = 'ausserhalb'
+): string {
+	return zaehltZurHoechstzahl(v, stimmfuehrung)
+		? 'Zählt nach der Einstellung Ihrer Gemeinschaft zur Höchstzahl'
+		: 'Zählt nicht zur Höchstzahl';
+}
 
 /** Die Hilfe beim Einlass einer dritten Person: Sie steht nie im Register. */
 export const GRUNDHILFE_DRITTE =
@@ -275,16 +298,22 @@ const OHNE_NACHWEIS =
 	'oder hinterlegen Sie es als Datei.';
 
 /**
- * Der Hinweis bei der Höchstzahl (Fachprüfung F1 Runde 2, 1.2).
+ * Der Hinweis bei der Höchstzahl (Fachprüfung F1 Runde 2, 1.2), nach der Wahl
+ * zu L15 (Migration 194).
  *
- * **Als Regel der Anwendung, nicht als Rechtslage.** Ob eine reglementarische
- * Höchstzahl die Stimmführung für die eigene gemeinsame Einheit erfasst, ist
- * nicht geklärt (offen für die Anwältin, Frage 1.5 a). Ein Satz «zählt nicht
- * mit» ohne den zweiten Teil gäbe eine offene Frage als gesichert aus.
+ * **Als Einstellung der Gemeinschaft, nicht als Rechtslage.** Ob eine
+ * reglementarische Höchstzahl die Stimmführung für die eigene gemeinsame
+ * Einheit erfasst, ist nicht geklärt (`quellen`, Frage 77). Ein Satz «zählt
+ * nicht mit» ohne den zweiten Teil gäbe eine offene Frage als gesichert aus.
  */
-export const HOECHSTZAHL_MITBERECHTIGTE =
-	'Votum zählt die Stimme einer Mitberechtigten für die eigene gemeinsame Einheit nicht mit; ' +
-	'ob ein Reglement sie einbeziehen darf, ist rechtlich nicht geklärt.';
+export function hoechstzahlMitberechtigte(wahl: Stimmfuehrungswahl): string {
+	return (
+		'Die Stimme einer Mitberechtigten für die eigene gemeinsame Einheit zählt nach der Einstellung Ihrer ' +
+		`Gemeinschaft ${wahl === 'mitzaehlen' ? 'zur' : 'nicht zur'} Höchstzahl. Ob eine Höchstzahl sie erfasst ` +
+		// Fachprüfung F-7: beide offenen Fragen.
+		'und ob ein Reglement sie ausdrücklich einbeziehen darf, ist nicht geklärt.'
+	);
+}
 
 /**
  * Welcher Grund für **diese eine** Vertretung gilt (Produktentscheid
@@ -395,17 +424,24 @@ export function mitberechtigtenhinweis(l: { huelle: string; fuehrt: string | nul
  * **Die Regel steht an drei Stellen, und das ist bewusst hingenommen**
  * (Code-Review vom 24.09.2026, B8). Hier für die Warnung, in
  * `verlangeVollmachtsgrenze` als frühes `return` für die neu erfasste Zeile,
- * und ein drittes Mal als `representation_basis IS NULL` in der Abfrage über
+ * und ein drittes Mal in der Abfrage über
  * den Bestand. Die dritte lässt sich nicht hierher holen: Sie filtert in der
  * Datenbank, und alle Zeilen zu laden, um sie danach zu verwerfen, wäre eine
  * Rechnung mehr für dieselbe Antwort.
  *
- * Wer die Ausnahme je einschränkt — etwa, dass `mitberechtigt` doch mitzählt —
- * ändert drei Stellen, und die dritte sucht niemand im Kern. Deshalb steht sie
- * hier genannt.
+ * Wer die Ausnahme je einschränkt, ändert drei Stellen, und die dritte sucht
+ * niemand im Kern. Deshalb steht sie hier genannt.
+ *
+ * **L15 schränkt sie ein** (Migration 194, Entscheid 0054 Punkte 2 und 6):
+ * Unter «mitzaehlen» zählt die Stimmführung als Mitberechtigte mit, Organ und
+ * gesetzliche Vertretung bleiben ausserhalb. Die beiden anderen Stellen lesen
+ * dieselbe Wahl (`verlangeVollmachtsgrenze` in `server/vollmacht.ts`).
  */
-export function zaehltZurHoechstzahl(v: Pick<Vollmacht, 'vertretungsgrund'>): boolean {
-	return !v.vertretungsgrund;
+export function zaehltZurHoechstzahl(
+	v: Pick<Vollmacht, 'vertretungsgrund'>,
+	stimmfuehrung: Stimmfuehrungswahl = 'ausserhalb'
+): boolean {
+	return !v.vertretungsgrund || (v.vertretungsgrund === 'mitberechtigt' && stimmfuehrung === 'mitzaehlen');
 }
 
 /** Überträgt diese Vollmacht die Ausübung? Genau ein Zustand tut das. */
@@ -764,6 +800,11 @@ export const SELBST_ERSCHIENEN =
 export interface Vollmachtsschranke {
 	hoechstzahl: number | null;
 	fundstelle: string | null;
+	/**
+	 * Die Wahl zu L15 (Migration 194). Ohne Angabe die Vorgabe: Die
+	 * Stimmführung als Mitberechtigte zählt nicht mit.
+	 */
+	stimmfuehrung?: Stimmfuehrungswahl;
 }
 
 /**
@@ -892,6 +933,64 @@ export function istVertreterkennung(kennung: string): boolean {
 	return kennung.startsWith(VERTRETERKENNUNG_VORSATZ);
 }
 
+/**
+ * Die Absage, wenn eine Vollmacht die Höchstzahl überschritte
+ * (`verlangeVollmachtsgrenze` in `server/vollmacht.ts`). Im Kern, damit beide
+ * Fassungen und der Zusatz zu L15 ohne Datenbank prüfbar sind.
+ *
+ * **Der Grund steht dabei, wo L15 ihn liefert** (Migration 194, Akzeptanz-
+ * kriterium 4 des Auftrags): Zählt unter «mitzaehlen» eine Stimmführung als
+ * Mitberechtigte mit, sagt der Satz das, sonst sucht die Leitung eine
+ * Vollmacht, die sie nicht findet. Der Ausweg über den Grund nennt dann nur
+ * noch Organ und gesetzliche Vertretung.
+ */
+export function vollmachtsgrenzeSatz(l: {
+	herkunft: 'zugang' | 'leitung';
+	waere: number;
+	name: string;
+	hoechstzahl: number;
+	fundstelle: string | null;
+	/** Ob unter den gezählten, die neue eingeschlossen, eine Stimmführung als Mitberechtigte ist (L15). */
+	stimmfuehrungGezaehlt: boolean;
+	/**
+	 * Die Wahl zu L15. Unter «mitzaehlen» nennt der Ausweg nur Organ und
+	 * gesetzliche Vertretung, auch ohne gezählte Stimmführung (Codeprüfung
+	 * Durchgang 2, N1): Der Grund «mitberechtigt» hülfe dort nicht.
+	 */
+	stimmfuehrung?: Stimmfuehrungswahl;
+}): string {
+	const quelle = l.fundstelle ? ` (${l.fundstelle})` : '';
+	if (l.herkunft === 'zugang') {
+		return (
+			`Diese Person hat die Zahl von Vollmachten erreicht, die Ihr Reglement zulässt${quelle}. ` +
+			(l.stimmfuehrungGezaehlt
+				? // Laienprüfung L-5: in Worten des Eigentümers.
+					'Dazu zählt nach der Einstellung Ihrer Gemeinschaft auch ihre Stimme für eine Einheit, die ihr mit ' +
+					'anderen zusammen gehört. '
+				: '') +
+			'Lassen Sie sich von jemand anderem vertreten.'
+		);
+	}
+	return (
+		`Diese Vollmacht wäre die ${l.waere}. für ${l.name}; das Reglement lässt ${l.hoechstzahl} zu${quelle}. ` +
+		(l.stimmfuehrungGezaehlt
+			? 'Nach der Einstellung Ihrer Gemeinschaft zählt dabei die Stimme mit, die die Person als ' +
+				'Mitberechtigte für eine eigene gemeinsame Einheit führt. '
+			: '') +
+		'Lassen Sie die weiteren Einheiten von einer anderen Person vertreten. Wird die Grenze überschritten, ' +
+		'zählt die Stimme trotzdem mit, und der Beschluss wäre angreifbar. ' +
+		// **Der zweite Ausweg gehört genannt** (Code-Review vom 24.09.2026, B2).
+		// Seit Ä-28 steht er auf demselben Formular zwei Zeilen über der Meldung.
+		(l.stimmfuehrungGezaehlt || l.stimmfuehrung === 'mitzaehlen'
+			? `Handelt die Person als Organ oder von Gesetzes wegen? Dann wählen Sie den Grund bei «${GRUNDFRAGE}». ` +
+				// Laienprüfung L-6: das Feld nennt auch die Mitberechtigte.
+				'Diese Vertretungen zählen nicht mit; die Stimme als Mitberechtigte zählt nach der Einstellung Ihrer ' +
+				'Gemeinschaft mit.'
+			: `Handelt die Person nicht kraft Vollmacht? Dann wählen Sie den Grund bei «${GRUNDFRAGE}». ` +
+				'Solche Vertretungen zählen nicht mit.')
+	);
+}
+
 export interface Ueberschreitung {
 	bevollmaechtigt: string;
 	anzahl: number;
@@ -940,10 +1039,11 @@ export function ueberschreitungen(
 	const jeBevollmaechtigt = new Map<string, { anzahl: number; anzeige: string }>();
 	for (const v of vollmachten) {
 		if (v.zustand !== 'erfasst' && v.zustand !== 'bestaetigt') continue;
-		// **Ä-28**: Organvertreter, gesetzliche Vertreter und Mitberechtigte
-		// zählen nicht zur Höchstzahl. Die Warnung muss hier dasselbe tun wie
-		// die Sperre, sonst meldet sie eine Überschreitung, die keine ist.
-		if (!zaehltZurHoechstzahl(v)) continue;
+		// **Ä-28**: Organvertreter, gesetzliche Vertreter und, nach L15,
+		// Mitberechtigte zählen nicht zur Höchstzahl. Die Warnung muss hier
+		// dasselbe tun wie die Sperre, sonst meldet sie eine Überschreitung, die
+		// keine ist.
+		if (!zaehltZurHoechstzahl(v, schranke.stimmfuehrung)) continue;
 		const anzeige = v.bevollmaechtigtId ? (namen.get(v.bevollmaechtigtId) ?? v.bevollmaechtigtId) : (v.bevollmaechtigtName ?? '');
 		if (!anzeige) continue;
 		const schluessel = vollmachtsschluessel(anzeige);

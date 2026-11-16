@@ -1360,6 +1360,8 @@ export const ANGABEN_WOERTER: Record<string, string> = {
 	strasse: 'Strasse',
 	stufe: 'Stufe',
 	folgestufe: 'Stufe der Folgeversammlung',
+	// L16 (Migration 194): ein Wahrheitswert, steht als «ja» (`wertInWorten`).
+	nachLesart: 'Zweite nach der Einstellung L16 (die vertagte war schon beschlussfähig)',
 	stweg: 'Gemeinschaft',
 	tag: 'Abend',
 	tage: 'Tage',

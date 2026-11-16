@@ -1,6 +1,6 @@
 # 0040: Vertagen nach erreichter Beschlussfähigkeit ergibt eine neue erste Versammlung (C3)
 
-- **Status:** gilt
+- **Status:** gilt, als Vorgabe der Lesart L16 (Entscheid 0054, Punkte 3 und 7)
 - **Datum:** 2026-11-04
 - **Rolle:** Produktentscheid
 

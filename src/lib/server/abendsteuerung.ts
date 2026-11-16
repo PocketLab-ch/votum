@@ -99,6 +99,8 @@ export interface Hausvertagung {
 	 * Abend schon beschlussfähig war (C3, F4c; `folgestufeNachVertagung`).
 	 */
 	folgestufe: Versammlungsstufe;
+	/** Die zweite nur nach L16: Das Haus war schon beschlussfähig (Migration 194). */
+	nachLesart?: boolean;
 }
 
 /** Ein Sammelergebnis fürs Vertagen — mit dem gemeinsamen Folgetermin. */
@@ -789,7 +791,8 @@ export async function vertageAmAbend(
 				gemeinschaft: h.name,
 				versammlungId: h.versammlungId,
 				folgeId: e.folge.id,
-				folgestufe: e.folgestufe
+				folgestufe: e.folgestufe,
+				...(e.nachLesart ? { nachLesart: true } : {})
 			});
 		} catch (fehler) {
 			if (fehler instanceof FachlicherFehler) {

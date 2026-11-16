@@ -153,7 +153,7 @@ describe('Fassung 2026-10-24 gegenüber 2026-10-23', () => {
 			const getauscht = { ...NEU, knoten: NEU.knoten.map((k) => knotenNachLesart(NEU, k, wahlen)) };
 			expect(pruefeRegelwerk(getauscht), w.wert).toEqual([]);
 		}
-		const qualifiziert = knotenNachLesart(NEU, NEU.knoten.find((k) => k.id === WAEHLEN_ERWEITERT_ID)!, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende' });
+		const qualifiziert = knotenNachLesart(NEU, NEU.knoten.find((k) => k.id === WAEHLEN_ERWEITERT_ID)!, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
 		expect(ergebniskarte(NEU, qualifiziert).wortlautHinweis).toBe(NEU.wortlautErklaerung);
 	});
 

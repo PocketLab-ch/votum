@@ -1307,6 +1307,7 @@ async function versiegleUnterSperre(
 			ort: versammlung!.ort,
 			art: versammlung!.art,
 			stufe: versammlung!.stufe,
+			...(versammlung!.stufeNachLesart ? { stufeNachLesart: true as const } : {}),
 			geschlossenAm: versammlung!.geschlossenAm ?? null
 		},
 		versiegeltAm: jetzt,

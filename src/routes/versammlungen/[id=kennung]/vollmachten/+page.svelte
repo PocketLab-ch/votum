@@ -3,9 +3,10 @@
 	import {
 		brauchtNachweis,
 		GRUNDFRAGE,
-		GRUNDHILFE,
+		grundhilfe,
+		grundvermerk,
 		GRUNDWAHL,
-		HOECHSTZAHL_MITBERECHTIGTE,
+		hoechstzahlMitberechtigte,
 		istBestaetigbar,
 		nachweisFehlt,
 		vertretungsgrundInWorten
@@ -122,12 +123,13 @@
 		{/if}
 	</p>
 	<!--
-		**Regel der Anwendung, nicht Rechtslage** (Fachprüfung F1 Runde 2, 1.2).
+		**Einstellung der Gemeinschaft, nicht Rechtslage** (Fachprüfung F1 Runde 2,
+		1.2; Lesart L15, Migration 194).
 		Steht nur, wo eine Höchstzahl hinterlegt ist: Ohne sie gibt es nichts,
 		wovon die Stimmführung ausgenommen wäre.
 	-->
 	{#if data.schranke.hoechstzahl}
-		<p class="klein">{HOECHSTZAHL_MITBERECHTIGTE}</p>
+		<p class="klein">{hoechstzahlMitberechtigte(data.schranke.stimmfuehrung)}</p>
 	{/if}
 
 	<!--
@@ -183,7 +185,7 @@
 				-->
 				{#if p.vertretungsgrund}
 					<p class="grundvermerk">
-						Zählt nicht zur Höchstzahl: {vertretungsgrundInWorten(p)}
+						{grundvermerk(p, data.schranke.stimmfuehrung)}: {vertretungsgrundInWorten(p)}
 					</p>
 				{/if}
 				{#if p.bemerkung}<p class="bemerkung">{p.bemerkung}</p>{/if}
@@ -365,7 +367,7 @@
 				-->
 				{#if p.vertretungsgrund}
 					<p class="grundvermerk">
-						Zählt nicht zur Höchstzahl: {vertretungsgrundInWorten(p)}
+						{grundvermerk(p, data.schranke.stimmfuehrung)}: {vertretungsgrundInWorten(p)}
 					</p>
 				{/if}
 				<p class="klein">
@@ -556,7 +558,8 @@
 			<!--
 				**Der Grund der Vertretung** (Ä-28 der Zweitprüfung vom 17.09.2026).
 				Organvertreter juristischer Personen, gesetzliche Vertreter und
-				Mitberechtigte zählen nicht zur Höchstzahl des Reglements. Ohne dieses
+				Mitberechtigte zählen nicht zur Höchstzahl des Reglements; Mitberechtigte
+				doch, wenn die Gemeinschaft bei L15 «Zählt mit» gewählt hat. Ohne dieses
 				Feld wiese die Sperre sie ab, und zwar ohne Weg daran vorbei.
 
 				**Drei feste Werte, kein Freitext.** Der Befund R-2b hat am 23.09.2026
@@ -592,11 +595,13 @@
 				<p class="hilfe">
 					Nur ändern, wenn die Person nicht kraft gewöhnlicher Vollmacht handelt: als Organ
 					einer Firma, als gesetzliche Vertretung oder als Mitberechtigte, die im Register
-					fehlt. Votum zählt solche Vertretungen nicht zur Höchstzahl des Reglements. Gesichert
+					fehlt. Votum zählt solche Vertretungen nicht zur Höchstzahl des Reglements{#if data.schranke.stimmfuehrung === 'mitzaehlen'},
+					ausser die Stimme als Mitberechtigte: Sie zählt nach der Einstellung Ihrer Gemeinschaft
+					mit{/if}. Gesichert
 					ist das nur beim Organ; bei gesetzlicher Vertretung und Mitberechtigten ist es
 					rechtlich nicht geklärt. Der Grund steht danach im Protokoll.
 				</p>
-				<p class="hilfe">{GRUNDHILFE}</p>
+				<p class="hilfe">{grundhilfe(data.schranke.stimmfuehrung)}</p>
 			</div>
 
 			<div class="feld">
