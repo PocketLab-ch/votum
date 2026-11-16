@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import ThemeSchalter from '$lib/components/ThemeSchalter.svelte';
 	import { istAuffaellig } from '$lib/domain/betrieb';
+	import { istOffenerPfad } from '$lib/domain/oeffentlich';
 	import { handbuchZiel } from '$lib/handbuch';
 	import { deutschePflichtfelder } from '$lib/pflichtfelder';
 
@@ -91,6 +92,23 @@
 
 	const saalsicht = $derived(
 		page.route.id === '/p' || page.route.id?.endsWith('/praesentation') === true
+	);
+
+	/**
+	 * **Der Weg zum Quellcode steht dort, wo die Verwaltung arbeitet**
+	 * (Produktentscheid 16.11.2026: Fusszeile für Verwaltung und Sitzungsleitung,
+	 * dazu die Anmeldeseite).
+	 *
+	 * Nicht in der Saalsicht und nicht auf den übrigen offenen Pfaden (`/z`,
+	 * `/e`, `/b`): Dort stehen die Eigentümer, am Telefon oder vor der
+	 * Leinwand, und jede Zeile mehr lenkt von der einen Handlung ab, für die
+	 * sie gekommen sind. Die Anmeldeseite ist offen und trotzdem dabei, weil
+	 * sie die Tür der Verwaltung ist.
+	 */
+	const zeigeQuellcode = $derived(
+		!saalsicht &&
+			(page.url.pathname === '/anmelden' ||
+				(!!data.benutzer && !istOffenerPfad(page.url.pathname)))
 	);
 
 	/**
@@ -235,6 +253,19 @@
 	<main>
 		{@render children()}
 	</main>
+
+	{#if zeigeQuellcode}
+		<!--
+			Ein neues Fenster, damit eine laufende Sitzung nicht hinter dem
+			Quellcode verschwindet; `noopener`, weil die Seite nicht unsere ist.
+		-->
+		<footer class="quellcode">
+			Votum ist freie Software (AGPLv3) ·
+			<a href="https://codeberg.org/PocketLab/votum" target="_blank" rel="noopener noreferrer">
+				Quellcode<span class="nurLeser"> (öffnet sich in einem neuen Fenster)</span>
+			</a>
+		</footer>
+	{/if}
 
 	<!--
 		**Die Quittungen sammeln sich unten rechts** (21.08.2026). Einmal im
@@ -482,5 +513,18 @@
 	/* Ohne Kopf gibt es auch nichts abzusetzen: Die Anzeige beginnt am Rand. */
 	.rahmen.saal :global(main) {
 		padding: 0;
+	}
+
+	/* Leise und am Schluss: ein Angebot, kein Weg der Arbeit. */
+	.quellcode {
+		padding: 0.75rem var(--rand);
+		border-top: 1px solid var(--linie);
+		color: var(--text-leise);
+		font-size: 0.85rem;
+		text-align: center;
+	}
+
+	.quellcode a {
+		color: inherit;
 	}
 </style>

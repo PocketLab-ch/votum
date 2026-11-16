@@ -902,6 +902,40 @@ async function main() {
 			await behaupteText(leitung, 'Migrationen ausgeführt', 'Keine Migrationsangabe im Ausklapper');
 		});
 
+		await schritt('Der Quellcode ist verlinkt, wo die Verwaltung arbeitet', async () => {
+			/*
+			 * **Produktentscheid 16.11.2026:** Fusszeile für Verwaltung und
+			 * Sitzungsleitung samt Anmeldeseite, nicht bei den Eigentümern
+			 * (`/z`) und nicht in der Saalsicht (`/p`). Beide Richtungen werden
+			 * gemessen: Ein Link, der überall erscheint, wäre hier ebenso rot
+			 * wie einer, der fehlt.
+			 *
+			 * **`/z` und `/p` mit dem Keks der Leitung.** Ohne Anmeldung fehlt
+			 * der Link dort ohnehin; geschützt wird der Fall, dass eine
+			 * angemeldete Leitung die Seite der Eigentümer öffnet. Nur so wird
+			 * der Schritt rot, wenn die Ausnahme der offenen Pfade fällt
+			 * (Codeprüfung 16.11.2026). Die Anmeldeseite dagegen ohne Keks: Mit
+			 * ihm leitet sie sofort weiter.
+			 */
+			const ziel = 'https://codeberg.org/PocketLab/votum';
+			const link = leitung.locator(`footer a[href="${ziel}"]`);
+			behaupte(await link.count(), 'Auf der Übersicht fehlt der Link zum Quellcode');
+
+			const anmelden = await (
+				await leitung.request.get(`${ZIEL}/anmelden`, { headers: { cookie: '' } })
+			).text();
+			behaupte(anmelden.includes(`href="${ziel}"`), 'Auf der Anmeldeseite fehlt der Link zum Quellcode');
+			for (const pfad of ['/z', '/p']) {
+				const antwort = await leitung.request.get(`${ZIEL}${pfad}`, { maxRedirects: 0 });
+				behaupte(antwort.status() === 200, `${pfad} antwortet angemeldet mit ${antwort.status()}`);
+				behaupte(
+					!(await antwort.text()).includes(ziel),
+					`${pfad} zeigt der angemeldeten Leitung den Link zum Quellcode`
+				);
+			}
+			return 'Übersicht und Anmeldung ja, /z und /p nein';
+		});
+
 		await schritt('Die Startseite führt in die Arbeit zurück', async () => {
 			/*
 			 * **Auftraggeber, 25.08.2026**: «Dashboard besser strukturieren. Bspw.
