@@ -4,7 +4,7 @@
  * **Eine Kennung, die es schon gab.** `scripts/abbild-bauen.sh` bildet ihn aus
  * Datum, Uhrzeit und Commit (`20261116-0854-854363d4`) und reicht ihn als
  * `VOTUM_VERSION` ins Abbild. Derselbe Name steht am Betrieb, im
- * Abschlusspaket und als Tag des Stands auf Codeberg, damit man ihn wörtlich
+ * Abschlusspaket und als Tag des Stands auf GitHub, damit man ihn wörtlich
  * suchen kann. `package.json` trägt keine Version, die gelesen wird.
  *
  * Rein: hinein geht der Wert der Umgebung, heraus die Version oder `null`.

@@ -118,12 +118,12 @@ Abbild und bricht ab, wenn er dort nicht ankommt. Die Anwendung zeigt ihn unten
 auf der Anmeldeseite und auf jeder Seite der Verwaltung als
 «Version 20261116-0854-854363d4», und jedes Abschlusspaket nennt ihn in
 `MANIFEST.txt` unter «Anwendung». So lässt sich belegen, mit welchem Stand eine
-Versammlung gezählt wurde; der Stand auf Codeberg trägt denselben Namen als Tag.
+Versammlung gezählt wurde; der Stand auf GitHub trägt denselben Namen als Tag.
 
 Ohne das Skript gebaut, auch von Hand mit `docker build`, fehlt die Version:
 Die Fusszeile zeigt dann «Entwicklungsstand», und das Abschlusspaket sagt
 «ohne Versionsangabe». Ein Tag mit «-lokal» stammt aus einem veränderten
-Arbeitsverzeichnis und hat keinen Stand auf Codeberg; damit lässt sich nicht
+Arbeitsverzeichnis und hat keinen Stand auf GitHub; damit lässt sich nicht
 belegen, welcher Code gezählt hat.
 
 Zurück auf eine frühere Fassung: `VERSAMMLUNG_TAG` auf den alten Tag zeigen

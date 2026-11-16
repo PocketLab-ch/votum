@@ -43,15 +43,26 @@ Die Version steht unten auf der Anmeldeseite und auf jeder Seite der
 Verwaltung (nicht auf den Seiten zum Abstimmen und nicht auf der Anzeige im
 Saal) und in jedem Abschlusspaket, etwa «Version 20261116-0854-854363d4». Nennen Sie sie, wenn Sie einen Fehler melden oder
 nachfragen, wie eine Versammlung gezählt wurde. Den Quellcode genau dieser
-Version finden Sie auf Codeberg in der
-[Liste der Tags](https://codeberg.org/PocketLab/votum/tags) unter demselben
+Version finden Sie auf GitHub in der
+[Liste der Tags](https://github.com/PocketLab-ch/votum/tags) unter demselben
 Namen.
 
-Der Quellcode liegt öffentlich auf <https://codeberg.org/PocketLab/votum>, als
-Spiegel: Entwickelt wird an anderer Stelle, und der Spiegel nimmt keine Pull
-Requests an. Fehler und Fragen können Sie dort als Issue melden, also als
-öffentlichen Eintrag; dafür braucht es ein Konto bei Codeberg. Schreiben Sie
-keine Namen oder Daten Ihrer Gemeinschaft hinein.
+Der Quellcode liegt öffentlich auf <https://github.com/PocketLab-ch/votum>, als
+Spiegel: Entwickelt wird an anderer Stelle, gelesen wird, was hier eingeht.
+Fragen zu Ihrer eigenen Versammlung richten Sie an Ihre Verwaltung oder an die
+Sitzungsleitung, im Zweifel zuerst dorthin. Fehler in Votum melden Sie als
+Issue, Fragen zu Votum in den Discussions; dafür braucht es ein Konto bei
+GitHub. Beides ist öffentlich: Schreiben Sie keine Namen oder Daten Ihrer
+Gemeinschaft hinein.
+
+Pull Requests sind willkommen; eine grössere Änderung besprechen Sie am besten
+vorher in den Discussions. Wir führen Pull Requests nicht auf GitHub zusammen.
+Nehmen wir einen Beitrag an, übernehmen wir ihn von Hand, und er erscheint mit
+dem nächsten Stand. Im Pull Request vermerken wir, mit welchem Stand, und
+schliessen ihn dann. Einen Beitrag, den wir nicht übernehmen, schliessen wir mit
+einer kurzen Begründung. Der öffentliche Stand nennt keine einzelnen Autorinnen
+und Autoren.
+
 Sicherheitslücken melden Sie nicht als Issue, sondern wie in
 [`SECURITY.md`](SECURITY.md) beschrieben.
 

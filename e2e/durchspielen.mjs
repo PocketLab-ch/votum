@@ -917,7 +917,7 @@ async function main() {
 			 * (Codeprüfung 16.11.2026). Die Anmeldeseite dagegen ohne Keks: Mit
 			 * ihm leitet sie sofort weiter.
 			 */
-			const ziel = 'https://codeberg.org/PocketLab/votum';
+			const ziel = 'https://github.com/PocketLab-ch/votum';
 			const link = leitung.locator(`footer a[href="${ziel}"]`);
 			behaupte(await link.count(), 'Auf der Übersicht fehlt der Link zum Quellcode');
 			// Entscheid 0053: daneben die Version, der Abbild-Tag, oder ohne Tag «Entwicklungsstand».

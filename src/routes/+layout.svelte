@@ -258,7 +258,7 @@
 	{#if zeigeQuellcode}
 		<!--
 			Die Version ist der Abbild-Tag (Entscheid 0053), gleich lautend wie am
-			Betrieb, im Abschlusspaket und als Tag auf Codeberg; ohne Tag
+			Betrieb, im Abschlusspaket und als Tag auf GitHub; ohne Tag
 			«Entwicklungsstand». Der Quellcode öffnet sich in einem neuen Fenster,
 			damit eine laufende Sitzung nicht dahinter verschwindet; `noopener`,
 			weil die Seite nicht unsere ist.
@@ -266,7 +266,7 @@
 		<footer class="quellcode">
 			Votum ist freie Software (AGPLv3) ·
 			<span class="version">{versionInWorten(data.version ?? null)}</span> ·
-			<a href="https://codeberg.org/PocketLab/votum" target="_blank" rel="noopener noreferrer">
+			<a href="https://github.com/PocketLab-ch/votum" target="_blank" rel="noopener noreferrer">
 				Quellcode<span class="nurLeser"> (öffnet sich in einem neuen Fenster)</span>
 			</a>
 		</footer>

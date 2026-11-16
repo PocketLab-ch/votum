@@ -28,6 +28,7 @@ einmal über das Formular, statt ein Issue zu eröffnen.
 
 Danke, dass Sie die Lücke melden.
 
-Fehler und Fragen, die keine Sicherheitslücke sind, können Sie gern als Issue
-melden. Pull Requests nimmt dieses Repo nicht an: Es ist ein Spiegel, entwickelt
-wird an anderer Stelle.
+Fehler, die keine Sicherheitslücke sind, können Sie gern als Issue melden, Fragen
+in den Discussions. Beides ist öffentlich: Schreiben Sie keine Namen oder Daten
+Ihrer Gemeinschaft hinein. Pull Requests sind willkommen; wie wir sie übernehmen,
+steht im [README](README.md).

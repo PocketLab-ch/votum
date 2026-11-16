@@ -86,7 +86,7 @@ fi
 # **Die Version muss im Abbild stehen** (Codeprüfung 16.11.2026, Entscheid 0053):
 # Fehlte das Build-Arg, zeigte der Betrieb «Entwicklungsstand», und jedes
 # Abschlusspaket trüge für immer «ohne Versionsangabe». Kein Prüflauf sähe es,
-# denn der gebaute Stand auf pDev läuft ohne die Variable.
+# denn der gebaute Stand auf dem Entwicklungssystem läuft ohne die Variable.
 im_abbild="$(docker run --rm --entrypoint printenv "versammlung:${tag}" VOTUM_VERSION || true)"
 if [[ "$im_abbild" != "$tag" ]]; then
 	echo "Abbruch: Im Abbild versammlung:${tag} steht VOTUM_VERSION=«${im_abbild}» statt «${tag}»." >&2

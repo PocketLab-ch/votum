@@ -1,5 +1,5 @@
 # Ausschlüsse für jeden öffentlichen Stand (git archive), auch den Spiegel auf
-# Codeberg (docs/veroeffentlichung-personendaten.md).
+# GitHub (Entscheid 0055, docs/veroeffentlichung-personendaten.md).
 #
 # ACHTUNG: Diese Liste bewusst kurz halten. Wer hier Quellcode ausschliesst,
 # verletzt die Lizenz. Im Zweifel drin lassen.

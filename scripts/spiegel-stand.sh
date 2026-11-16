@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Erzeugt den öffentlichen Stand von Votum für den Spiegel auf Codeberg
-# (Entscheid 0051, Codeberg-Plan Schritt 3).
+# Erzeugt den öffentlichen Stand von Votum für den Spiegel auf GitHub
+# (Entscheide 0051 und 0055).
 #
 #   scripts/spiegel-stand.sh <commit> <ziel>
 #

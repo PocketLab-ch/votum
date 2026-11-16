@@ -44,6 +44,10 @@ Auslieferung** laufen vier davon gegen den gebauten Stand (unten, «Durchstiche�
 
 ## Regeln, die nicht im Code stehen
 
+- **Nach jedem Prod-Ausrollen ein neuer Stand auf GitHub**, mit dem Skill
+  `github-spiegel`, Tag gleich dem Abbild-Tag am Betrieb (Entscheide 0051,
+  0053, 0055). Ohne ihn fehlt die Version, die die Fusszeile zeigt, als Tag im
+  Spiegel, und das README verweist ins Leere.
 - **Ein `npm install` ist ein Eingriff an einer laufenden geteilten Ressource,
   nicht nur an Dateien.** Wer ihn fährt, meldet ihn den anderen Sitzungen und
   nennt den Prozess, nicht bloss `package.json` und `node_modules`: `.` ist als

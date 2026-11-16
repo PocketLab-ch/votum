@@ -1,6 +1,6 @@
 # 0051: Votum als Spiegel auf Codeberg, mit Issues, ohne Beiträge
 
-- **Status:** gilt
+- **Status:** abgelöst durch [0055](0055-spiegel-auf-github.md) (Spiegel auf GitHub, 16.11.2026)
 - **Datum:** 2026-11-15
 - **Rolle:** Produktentscheid
 
@@ -38,10 +38,12 @@ Personendaten-Wächters und die internen Prüfberichte mitzunehmen.
 - **Sicherheitslücken** gehören nicht in ein Issue, sondern über das
   Kontaktformular von PocketLab (`SECURITY.md`).
 - **Wann neu hochladen:** nach jedem Prod-Ausrollen, mit dem Commit des
-  ausgerollten Abbilds. Ob von Hand oder als Schritt im Ausrollen, wird nach dem
-  ersten Lauf entschieden. Der erste Stand braucht einen Commit, der `.gitea/`
-  schon ausschliesst (Mindestliste des Skripts); er geht also mit dem nächsten
-  Ausrollen nach diesem Entscheid.
+  ausgerollten Abbilds und dem Abbild-Tag als Tag (Entscheid 0053). Seit dem
+  16.11.2026 als eigener Schritt nach dem Ausrollen, nicht im Ausrollen selbst:
+  mit dem Skill `codeberg-spiegel`, der den Stand erzeugt, den Unterschied
+  gegenprüfen lässt, pusht und nachmisst (Produktentscheid 16.11.2026, nach
+  fünf Ständen von Hand). Der erste Stand brauchte einen Commit, der `.gitea/`
+  schon ausschliesst (Mindestliste des Skripts).
 - **Ein Stand schliesst an den vorigen an** (`SPIEGEL_VORGAENGER=<url oder pfad
   des Spiegels>` beim Skript; das interne Repo als Vorgänger bricht ab): Der Push geht ohne `--force`, und ein früherer Stand, den jemand in
   einer Meldung nennt, bleibt auffindbar. Nur der erste Stand hat keinen

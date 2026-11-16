@@ -1,6 +1,6 @@
 # 0053: Die Version von Votum ist der Abbild-Tag
 
-- **Status:** gilt
+- **Status:** gilt; der Ort des Spiegels («Codeberg») ersetzt durch [0055](0055-spiegel-auf-github.md)
 - **Datum:** 2026-11-16
 - **Rolle:** Produktentscheid
 
