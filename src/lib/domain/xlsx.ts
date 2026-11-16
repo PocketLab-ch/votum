@@ -32,7 +32,7 @@
  *
  * `scripts/mappe-nachrechnen.mjs` baut die Mappe, trägt Stimmen ein, lässt
  * Calc rechnen und hält jede Zeile gegen `zaehleAus` (Stand und Zahl der
- * Werte im README, «Auszählmappe»). Damit sind `fullCalcOnLoad`,
+ * Werte in `docs/bauweise.md`, «Auszählmappe»). Damit sind `fullCalcOnLoad`,
  * `SUMIF`, `SUMIFS`, `INT`, `CEILING` und die `IF`-Ketten für «erreicht» und
  * «Ergebnis» belegt — nicht mehr nur der Aufbau.
  *

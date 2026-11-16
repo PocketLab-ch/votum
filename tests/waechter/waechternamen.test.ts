@@ -58,6 +58,8 @@ function baum(dateien: Record<string, string> = {}, ohne?: string): string {
 	}
 	// Der vorhandene Wächter, auf den gültige Verweise zeigen.
 	writeFileSync(join(wurzel, 'scripts', 'check-echt.mjs'), '// ein vorhandener Wächter\n');
+	// Die Pflichtdatei der Quelle `docs`.
+	if (ohne !== 'docs') writeFileSync(join(wurzel, 'docs', 'bauweise.md'), '# Bauweise\n');
 	// Die flache Wurzel braucht zwei Dateien.
 	if (ohne !== '.') {
 		writeFileSync(join(wurzel, 'README.md'), '# Titel\n');
@@ -114,8 +116,8 @@ describe('Wächter «Wächternamen» — Reissleinen', () => {
 	it('bricht ab, wenn README.md fehlt, auch bei genug anderen Dateien', () => {
 		/*
 		 * Die Zahl allein sagt hier nichts: Konfigurationsdateien füllen die
-		 * Schwelle, aber `README.md` trägt allein knapp ein Drittel aller
-		 * Nennungen. Ihr Wegfall wäre unbemerkt geblieben.
+		 * Schwelle, aber `README.md` trug allein knapp ein Drittel aller
+		 * Nennungen (bis 16.11.2026). Ihr Wegfall wäre unbemerkt geblieben.
 		 */
 		const wurzel = baum();
 		rmSync(join(wurzel, 'README.md'));
@@ -124,6 +126,18 @@ describe('Wächter «Wächternamen» — Reissleinen', () => {
 		const { rot, ausgabe } = fahre(wurzel);
 		expect(rot).toBe(true);
 		expect(ausgabe).toContain('README.md');
+	});
+
+	it('bricht ab, wenn docs/bauweise.md fehlt, auch bei genug anderen Dateien', () => {
+		// Seit dem 16.11.2026 trägt sie den Teil der Nennungen, den vorher das
+		// README trug; eine gleichnamige Datei unter docs/agents/ zählt nicht.
+		const wurzel = baum();
+		rmSync(join(wurzel, 'docs', 'bauweise.md'));
+		mkdirSync(join(wurzel, 'docs', 'agents'), { recursive: true });
+		writeFileSync(join(wurzel, 'docs', 'agents', 'bauweise.md'), '# anderswo\n');
+		const { rot, ausgabe } = fahre(wurzel);
+		expect(rot).toBe(true);
+		expect(ausgabe).toContain('docs/bauweise.md');
 	});
 
 	it('bricht ab, wenn die Wurzel unter die Dateizahl fällt', () => {

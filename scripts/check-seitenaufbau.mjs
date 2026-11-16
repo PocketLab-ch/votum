@@ -201,7 +201,7 @@ for (const pfad of seiten) {
 	 * Code-Review zum Umbau). Steht die Marke da und ist der Grund zu kurz,
 	 * fiele die Seite sonst still in den Rueckstand: Die Zahl «begruendet dabei»
 	 * saenke um eins, und niemand liest eine Zahl, die um eins faellt. Der
-	 * Waechter behauptet in README und `docs/gestaltung.md`, einen Satz zu
+	 * Waechter behauptet in `docs/bauweise.md` und `docs/gestaltung.md`, einen Satz zu
 	 * verlangen — dann muss er es auch sagen, wenn keiner dasteht.
 	 */
 	if (rohmarke && !ausnahmemarke) markenOhneSatz.push(`${kurz} — «${grund.slice(0, 60)}»`);

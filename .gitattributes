@@ -30,7 +30,7 @@ docs/plan-offene-punkte-2026-10-13.md export-ignore
 # Interne Arbeitspapiere (Sicherheitsprüfung des Codeberg-Stands, 15.11.2026):
 # Freigabeprotokoll, Messprotokoll, Pendenzen, datierte Pläne, Befund-, Prüf-
 # und Anwaltsberichte. Sie beschreiben den Betrieb dieses Hauses und offene
-# Punkte, nicht die Software. Im Stand bleiben die Produktdokumente (README,
+# Punkte, nicht die Software. Im Stand bleiben die Produktdokumente (README, bauweise,
 # Handbuch, installation, dienste, gestaltung, leitplanken, verbund,
 # vererbung-abend), `docs/agents/` und `docs/entscheide/`.
 docs/freigabe.md export-ignore

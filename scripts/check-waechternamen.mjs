@@ -59,8 +59,8 @@ const MARKE = 'waechtername-historisch:';
  * **Die Quellen, und je Quelle eine Reissleine.**
  *
  * Eine Untergrenze auf der **Summe** taugt hier nicht (04.09.2026, aus dem
- * Code-Review): Von rund hundert Nennungen steht knapp ein Drittel allein in
- * `README.md`. Eine
+ * Code-Review): Von rund hundert Nennungen stand knapp ein Drittel allein in
+ * `README.md`, seit dem 16.11.2026 in `docs/bauweise.md`. Eine
  * Gesamtgrenze von 30 wäre also erfüllt gewesen, auch wenn der Wächter `src/`
  * und `docs/` gar nicht mehr liest — er hätte genau den Ausfall nicht erkannt,
  * gegen den er steht.
@@ -79,7 +79,10 @@ const QUELLEN = [
 	{ pfad: 'src', endungen: ['.ts', '.svelte'], mindestens: 50 },
 	{ pfad: 'e2e', endungen: ['.mjs'], mindestens: 3 },
 	{ pfad: 'scripts', endungen: ['.mjs', '.js'], mindestens: 10 },
-	{ pfad: 'docs', endungen: ['.md'], mindestens: 3 },
+	// `docs/bauweise.md` trägt seit dem 16.11.2026 die Begründungen, die vorher im
+	// README standen, und damit den grössten Teil der Nennungen: namentlich verlangt
+	// wie früher die README.md der Wurzel (unten bei den Reissleinen).
+	{ pfad: 'docs', endungen: ['.md'], mindestens: 3, muss: 'docs/bauweise.md' },
 	// Die Wurzel nicht rekursiv, sonst zählt alles doppelt. Sie trägt
 	// `README.md` und `eslint.config.js`; letztere nannte einen abgelösten
 	// Wächter und lag ausserhalb der ersten Fassung dieser Liste.
@@ -203,26 +206,30 @@ function dateienDerQuelle(q) {
 const quellen = [];
 for (const q of QUELLEN) {
 	const gefunden = dateienDerQuelle(q);
-	/*
-	 * Eine Datei namentlich verlangen, wo die Zahl allein nichts sagt
-	 * (04.09.2026, aus dem zweiten Code-Review): In der Wurzel füllen schon die
-	 * Konfigurationsdateien die Schwelle, und `README.md` trägt allein knapp ein
-	 * Drittel aller Nennungen. Ihr Wegfall wäre unbemerkt geblieben.
-	 */
-	if (q.muss && !gefunden.some((p) => p.endsWith(q.muss))) {
-		console.error(
-			`\nDer Wächter findet «${q.muss}» nicht mehr in «${q.pfad}».\nDiese Datei trägt ` +
-				'einen grossen Teil der Prüfmenge; ohne sie liest der Wächter\nzu wenig, um etwas ' +
-				'zu bedeuten. Wurde sie verschoben, gehört er mit umgebaut.\n'
-		);
-		process.exit(1);
-	}
 	if (gefunden.length < q.mindestens) {
 		console.error(
 			`\nDer Wächter hat in «${q.pfad}» nur ${gefunden.length} Datei(en) gefunden, ` +
 				`erwartet mindestens ${q.mindestens}.\nEr liest dort nicht mehr, was er lesen ` +
 				'soll — und ein Wächter mit leerer Prüfmenge ist grün und wertlos.\nWurde die ' +
 				'Quelle verschoben oder umbenannt, gehört dieser Wächter mit umgebaut.\n'
+		);
+		process.exit(1);
+	}
+	/*
+	 * Erst die Zahl, dann die Pflichtdatei: Liefert eine Quelle gar nichts, nennt
+	 * die Absage die Schwelle (16.11.2026, als `docs` eine Pflichtdatei bekam).
+	 * Eine Datei namentlich verlangen, wo die Zahl allein nichts sagt
+	 * (04.09.2026, aus dem zweiten Code-Review): In der Wurzel füllen schon die
+	 * Konfigurationsdateien die Schwelle, und `README.md` trug allein knapp ein
+	 * Drittel aller Nennungen. Ihr Wegfall wäre unbemerkt geblieben. Seit dem
+	 * 16.11.2026 trägt diesen Teil `docs/bauweise.md`, und die Quelle `docs`
+	 * verlangt sie ebenso.
+	 */
+	if (q.muss && !gefunden.some((p) => p.endsWith('/' + q.muss))) {
+		console.error(
+			`\nDer Wächter findet «${q.muss}» nicht mehr in «${q.pfad}».\nDiese Datei trägt ` +
+				'einen grossen Teil der Prüfmenge; ohne sie liest der Wächter\nzu wenig, um etwas ' +
+				'zu bedeuten. Wurde sie verschoben, gehört er mit umgebaut.\n'
 		);
 		process.exit(1);
 	}

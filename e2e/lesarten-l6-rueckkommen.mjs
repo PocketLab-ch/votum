@@ -1,7 +1,7 @@
 /**
  * Durchstich: Rückkommen auf einen Beschluss unter Lesart L6,
  * Reglementsschranke (Migration 181, Fassung 2026-11-05, Entscheid 0018;
- * README «Lesarten der Gemeinschaft», «Das Rückkommen übernimmt das Mehr,
+ * `docs/bauweise.md`, «Lesarten der Gemeinschaft», «Das Rückkommen übernimmt das Mehr,
  * nicht die Lesart»).
  *
  * **Der Weg bis zum Beschluss** wie in `e2e/lesarten-l6.mjs`: sechs

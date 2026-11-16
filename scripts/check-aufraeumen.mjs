@@ -75,7 +75,7 @@ if (betroffen.size < 15) {
  *
  * Der erste Anlauf las `DELETE FROM …` auch aus einer auskommentierten Zeile —
  * die Gegenprobe blieb grün, obwohl der Befehl abgeschaltet war. Genau davor
- * warnt der Wächterabschnitt des README: Ein regulärer Ausdruck über Dateitext
+ * warnt der Wächterabschnitt von `docs/bauweise.md`: Ein regulärer Ausdruck über Dateitext
  * unterscheidet Code nicht von Kommentar. Das Skript ist SQL, also fällt weg,
  * was hinter `--` bis zum Zeilenende steht.
  */

@@ -57,7 +57,7 @@ const VERMERK = 'zeichenzahl-frei:';
  * Untergrenze der bewachten Menge.
  *
  * Ein Wächter, dessen Muster nach einem Umbau nichts mehr trifft, meldet «in
- * Ordnung» und prüft nichts (README, Abschnitt «Wächter»). Gezählt wird deshalb
+ * Ordnung» und prüft nichts (`docs/bauweise.md`, Abschnitt «Wächter»). Gezählt wird deshalb
  * nicht, wie viele Dateien gelesen wurden — das sagt nichts —, sondern die
  * bewachte Menge: jede Längenschranke auf einer Zeichenkette, ob sie nun noch
  * `.length` zählt oder schon `zeichenzahl()`. **Beide** zusammen, sonst sänke

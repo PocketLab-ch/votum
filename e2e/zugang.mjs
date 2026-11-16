@@ -12,7 +12,7 @@
 export function zugang(name) {
 	const wert = process.env[name];
 	if (!wert) {
-		console.error(`${name} fehlt: Das Kennwort des Prüfkontos kommt aus der Umgebung, ohne Vorgabe (README, Abschnitt «Tests»).`);
+		console.error(`${name} fehlt: Das Kennwort des Prüfkontos kommt aus der Umgebung, ohne Vorgabe (docs/bauweise.md, Abschnitt «Tests»).`);
 		process.exit(2);
 	}
 	return wert;

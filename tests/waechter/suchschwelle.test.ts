@@ -16,7 +16,7 @@ import { svelteBaum, svelteDateien } from '../../scripts/svelte-baum.mjs';
  * dieses Wächters suchte am selben Tag nach `class="suchfeld"` und urteilte je
  * Datei. Nachgemessen sah sie 10 von 15 Feldern, hielt zwei Felder einer Datei
  * für geregelt, sobald eines es war, und wäre auf `class="suchfeld gross"`
- * hereingefallen. Genau diese blinden Stellen führt `README.md` als Grund auf,
+ * hereingefallen. Genau diese blinden Stellen führt `docs/bauweise.md` als Grund auf,
  * warum die Wächter am 24.08.2026 auf `scripts/svelte-baum.mjs` umgestellt
  * wurden.
  *

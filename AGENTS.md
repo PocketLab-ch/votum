@@ -7,8 +7,8 @@ jeden Schritt so fest, dass ein Beschluss später belegbar ist.
 
 **Diese Datei ist ein Wegweiser, keine zweite Wahrheit.** Kern für KI-Werkzeuge:
 was bei jeder Arbeit gilt und welche Fallen zuschlagen, bevor man nachschlägt.
-Das Warum steht in [`README.md`](README.md), rund 2200 Zeilen nach Themen
-gegliedert; das Handbuch für Betrieb und Anwendung unter [`docs/`](docs/).
+Das Warum steht in [`docs/bauweise.md`](docs/bauweise.md), rund 2600 Zeilen nach Themen
+gegliedert (bis 16.11.2026 das `README.md`, das jetzt Aussenstehenden den Überblick gibt); das Handbuch für Betrieb und Anwendung unter [`docs/`](docs/).
 Ausführlich zu Prüflauf, Durchstichen und Sperrfolge: das Kapitel
 [`docs/agents/entwicklung.md`](docs/agents/entwicklung.md). Wo diese Datei und
 der Bestand auseinandergehen, gilt der Bestand, und die Abweichung gehört hier
@@ -37,7 +37,7 @@ Prüflauf gehört deshalb in den Container, die Browserläufe auf den Wirt.
 | Starten | `docker compose up -d`, dann `http://127.0.0.1:3100/` |
 | Pakete geändert | `docker compose exec -T app npm install …`, **danach `docker compose restart app`** |
 
-Die weiteren Durchstiche liegen unter `e2e/`, einer je Fragestellung; README,
+Die weiteren Durchstiche liegen unter `e2e/`, einer je Fragestellung; `docs/bauweise.md`,
 Abschnitt «Tests», sagt zu jedem, was er prüft. Zugang ist `pruefer`; das Kennwort kommt
 aus `KENNWORT` (Leitung: `KENNWORT_LEITUNG`), ohne Vorgabe (`e2e/zugang.mjs`), Ablage nach Betriebsdoku. **Vor jeder
 Auslieferung** laufen vier davon gegen den gebauten Stand (unten, «Durchstiche»).
@@ -53,7 +53,7 @@ Auslieferung** laufen vier davon gegen den gebauten Stand (unten, «Durchstiche�
   ausführlich im Code, und genau das macht es anfällig für Prüfberichte, die
   gegen die Begründung anlaufen, ohne sie gelesen zu haben: Von zehn gemeldeten
   «Befunden» waren am 04.09.2026 drei bewusste Entscheide. Wer prüft, nimmt die
-  Definition aus README, Abschnitt «Was ein Fehler ist, und was nicht», in den
+  Definition aus `docs/bauweise.md`, Abschnitt «Was ein Fehler ist, und was nicht», in den
   Auftrag.
 - **Sprache:** Deutsch mit echten Umlauten, keine ASCII-Umschreibung, in
   Code-Kommentaren, Commit-Texten, Log-Meldungen, Oberflächen und Doku;
@@ -207,7 +207,7 @@ wenn der Kern etwas aus einer äusseren Schicht einbindet. Der Wächter läuft v
 
 | Frage | Ort |
 |---|---|
-| Warum ist etwas so gebaut | [`README.md`](README.md) |
+| Warum ist etwas so gebaut | [`docs/bauweise.md`](docs/bauweise.md) |
 | Aufsetzen, Sichern, Aktualisieren, Fehlersuche | [`docs/installation.md`](docs/installation.md) |
 | Eine Seite bauen oder umbauen | [`docs/gestaltung.md`](docs/gestaltung.md) |
 | Ist die Anwendung für eine echte Versammlung frei | `docs/freigabe.md` (intern, nicht im öffentlichen Stand) |

@@ -40,7 +40,7 @@
  *    Klick, das Eröffnen wird mit der Absage zu L7 abgewiesen, ohne Hinweis
  *    auf eine unverbindliche Abstimmung; das Häkchen «konsultativ» fehlt, und
  *    ein Formular mit `konsultativ=ja` wird ebenso abgewiesen (Entscheid 0043;
- *    README, «Konsultativ abstimmen geht»; DB-Test «Die Sperre»). Das Budget
+ *    `docs/bauweise.md`, «Konsultativ abstimmen geht»; DB-Test «Die Sperre»). Das Budget
  *    ohne Ausstand öffnet und wird angenommen: Die übrigen Traktanden gehen
  *    weiter.
  *

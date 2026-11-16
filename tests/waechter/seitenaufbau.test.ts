@@ -199,7 +199,7 @@ describe('Der Seitenaufbau-Wächter', () => {
 	 * **Und sie wird benannt** (02.09.2026, aus dem Code-Review zum Umbau). Der
 	 * erste Anlauf liess die Seite bloss in den Rückstand fallen: Die Zahl
 	 * «begruendet dabei» sank um eins, und niemand liest eine Zahl, die um eins
-	 * fällt. Der Wächter verspricht in README und `docs/gestaltung.md`, einen
+	 * fällt. Der Wächter verspricht in `docs/bauweise.md` und `docs/gestaltung.md`, einen
 	 * Satz zu verlangen — dann muss er auch sagen, wenn keiner dasteht.
 	 */
 	it('nennt eine Marke ohne Grund, statt sie still zum Rückstand zu zählen', () => {
