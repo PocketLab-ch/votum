@@ -62,8 +62,8 @@ const REGEL_REGLEMENT = {
 };
 
 describe('Fassung 2026-11-18', () => {
-	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+	it('ist seit der Fassung 2026-11-19 nicht mehr die aktuelle und besteht die Prüfungen', () => {
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);

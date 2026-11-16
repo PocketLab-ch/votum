@@ -238,9 +238,10 @@ describe('die ausgelieferte Fassung', () => {
 		expect(AKTUELLE_FASSUNG).toBe(RW.fassung);
 	});
 
-	it('ist als noch nicht juristisch gegengelesen gekennzeichnet', () => {
-		// Vorläufig angenommen ist nicht dasselbe wie freigegeben. Solange das
-		// hier falsch steht, weist jede Herleitung darauf hin.
+	it('trägt das Merkmal «nicht juristisch gegengelesen» als Tatsache', () => {
+		// Vorläufig angenommen ist nicht dasselbe wie freigegeben. Seit Entscheid
+		// 0052 steuert das Merkmal keine Anzeige mehr; es bleibt falsch, weil
+		// niemand gegengelesen hat.
 		expect(RW.juristischGegengelesen).toBe(false);
 		expect(RW.freigabevermerk).toMatch(/vorläufig angenommen/i);
 	});

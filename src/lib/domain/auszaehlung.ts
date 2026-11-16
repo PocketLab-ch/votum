@@ -5714,9 +5714,9 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 	 * (ZGB Art. 649b Abs. 2; BGer 5A_735/2019 E. 3.3.1). Bis zum 25.09.2026 stand
 	 * hier «einstimmig … mit Ausnahme der auszuschliessenden Person», was weder
 	 * im Gesetz noch im Entscheid steht (Fachprüfung 25.09.2026, B6).
-	 * Entschieden ist die Frage damit nicht — sie gehört auf die Liste der
-	 * juristischen Gegenlesung, und bis dahin steht sie bei jedem betroffenen
-	 * Beschluss auf der Karte.
+	 * Entschieden ist die Frage damit nicht; sie steht bei jedem betroffenen
+	 * Beschluss auf der Karte (bis zum 16.11.2026 «auf der Liste der
+	 * juristischen Gegenlesung», die nach Entscheid 0052 entfällt).
 	 *
 	 * **Nur, wo jemand im Ausstand aus der Zahl fällt** (Pendenz aus Block 6,
 	 * 30.10.2026). Stellt die Leitung die Ausschlussklage auf «alle Eigentümer»,

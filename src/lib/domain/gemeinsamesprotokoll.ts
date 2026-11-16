@@ -29,12 +29,11 @@
  * einen Entwurf qualifiziert signiert, hat einen Beschluss belegt, den es so nie
  * gab.
  *
- * **Zur elektronischen Signatur.** Für Protokolle der
- * Stockwerkeigentümergemeinschaft besteht keine gesetzliche Schriftformvorschrift
- * — die qualifizierte Signatur (QES) nach ZertES ist deshalb nicht zwingend, und
- * eine fortgeschrittene (FES) genügt. Die QES schadet nicht und ist im
- * Anfechtungsfall der stärkere Nachweis. Diese Einschätzung steht unter demselben
- * Vorbehalt wie das Regelwerk: Die juristische Gegenlesung steht aus.
+ * **Zur elektronischen Signatur** steht die Einschätzung in `docs/verbund.md`
+ * (seit 16.11.2026 nach Fachprüfung: Form gesetzlich offen, Unterschrift
+ * umstritten; QES, wo das Reglement die Unterzeichnung verlangt oder fürs
+ * Grundbuch, sonst FES vertretbar). Hier nur der Verweis, damit nicht zwei
+ * Fassungen auseinanderlaufen.
  *
  * Rein: hinein gehen die Angaben, heraus kommt Text. Kein Zugriff auf Datenbank
  * oder Uhr (AD-1) — der Erzeugungszeitpunkt kommt von aussen herein, wie beim

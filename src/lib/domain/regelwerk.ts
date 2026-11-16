@@ -585,8 +585,11 @@ export interface Regelwerk {
 	/** Unveränderliche Fassungskennung, Format JJJJ-MM-TT (AD-4). */
 	fassung: string;
 	/**
-	 * Ob eine Juristin die Fassung gegengelesen hat. Solange falsch, weist die
-	 * Oberfläche bei jedem hergeleiteten Erfordernis darauf hin.
+	 * Ob eine Juristin die Fassung gegengelesen hat. Bis zum 16.11.2026 wies die
+	 * Oberfläche darauf hin, solange es falsch war; seit Entscheid 0052 steuert
+	 * es keine Anzeige mehr und bleibt `false`, weil es eine Tatsache beschreibt
+	 * (die offenen Rechtsfragen sind nach Entscheid 0044 eingeordnet, fest
+	 * gerechnet oder als Lesart einstellbar; gegengelesen hat niemand).
 	 */
 	juristischGegengelesen: boolean;
 	/** Wer wann was freigegeben hat, im Klartext. */

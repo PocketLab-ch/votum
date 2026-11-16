@@ -63,7 +63,7 @@ function herleiten(rw: Regelwerk) {
 
 describe('Fassung 2026-11-13', () => {
 	it('ist seit Block C (Entscheid 0048) nicht mehr die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);

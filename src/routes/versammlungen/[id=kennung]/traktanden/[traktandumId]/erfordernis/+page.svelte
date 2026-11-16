@@ -765,10 +765,8 @@
 
 <footer class="fassung">
 	<p>
-		Regelwerk Fassung {data.fassung}.
-		{#if !data.juristischGegengelesen}
-			<strong>Noch nicht juristisch gegengelesen.</strong>
-		{/if}
+		<!-- Bis zum 16.11.2026 «Noch nicht juristisch gegengelesen.»; entfällt nach Entscheid 0052. -->
+		Regelwerk Fassung {data.fassung}. Jedes Ergebnis ist ein Vorschlag an die Sitzungsleitung.
 	</p>
 	<p class="hilfe">{data.freigabevermerk}</p>
 </footer>

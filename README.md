@@ -4,21 +4,20 @@
 
 Werkzeug zur Führung von Stockwerkeigentümer-Versammlungen nach ZGB Art. 712a ff.
 Es richtet sich an Verwaltungen und an Gemeinschaften in der Schweiz, die ihre
-Versammlung selbst leiten. Votum ist eine Webanwendung, die auf einem Server oder
-auf dem Notebook im Versammlungsraum läuft. Sie aufzusetzen verlangt Erfahrung
-mit Docker, für das Notebook im Saal auch mit einem eigenen WLAN; wie, steht
-unter [Installation](docs/installation.md).
+Versammlung selbst leiten.
 
-Führt den Rechtsakt, statt ihn nur zu dokumentieren: Das Mehrheitserfordernis wird
-je Traktandum aus dem Vorhaben hergeleitet, Kopfstimmen und Wertquoten werden nach
-der geltenden Regel ausgezählt, und das Ergebnis lässt sich später belegen.
-Massgeblich sind Gesetz und Reglement der Gemeinschaft; was das Reglement
-abweichend regelt, tragen Sie in Votum ein. Bei umstrittenen Rechtsfragen rechnet
-Votum nach einer Vorgabe, die nicht immer die vorsichtigere Lesart ist; an vielen
-Stellen kann die Gemeinschaft vor der Freigabe der Einladung eine andere
-einstellen. Ein Gericht bindet weder Vorgabe noch Wahl; Votum nennt deshalb auch,
-was die andere Lesart verlangt. Votum schlägt vor, die Sitzungsleitung entscheidet.
-Ausserdem bietet Votum:
+**Installation:** Votum ist eine Webanwendung für einen Server oder für das
+Notebook im Versammlungsraum. Sie aufzusetzen verlangt Erfahrung mit Docker, für
+das Notebook im Saal auch ein eigenes WLAN. Die Anleitung steht unter
+[Installation](docs/installation.md).
+
+Votum leitet je Traktandum das nötige Mehr her und zählt danach Kopfstimmen und
+Wertquoten aus; das Ergebnis lässt sich später belegen. Massgeblich bleiben
+Gesetz und Reglement der Gemeinschaft; was das Reglement abweichend regelt,
+tragen Sie in Votum ein. Bei den meisten umstrittenen Rechtsfragen kann die
+Gemeinschaft vor der Freigabe der Einladung wählen, nach welcher Lesart Votum
+rechnet; Votum nennt auch, was die andere verlangt. Votum schlägt vor, die Sitzungsleitung
+entscheidet. Ausserdem bietet Votum:
 
 - Abstimmen im Saal mit dem eigenen Telefon, angemeldet über ein persönliches
   QR-Blatt, oder auf Papier; die Stimmen auf Papier erfasst die Sitzungsleitung.
@@ -67,14 +66,9 @@ Geprüft wird im internen Repo, aus dem dieser Stand stammt:
 - Texte mit Rechtsaussagen gehen durch eine Laien- und eine Fachprüfung, beide
   ebenfalls durch KI-Modelle, die Fachprüfung an Gesetz und Kommentar.
 
-Im Spiegel fehlen zwei interne Sperrlisten (gesperrte echte Namen und Angaben
-zum Betrieb); sie bleiben intern, damit sie nicht öffentlich werden.
-`npm run pruefen` bricht dort deshalb mit Absicht beim Personendaten-Wächter
-ab, und aus demselben Grund ist der Test
-`tests/waechter/handbuch-betriebsangaben.test.ts` rot. Rot ist dort auch
-`tests/waechter/ci-skripte.test.ts`, weil die interne CI unter `.gitea/` nicht
-mitkommt. Einzelheiten zu den
-Tests stehen in [`docs/bauweise.md`](docs/bauweise.md), Abschnitt «Tests».
+Zwei Listen mit echten Namen und Angaben zum Betrieb bleiben bewusst intern;
+ohne sie läuft der volle Prüflauf im Spiegel nicht (Einzelheiten in
+[`docs/bauweise.md`](docs/bauweise.md), Abschnitt «Tests»).
 
 ## Entwicklung
 

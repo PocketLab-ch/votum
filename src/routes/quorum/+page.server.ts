@@ -111,7 +111,6 @@ export const load: PageServerLoad = mitAbsage(async ({ locals, url }) => {
 
 	const gemeinsam = {
 		fassung: regelwerk.fassung,
-		juristischGegengelesen: regelwerk.juristischGegengelesen,
 		freigabevermerk: regelwerk.freigabevermerk,
 		aeste: regelwerk.aeste,
 		gemeinschaften: gemeinschaften.map((g) => ({ id: g.id, name: g.name })),

@@ -741,11 +741,17 @@ der Fall.
 Unterzeichnet wird ausserhalb — etwa über Skribble. Die Anwendung erfährt davon nichts; deshalb wird
 der Schritt im Ablauf nie abgehakt.
 
-Für ein Protokoll der Stockwerkeigentümergemeinschaft besteht keine gesetzliche
-Schriftformvorschrift. Eine **fortgeschrittene** Signatur (FES) genügt daher; die
-**qualifizierte** (QES nach ZertES) ist nicht zwingend, im Anfechtungsfall aber
-der stärkere Nachweis. *Diese Einschätzung steht unter demselben Vorbehalt wie das
-Regelwerk: Die juristische Gegenlesung steht aus.*
+Das Gesetz schreibt für das Protokoll keine Form vor (SVIT-Kommentar Rz. 119 und
+124 ad Art. 712n). Ob es trotzdem unterzeichnet sein muss, ist umstritten; ein
+Teil von Lehre und Rechtsprechung verlangt die Unterschrift von Vorsitz und
+Protokollführung (Rz. 124 ad Art. 712n). Verlangt Ihr Reglement die
+Unterzeichnung, nehmen Sie die **qualifizierte** Signatur (QES nach ZertES): Nur
+sie, mit qualifiziertem Zeitstempel, steht der eigenhändigen Unterschrift gleich
+(OR Art. 14 Abs. 2bis). Soll ein Beschluss im Grundbuch angemerkt werden, nehmen
+Sie die QES, wenn Ihr Grundbuchamt elektronische Eingaben annimmt (GBV Art. 3
+Abs. 2); sonst unterzeichnen Sie auf Papier (SVIT-Kommentar Rz. 110a ad
+Art. 712n). Sonst ist eine **fortgeschrittene** Signatur (FES) vertretbar; die
+QES bleibt der stärkere Nachweis.
 
 Unterzeichnet wird von der Sitzungsleitung des Abends und der Protokollführung.
 Das Dokument trägt dafür keine Linien — wer elektronisch signiert, braucht keine,

@@ -69,9 +69,12 @@ Protokollnotiz. Der Anlass steht in `docs/echte-protokolle-2026-09-08.md`.
 Gemeinschaft, der Vorschlag beim Anlegen der nächsten Versammlung und die Maske
 am gemeinsamen Abend.
 
-Damit sind von den offenen Fragen des PRD noch zwei übrig: welcher
-Zeitstempeldienst auf Prod, und die **juristische Gegenlesung** des
-Entscheidbaums — sie bleibt die Bedingung vor der ersten echten Versammlung.
+Damit blieb von den offenen Fragen des PRD noch der Zeitstempeldienst auf Prod.
+Die **juristische Gegenlesung** des Entscheidbaums galt bis zum 16.11.2026 als
+Bedingung vor der ersten echten Versammlung; sie entfällt nach Entscheid 0052.
+Die offenen Fragen sind nach Entscheid 0044 eingeordnet, fest gerechnet oder
+als Lesart der Gemeinschaft einstellbar; freigegeben wurde am 12.11.2026 ohne
+sie.
 
 **Suchbar sind bisher** die Versammlungsübersicht, die Eigentümer- und die
 Gemeinschaftsliste (im Gerät, `domain/listensuche.ts`) sowie der Verlauf (in der
@@ -566,6 +569,15 @@ Vorher standen sie als Dateinamen in einer Liste im Wächter, weit weg von dem,
 wofür sie galten.
 
 ### Tests
+
+**Im öffentlichen Spiegel** fehlen zwei interne Sperrlisten, gesperrte echte
+Namen (`scripts/personendaten-sperre.tsv`) und Angaben zum Betrieb
+(`scripts/betriebsangaben-sperre.json`), und die interne CI unter `.gitea/`;
+sie bleiben intern, damit sie nicht öffentlich werden (`.gitattributes`).
+`npm run pruefen` bricht dort deshalb mit Absicht beim Personendaten-Wächter
+ab, und aus demselben Grund sind `tests/waechter/handbuch-betriebsangaben.test.ts`
+und `tests/waechter/ci-skripte.test.ts` rot. Geprüft wird im internen Repo,
+per Hook vor jedem Commit am Code und per CI nach jedem Push.
 
 Drei getrennte Reihen, weil sie Verschiedenes prüfen:
 
@@ -1575,8 +1587,10 @@ doppelte Kennungen, Kreise, unerreichbare Knoten. Eine Datendatei hat keinen
 Prüfung endet ein Pfad im Nichts, und zwar erst dann, wenn ihn jemand im Saal
 beschreitet. Zu jeder Prüfregel steht die Gegenprobe im Test.
 
-Die ausgelieferte Fassung ist als **noch nicht juristisch gegengelesen**
-gekennzeichnet. Jedes Ergebnis weist darauf hin.
+Das Merkmal `juristischGegengelesen` bleibt `false`, denn gegengelesen hat
+niemand. Seit Entscheid 0052 (16.11.2026, Fassung 2026-11-19) steuert es keine
+Anzeige mehr: Jedes Ergebnis nennt sich einen Vorschlag an die Sitzungsleitung,
+ohne den früheren Satz «Noch nicht juristisch gegengelesen».
 
 **Eine Fassung nur für Wortlaut** gibt es auch: 2026-11-11 (Kasten «Reglement»)
 und 2026-11-15 (Auftrag «Texte nach 0047»: Beratung der Angehörigen an der
@@ -1587,7 +1601,9 @@ Enthaltungen nach herrschender Lehre) und 2026-11-17 (die Sätze, die der
 Website-Abzug seit `5239aea5` eigens berichtigt: der sichere Weg bei den
 Köpfen, das Bundesgericht an Art. 647c, die Wahl mit erweiterten Befugnissen,
 der Grenzfall der Nutzung; Gründe für das, was nur auf der Website steht, in
-`quorum-2026-11-17.ts`). Sie
+`quorum-2026-11-17.ts`) und 2026-11-19 (der Widerruf einer Übertragung an den
+zwei Wahlkarten der Bewirtschaftung, der Freigabevermerk ohne ausstehende
+Gegenlesung; Entscheid 0052). Sie
 ändern kein Erfordernis und brauchen keine Migration. **Eine Fassung, die die
 Rechnung ändert**, ohne neue Karten: 2026-10-25 (Angehörige im Ausstand an der
 Ausschlussklage) und 2026-11-16 (Ausstand unter einer von Hand gesetzten

@@ -25,7 +25,7 @@ const VOR = holeRegelwerk('2026-11-14');
 
 describe('Fassung 2026-11-15', () => {
 	it('ist seit der Fassung 2026-11-16 nicht mehr die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		expect(NEU.fassung).toBe('2026-11-15');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);

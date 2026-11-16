@@ -254,10 +254,16 @@ describe('erfordernisAus', () => {
 });
 
 describe('die Ergebniskarte', () => {
-	it('weist auf die fehlende juristische Freigabe hin', () => {
+	it('nennt den Vorschlag an die Sitzungsleitung, nicht mehr eine ausstehende Gegenlesung', () => {
+		/*
+		 * Entscheid 0052 (16.11.2026): Das Datenfeld bleibt, wie es ist, denn
+		 * gegengelesen hat niemand; seit der Fassung 2026-11-19 sagt der Vermerk
+		 * aber nicht mehr, die Gegenlesung stehe aus.
+		 */
 		const karte = ergebniskarte(RW, knotenVon(RW, 'k-baulich-notwendig')!, ZAHLEN);
 		expect(karte.ohneJuristischeFreigabe).toBe(true);
-		expect(karte.freigabevermerk).toMatch(/Gegenlesung steht aus/);
+		expect(karte.freigabevermerk).not.toMatch(/Gegenlesung steht aus/);
+		expect(karte.freigabevermerk).toMatch(/Jedes Ergebnis ist ein Vorschlag an die Sitzungsleitung/);
 	});
 
 	it('trägt den Reglementsvorbehalt und den Hinweis auf gemischte Geschäfte', () => {

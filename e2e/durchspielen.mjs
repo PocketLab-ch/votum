@@ -936,6 +936,20 @@ async function main() {
 			return 'Übersicht und Anmeldung ja, /z und /p nein';
 		});
 
+		await schritt('Die Mehrheiten nennen den Vorschlag, keine ausstehende Gegenlesung', async () => {
+			/*
+			 * **Entscheid 0052 (16.11.2026):** «Noch nicht juristisch
+			 * gegengelesen» entfällt; der Vorschlag an die Sitzungsleitung
+			 * bleibt, in der Fusszeile und im Vermerk der Fassung 2026-11-19.
+			 */
+			await gehe(leitung, '/quorum');
+			// Nur der erste Absatz: Der Vermerk im Ausklapper darunter erzählt die Geschichte der Fassungen.
+			const fuss = (await leitung.locator('footer.fassung > p').first().innerText()).replace(/\s+/g, ' ');
+			behaupte(/Vorschlag an die Sitzungsleitung/.test(fuss), `Die Fusszeile nennt den Vorschlag nicht: ${fuss.slice(0, 80)}`);
+			behaupte(!/gegengelesen|Gegenlesung steht aus/i.test(fuss), 'Die Fusszeile nennt noch die Gegenlesung');
+			return fuss.slice(0, 60);
+		});
+
 		await schritt('Die Startseite führt in die Arbeit zurück', async () => {
 			/*
 			 * **Auftraggeber, 25.08.2026**: «Dashboard besser strukturieren. Bspw.
@@ -2760,6 +2774,10 @@ async function main() {
 				`${ZIEL}/versammlungen/${versammlungId}/traktanden/${spielplatzId}/erfordernis`,
 				{ waitUntil: 'domcontentloaded' }
 			);
+			// Entscheid 0052: Auch die Fusszeile der Erfordernisseite nennt den Vorschlag, keine Gegenlesung.
+			const fussErfordernis = (await leitung.locator('footer.fassung > p').first().innerText()).replace(/\s+/g, ' ');
+			behaupte(/Vorschlag an die Sitzungsleitung/.test(fussErfordernis), 'Die Erfordernisseite nennt den Vorschlag nicht');
+			behaupte(!/gegengelesen/i.test(fussErfordernis), 'Die Erfordernisseite nennt noch die Gegenlesung');
 			const direktweg = leitung.getByText('Erfordernis ohne Herleitung setzen').first();
 			if (await direktweg.count()) await direktweg.click();
 			const typ = leitung.locator('select[name="typ"]').first();

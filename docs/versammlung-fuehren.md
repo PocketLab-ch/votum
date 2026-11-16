@@ -816,9 +816,8 @@ den Entscheidbaum hiesse Seitenwechsel vor wartenden Menschen.
 
 Drei Dinge, die Sie wissen müssen:
 
-- **Der Vorschlag ist keine Feststellung.** Die ausgelieferte Regelfassung ist
-  als *noch nicht juristisch gegengelesen* gekennzeichnet, und jedes Ergebnis
-  weist darauf hin. Das Werkzeug schlägt vor, Sie entscheiden.
+- **Der Vorschlag ist keine Feststellung.** Jedes Ergebnis nennt sich einen
+  Vorschlag an die Sitzungsleitung. Das Werkzeug schlägt vor, Sie entscheiden.
 - **Ein fehlendes Erfordernis hält die Freigabe nicht auf.** Es lässt sich
   nachholen und darf die Einladung nicht blockieren. Vor der Abstimmung muss es
   stehen.
@@ -5173,7 +5172,9 @@ nicht mehr erreichbar; die Anwendung sagt es, bevor abgestimmt wird.
 > Gesetz dieselbe Ausnahme selbst kennt: Die Ermächtigung zur Ausschlussklage
 > verlangt einen «Mehrheitsbeschluss aller Miteigentümer mit Ausnahme des
 > Beklagten» (ZGB Art. 649b Abs. 2, BGer 5A_735/2019 E. 3.3.1). Entschieden
-> ist die Frage damit nicht — sie gehört zur juristischen Gegenlesung.
+> ist die Frage damit nicht. Einstellen lässt sie sich nicht; die Anwendung
+> bleibt bei dieser Lesart. Sicher geht, wer auch die schriftliche Zustimmung
+> der Person im Ausstand einholt.
 
 **Betroffen und im Ausstand zugleich.** Einen Ausstand gibt es bei der
 Änderung eines Nutzungsrechts nur, wenn ein Geschäft mit der Gemeinschaft

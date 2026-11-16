@@ -16,7 +16,7 @@ const VOR = holeRegelwerk('2026-10-24');
 
 describe('Fassung 2026-10-25 gegenüber 2026-10-24', () => {
 	it('ist in sich stimmig und seit Lesarten Block 3 nicht mehr die aktuelle', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toEqual([]);
 	});

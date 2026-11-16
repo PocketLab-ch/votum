@@ -333,7 +333,15 @@ Beschluss an der nächsten Versammlung. Siehe
 
 ## Ein Vorbehalt, der nicht übergangen werden darf
 
-Die ausgelieferte Fassung des Regelwerks ist **nicht juristisch gegengelesen**.
-Jedes Ergebnis weist darauf hin. Der Vorschlag des Werkzeugs ersetzt die
-rechtliche Einschätzung der Sitzungsleitung nicht, und im Streitfall zählt, was
-die Versammlung beschlossen hat, nicht was das Werkzeug vorgeschlagen hat.
+Jedes Ergebnis des Werkzeugs ist ein **Vorschlag an die Sitzungsleitung**, und
+jedes Ergebnis sagt das. Der Vorschlag ersetzt die rechtliche Einschätzung der
+Sitzungsleitung nicht, und im Streitfall zählt, was die Versammlung beschlossen
+hat, nicht was das Werkzeug vorgeschlagen hat. Wo umstritten ist, wie das Gesetz
+zu lesen ist, stellen Sie für die meisten dieser Fragen vor der Freigabe der
+Einladung ein, nach welcher Lesart Votum rechnet; ohne Einstellung gilt die
+Vorgabe, die nicht immer die vorsichtigere ist (siehe
+[Lesarten der Gemeinschaft](versammlung-fuehren.md#lesarten-der-gemeinschaft)).
+Wo es keine Wahl gibt, sagt die Karte, welcher Lesart Votum folgt. Votum nennt
+auch, was die andere Lesart verlangt. Folgt ein Gericht im
+Streitfall der anderen Lesart, kann es den Beschluss aufheben; an die Wahl Ihrer
+Gemeinschaft ist es nicht gebunden.

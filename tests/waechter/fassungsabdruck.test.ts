@@ -81,6 +81,7 @@ const ABDRUCK: Record<string, string> = {
 	'2026-11-16': '4cb4eb0be63b1540ee594ef8b5374b28f38d22ee4fe8e7cb17acfa11c1aef14e',
 	'2026-11-17': '61790f9132e8d3240c77ec4a7341689e49dd8a2eb399745c43d9955c05b58514',
 	'2026-11-18': '26d8eb5c6b1b155e64a9d2ef9213acc3e9ed5a188638ec21de48b60704266df8',
+	'2026-11-19': '4afb309374a219f5f6e9f661437d5042b82473cf0c27702ee9265b8d3e5c199d',
 };
 
 const abdruck = (fassung: string) => createHash('sha256').update(JSON.stringify(FASSUNGEN[fassung])).digest('hex');

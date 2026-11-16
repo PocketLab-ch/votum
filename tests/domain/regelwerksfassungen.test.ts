@@ -25,6 +25,7 @@ import {
 	UEBER_REGLEMENT_ID as FONDS_UEBER_2026_11_18
 } from '$lib/rules/quorum-2026-11-18';
 import { HINWEIS_GEWOEHNLICH as HINWEIS_GEWOEHNLICH_2026_10_24 } from '$lib/rules/quorum-2026-10-24';
+import { nachDieserFassung as nachDerFassung_2026_11_19 } from '$lib/rules/quorum-2026-11-19';
 import {
 	DELEGATION_GESPERRT as DELEGATION_GESPERRT_2026_10_27,
 	HINWEIS_ALLTAG as HINWEIS_ALLTAG_2026_10_27,
@@ -137,6 +138,7 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-19',
 			'2026-11-18',
 			'2026-11-17',
 			'2026-11-16',
@@ -1480,7 +1482,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb
@@ -3418,6 +3420,8 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		 * gelten unter jeder Regel.
 		 */
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(HINWEIS_GEWOEHNLICH_2026_10_24);
+		// Ab der Fassung 2026-11-19 mit dem Widerruf hinter dem Satz zur Erweiterung (Entscheid 0052).
+		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_19(HINWEIS_GEWOEHNLICH_2026_10_24));
 		/*
 		 * **Die Verweise ab 2026-10-27** (Entscheiden statt der Versammlung) zeigen
 		 * auf eine andere Karte und erklären nicht das Mehr dieser Karte; sie

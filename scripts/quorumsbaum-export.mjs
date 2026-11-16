@@ -143,12 +143,13 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-18): Die Wortlaute der Website hängen an den Ersetzungen
-// der Fassungen 2026-11-14, 2026-11-15 und 2026-11-17 (`nachDieserFassung`). Die Fassung
+// Die aktuelle Fassung (2026-11-19): Die Wortlaute der Website hängen an den Ersetzungen
+// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17 und 2026-11-19 (`nachDieserFassung`;
+// 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung). Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_18 } from '../src/lib/rules/quorum-2026-11-18.ts';
+import { REGELWERK_2026_11_19, WIDERRUF, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-19.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -158,8 +159,7 @@ import {
 	STUETZE_RZ112,
 	VORSITZ_WAHL,
 	WAHL_REST,
-	WAHL_STUECKE,
-	nachDieserFassung
+	WAHL_STUECKE
 } from '../src/lib/rules/quorum-2026-11-17.ts';
 import { KOPFZAEHLWEISE_ARTIKEL } from '../src/lib/domain/lesarten.ts';
 import { HINWEIS as WAHL_HINWEIS_NACH_GESETZ, KLEINE_GEMEINSCHAFTEN } from '../src/lib/rules/quorum-2026-11-13.ts';
@@ -211,7 +211,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_18;
+const rw = REGELWERK_2026_11_19;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -793,7 +793,10 @@ const WAHL_ERSTER_SATZ_WEBSITE =
 	'gemeinschaftliche Teile vermieten, braucht das einen eigenen Beschluss mit qualifiziertem ' +
 	'Mehr; um statt der Versammlung zu entscheiden, etwa Budget oder Fondseinlagen festlegen ' +
 	'statt nur vorschlagen, Einstimmigkeit (ZGB Art. 647b Abs. 1, 712g Abs. 3; ' +
-	'SVIT-Kommentar Rz. 46 ad Art. 712q, Rz. 91 ad Art. 712g, Rz. 45 ad Art. 712m).';
+	'SVIT-Kommentar Rz. 46 ad Art. 712q, Rz. 91 ad Art. 712g, Rz. 45 ad Art. 712m). ' +
+	// Ab der Fassung 2026-11-19 der Widerruf, derselbe Wortlaut wie in der Anwendung und
+	// auf der Website-Karte `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026).
+	WIDERRUF;
 
 /**
  * Gezielte Umformulierungen für die Website, je mit Grund (Durchgang über
@@ -912,7 +915,7 @@ const UMFORMULIERUNGEN = new Map([
 	// Das leistet ihr geprüfter Wortlaut schon. Die gewöhnliche Wahl trägt den ersten Satz
 	// und den Verweis auf die Karte mit Lesart; die Website setzt dafür den
 	// ersten Satz ihrer Fassung.
-	[WAHL_ERWEITERUNG, WAHL_ERSTER_SATZ_WEBSITE],
+	[nachDieserFassung(WAHL_ERWEITERUNG), WAHL_ERSTER_SATZ_WEBSITE],
 	// **Die Wahl mit erweiterten Kompetenzen nach dem Gesetz** (Fassung
 	// 2026-11-13, Entscheid 0048, Block B): Die Karte rechnet nach der Vorgabe
 	// das qualifizierte Mehr, und ihr Hinweis folgt dem Gesetz. Er sagt nichts

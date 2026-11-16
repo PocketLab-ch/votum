@@ -181,7 +181,6 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		traktandum: eintrag.knoten,
 		nummer: eintrag.nummer,
 		fassung: regelwerk.fassung,
-		juristischGegengelesen: regelwerk.juristischGegengelesen,
 		freigabevermerk: regelwerk.freigabevermerk,
 		aeste: regelwerk.aeste,
 		kennzahlen,

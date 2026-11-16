@@ -345,18 +345,17 @@
 	zweiten Mal liest ihn niemand mehr, beim vierten überblättert man auch den
 	Satz darüber.
 
-	Der Satz, auf den es ankommt, bleibt stehen: Fassung und ob juristisch
-	gegengelesen. Die Entstehungsgeschichte — welcher Block wann geprüft wurde,
+	Der Satz, auf den es ankommt, bleibt stehen: Fassung, und dass jedes
+	Ergebnis ein Vorschlag ist. Bis zum 16.11.2026 stand davor «Noch nicht
+	juristisch gegengelesen»; nach Entscheid 0052 entfällt der Satz, die
+	offenen Rechtsfragen sind eingeordnet, fest gerechnet oder als Lesart
+	einstellbar (Entscheid 0044). Die Entstehungsgeschichte — welcher Block wann geprüft wurde,
 	wie die Lehrstreite vorentschieden sind — steht im Ausklapper. Sie gehört
 	nicht weg, nur nicht viermal auf denselben Weg.
 -->
 <footer class="fassung">
 	<p>
-		Regelwerk Fassung {data.fassung}.
-		{#if !data.juristischGegengelesen}
-			<strong>Noch nicht juristisch gegengelesen.</strong>
-			Jedes Ergebnis ist ein Vorschlag an die Sitzungsleitung.
-		{/if}
+		Regelwerk Fassung {data.fassung}. Jedes Ergebnis ist ein Vorschlag an die Sitzungsleitung.
 	</p>
 	<details>
 		<summary>Wie diese Fassung entstanden ist</summary>

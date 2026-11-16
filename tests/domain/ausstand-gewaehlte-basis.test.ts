@@ -81,7 +81,7 @@ function vonHand(rw: typeof NEU, knotenId = 'k-verwaltung-wichtig', typ: Erforde
 
 describe('Fassung 2026-11-16', () => {
 	it('ist die aktuelle Fassung, besteht die Prüfungen und ändert keine Karte', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-18');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
 		expect(AUSSTAND_BEI_GEWAEHLTER_BASIS_AB).toBe(NEU.fassung);
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(NEU.knoten).toBe(VOR.knoten);

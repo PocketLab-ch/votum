@@ -1899,8 +1899,9 @@ Drei Entscheidungen dazu:
    auf den letzten Abschnitt von `index.md`; den kann kein Browser an den oberen
    Rand holen, gemessen 686 px unter der Bildkante. Sie zeigt jetzt auf «Schritt
    6 — Die Mehrheitserfordernisse», also dorthin, wo steht, was man auf der Seite
-   tut. Der Vorbehalt zur Gegenlesung geht dabei nicht verloren: Er steht als
-   Warnung auf der Seite selbst.
+   tut. Der Hinweis, dass jedes Ergebnis ein Vorschlag ist, geht dabei nicht
+   verloren: Er steht in der Fusszeile der Seite selbst (bis zum 16.11.2026 als
+   Vorbehalt zur Gegenlesung, Entscheid 0052).
 
 Bewacht wird das an zwei Stellen, und beide braucht es: `handbuch-bauen.mjs`
 bricht den Bau ab, wenn ein Sprungziel keinen Anker im erzeugten HTML hat oder
