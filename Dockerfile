@@ -57,6 +57,11 @@ COPY scripts/benutzer-anlegen.mjs ./scripts/benutzer-anlegen.mjs
 # ersten Hochladen im Betrieb, also spät.
 RUN mkdir -p /daten/dateien && chown -R versammlung:versammlung /daten
 ENV VERSAMMLUNG_DATEIEN=/daten/dateien
+# Die Version ist der Abbild-Tag (Entscheid 0053), von scripts/abbild-bauen.sh
+# als Build-Arg gesetzt. Spät im Abbild, damit die Schichten davor im
+# Zwischenspeicher bleiben; ohne Angabe zeigt die Anwendung «Entwicklungsstand».
+ARG VOTUM_VERSION=
+ENV VOTUM_VERSION=${VOTUM_VERSION}
 
 USER versammlung
 EXPOSE 3000

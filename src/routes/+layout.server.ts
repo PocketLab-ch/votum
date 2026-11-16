@@ -2,6 +2,7 @@ import { darfStammdatenAendern } from '$lib/domain/rollen';
 import { holeBetriebszustand } from '$lib/server/betriebszustand';
 import { holeLaufendeVersammlung } from '$lib/server/versammlungen';
 import { istOffenerPfad } from '$lib/domain/oeffentlich';
+import { anwendungsversion } from '$lib/server/version';
 import type { LayoutServerLoad } from './$types';
 
 /**
@@ -26,6 +27,10 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		// Wächter hinterher abweist, gehört gar nicht erst hingestellt.
 		darfStammdaten: darfStammdatenAendern(locals.benutzer?.role),
 		betrieb: await holeBetriebszustand(locals.benutzer?.operatorId),
+		// Die Version des Abbilds für die Fusszeile (Entscheid 0053); `null` im
+		// Entwicklungsstapel und auf den offenen Pfaden, die keine Fusszeile haben:
+		// Was das Telefon nicht braucht, wird nicht hingeschickt (Codeprüfung N3).
+		version: istOffenerPfad(url.pathname) && url.pathname !== '/anmelden' ? null : anwendungsversion(),
 		/*
 		 * **Der Weg zurück in den Saal — auf jeder Seite** (21.08.2026).
 		 *

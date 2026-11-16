@@ -38,7 +38,11 @@ fi
 # des Repositorys zuordnen lassen.
 commit="$(git rev-parse --short HEAD 2>/dev/null || echo 'ohne-git')"
 schmutzig=''
-if ! git diff --quiet HEAD 2>/dev/null; then
+# **Auch unversionierte Dateien zählen** (Codeprüfung 16.11.2026, Entscheid 0053):
+# `COPY . .` nimmt sie ins Abbild, `git diff` sähe sie nicht, und ein Tag ohne
+# «-lokal» soll belegen, dass der Code dem Commit gleicht. Ignorierte Dateien
+# (node_modules, build) nennt `git status` ohne `--ignored` nicht.
+if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
 	schmutzig='-lokal'
 	echo "Achtung: Das Arbeitsverzeichnis weicht vom Commit ab; der Tag wird als '$commit$schmutzig' gekennzeichnet." >&2
 fi
@@ -46,7 +50,9 @@ fi
 tag="$(date +%Y%m%d-%H%M)-${commit}${schmutzig}"
 
 echo "Baue versammlung:${tag}"
-docker build ${ohne_cache} -t "versammlung:${tag}" .
+# Die Version der Anwendung ist dieser Tag (Entscheid 0053): Fusszeile und
+# Abschlusspaket lesen ihn aus `VOTUM_VERSION`.
+docker build ${ohne_cache} --build-arg "VOTUM_VERSION=${tag}" -t "versammlung:${tag}" .
 
 # **Was zur Laufzeit gelesen wird, muss im Abbild liegen** (15.10.2026, M6).
 # Die Schriften der PDFs fehlten in jedem Betriebsabbild bis dahin, und
@@ -74,6 +80,17 @@ if [[ -n "$fehlend" ]]; then
 	echo "Abbruch: Im Abbild versammlung:${tag} fehlen unter /app/schriften oder sind nicht lesbar:${fehlend}" >&2
 	echo "Ohne sie endet jedes PDF und das Versiegeln mit 500. Das Abbild ist gebaut, der Tag" >&2
 	echo "steht aber in keiner Env-Datei (wegräumen: docker rmi versammlung:${tag})." >&2
+	exit 1
+fi
+
+# **Die Version muss im Abbild stehen** (Codeprüfung 16.11.2026, Entscheid 0053):
+# Fehlte das Build-Arg, zeigte der Betrieb «Entwicklungsstand», und jedes
+# Abschlusspaket trüge für immer «ohne Versionsangabe». Kein Prüflauf sähe es,
+# denn der gebaute Stand auf pDev läuft ohne die Variable.
+im_abbild="$(docker run --rm --entrypoint printenv "versammlung:${tag}" VOTUM_VERSION || true)"
+if [[ "$im_abbild" != "$tag" ]]; then
+	echo "Abbruch: Im Abbild versammlung:${tag} steht VOTUM_VERSION=«${im_abbild}» statt «${tag}»." >&2
+	echo "Das Abbild ist gebaut, der Tag steht aber in keiner Env-Datei (wegräumen: docker rmi versammlung:${tag})." >&2
 	exit 1
 fi
 

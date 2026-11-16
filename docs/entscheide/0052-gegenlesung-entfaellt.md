@@ -20,7 +20,7 @@ Widerruf einer Übertragung an die Bewirtschaftung (Meldung der Website).
 ## Anlass
 
 Bis dahin galt die juristische Gegenlesung als offene Bedingung
-(`docs/freigabe.md`, Punkt 1), die Oberfläche schrieb unter jedes Ergebnis
+(internes Freigabeblatt), die Oberfläche schrieb unter jedes Ergebnis
 «Noch nicht juristisch gegengelesen», und der Freigabevermerk jeder Fassung
 seit 2026-07-30 trug «Die juristische Gegenlesung steht aus». Nach Entscheid
 0044 (06.11.2026) gehen die Restfragen nicht an eine Anwältin; der
@@ -57,4 +57,4 @@ Freigegeben wurde am 12.11.2026 ohne Gegenlesung.
 
 - Entscheid 0044 (Restpaket ohne Anwältin)
 - Fassung `src/lib/rules/quorum-2026-11-19.ts`
-- `docs/freigabe.md`, Punkt 1 (internes Arbeitspapier, nicht im öffentlichen Stand)
+- das interne Freigabeblatt (nicht im öffentlichen Stand)

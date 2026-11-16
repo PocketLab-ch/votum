@@ -7,6 +7,7 @@
 	import ThemeSchalter from '$lib/components/ThemeSchalter.svelte';
 	import { istAuffaellig } from '$lib/domain/betrieb';
 	import { istOffenerPfad } from '$lib/domain/oeffentlich';
+	import { versionInWorten } from '$lib/domain/version';
 	import { handbuchZiel } from '$lib/handbuch';
 	import { deutschePflichtfelder } from '$lib/pflichtfelder';
 
@@ -256,11 +257,15 @@
 
 	{#if zeigeQuellcode}
 		<!--
-			Ein neues Fenster, damit eine laufende Sitzung nicht hinter dem
-			Quellcode verschwindet; `noopener`, weil die Seite nicht unsere ist.
+			Die Version ist der Abbild-Tag (Entscheid 0053), gleich lautend wie am
+			Betrieb, im Abschlusspaket und als Tag auf Codeberg; ohne Tag
+			«Entwicklungsstand». Der Quellcode öffnet sich in einem neuen Fenster,
+			damit eine laufende Sitzung nicht dahinter verschwindet; `noopener`,
+			weil die Seite nicht unsere ist.
 		-->
 		<footer class="quellcode">
 			Votum ist freie Software (AGPLv3) ·
+			<span class="version">{versionInWorten(data.version ?? null)}</span> ·
 			<a href="https://codeberg.org/PocketLab/votum" target="_blank" rel="noopener noreferrer">
 				Quellcode<span class="nurLeser"> (öffnet sich in einem neuen Fenster)</span>
 			</a>

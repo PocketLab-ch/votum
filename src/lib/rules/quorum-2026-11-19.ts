@@ -38,8 +38,8 @@ import { ERWEITERUNG as ERWEITERUNG_VORHER } from './quorum-2026-10-23';
 const VOR = REGELWERK_2026_11_18;
 
 /**
- * Der Widerruf, nach `#faq-pflichtenheft` der Website, geschärft nach Laien-
- * und Fachprüfung (`quellen` `pruefung/berichte/2026-11-16-votum-gegenlesung-widerruf.md`):
+ * Der Widerruf, nach `#faq-pflichtenheft` der Website, geschärft nach der
+ * internen Laien- und Fachprüfung vom 16.11.2026:
  * «beides» für beide Fälle des Satzes davor (Rz. 70 ad Art. 712s gilt für jede
  * Einschränkung, Rz. 42 ad Art. 712m für die Delegation), «jederzeit» aus
  * Rz. 42, das Mehr des Reglements statt fest des qualifizierten (Lesart L6

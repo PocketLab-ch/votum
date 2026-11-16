@@ -39,6 +39,14 @@ Votum ist in der **Beta**. Bilder und Überblick:
 <https://pocketlab.ch/development/votum/>. Votum ist freie Software unter der
 GNU Affero General Public License, Version 3 ([`LICENSE`](LICENSE)).
 
+Die Version steht unten auf der Anmeldeseite und auf jeder Seite der
+Verwaltung (nicht auf den Seiten zum Abstimmen und nicht auf der Anzeige im
+Saal) und in jedem Abschlusspaket, etwa «Version 20261116-0854-854363d4». Nennen Sie sie, wenn Sie einen Fehler melden oder
+nachfragen, wie eine Versammlung gezählt wurde. Den Quellcode genau dieser
+Version finden Sie auf Codeberg in der
+[Liste der Tags](https://codeberg.org/PocketLab/votum/tags) unter demselben
+Namen.
+
 Der Quellcode liegt öffentlich auf <https://codeberg.org/PocketLab/votum>, als
 Spiegel: Entwickelt wird an anderer Stelle, und der Spiegel nimmt keine Pull
 Requests an. Fehler und Fragen können Sie dort als Issue melden, also als

@@ -44,6 +44,7 @@ import {
 	type Manifesteintrag
 } from '$lib/domain/siegel';
 import { bezeuge, dienst, ersatzdienst } from './zeitstempel';
+import { anwendungsversion } from './version';
 import { erzeugeAuswertung } from './pdf/auswertung';
 import { erzeugeStimmnachweis, type Stimmzeile } from './pdf/stimmnachweis';
 import { erzeugeVerlauf, type VerlaufszeileImBlatt } from './pdf/verlauf';
@@ -1347,6 +1348,8 @@ async function versiegleUnterSperre(
 				}
 			: {}),
 		zeitquelle: zeitquelle(),
+		// Mit welchem Stand der Anwendung versiegelt wurde (Entscheid 0053).
+		anwendung: { name: 'Votum', version: anwendungsversion() },
 		eintraege,
 		nichtEnthalten: [
 			{

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Meldung from '$lib/components/Meldung.svelte';
 	import { manifestzeitpunkt } from '$lib/domain/datum';
+	import { anwendungInWorten } from '$lib/domain/version';
 	let { data, form } = $props();
 
 	/*
@@ -73,6 +74,7 @@
 
 	{#if befund.manifest}
 		{@const m = befund.manifest}
+		{@const anwendung = anwendungInWorten((m as { anwendung?: unknown }).anwendung)}
 		<section class="teil">
 			<h3>Was im Paket steht</h3>
 			<dl class="angaben">
@@ -86,6 +88,11 @@
 				<dd>{manifestzeitpunkt(m.versiegeltAm)} durch {m.versiegeltDurch}</dd>
 				<dt>Zeitquelle</dt>
 				<dd>{m.zeitquelle}</dd>
+				<!-- Seit Entscheid 0053; ältere Pakete tragen die Angabe nicht. -->
+				{#if anwendung}
+					<dt>Anwendung</dt>
+					<dd>{anwendung}</dd>
+				{/if}
 				<dt>Siegel</dt>
 				<dd class="pruefsumme">{befund.gerechnetesSiegel}</dd>
 			</dl>

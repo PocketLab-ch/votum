@@ -24,6 +24,7 @@
 // Relativ, nicht über `$lib`: `check:schichten` löst den Alias nicht auf und
 // hielte den Nachbarn im selben Kern für Aussenwelt (AD-1, gemessen 22.09.2026).
 import { zeichenzahl } from './zeichenzahl';
+import { anwendungInWorten } from './version';
 
 export interface Manifesteintrag {
 	/** Pfad im Paket, mit Schrägstrichen. */
@@ -111,6 +112,17 @@ export interface Manifest {
 	};
 	/** Woher die Uhr kam (AD-12) — im lokalen Betrieb kann sie falsch gehen. */
 	zeitquelle: string;
+	/**
+	 * Mit welchem Stand der Anwendung versiegelt wurde (Entscheid 0053,
+	 * 16.11.2026): die Version ist der Abbild-Tag, `null` im Entwicklungsstapel.
+	 * Damit lässt sich belegen, mit welcher Fassung des Codes eine Versammlung
+	 * gezählt wurde; die Fassung des Regelwerks steht je Traktandum daneben.
+	 *
+	 * **Fehlt das Feld, stammt das Paket aus der Zeit davor**, wie bei
+	 * `zeitstempelstelle`. Das Siegel ist die Prüfsumme der Bytes; ein Paket
+	 * ohne das Feld bleibt so gültig, wie es versiegelt wurde.
+	 */
+	anwendung?: { name: string; version: string | null };
 	eintraege: Manifesteintrag[];
 	/** Was ausdrücklich **nicht** im Paket liegt, und warum. */
 	nichtEnthalten: { was: string; grund: string }[];
@@ -199,6 +211,9 @@ export function manifestInWorten(m: Manifest, siegel: string): string {
 	if (m.versammlung.geschlossenAm) z.push(`Geschlossen am: ${m.versammlung.geschlossenAm}`);
 	z.push(`Versiegelt am:  ${m.versiegeltAm} durch ${m.versiegeltDurch}`);
 	z.push(`Zeitquelle:     ${m.zeitquelle}`);
+	// Seit Entscheid 0053; ältere Pakete tragen die Angabe nicht.
+	const anwendung = anwendungInWorten(m.anwendung);
+	if (anwendung) z.push(`Anwendung:      ${anwendung}`);
 	z.push('');
 	z.push('WAS DIESES PAKET IST');
 	z.push('-'.repeat(56));

@@ -56,6 +56,20 @@ describe('Das Manifest', () => {
 		expect(t).toContain('Das Protokoll');
 	});
 
+	it('nennt die Anwendung samt Version, und ein Paket von vorher bleibt ohne die Zeile (Entscheid 0053)', () => {
+		const mit = manifestInWorten(
+			manifest({ anwendung: { name: 'Votum', version: '20261116-0854-854363d4' } }),
+			'c'.repeat(64)
+		);
+		expect(mit).toContain('Anwendung:      Votum, Version 20261116-0854-854363d4');
+		const dev = manifestInWorten(manifest({ anwendung: { name: 'Votum', version: null } }), 'c'.repeat(64));
+		expect(dev).toContain('Anwendung:      Votum, ohne Versionsangabe');
+		expect(dev).not.toContain('Entwicklungsstand');
+		// Vorher: kein Feld, keine Zeile, und das JSON bleibt Byte für Byte, wie es war.
+		expect(manifestInWorten(manifest(), 'c'.repeat(64))).not.toMatch(/^Anwendung: {6}/m);
+		expect(manifestAlsJson(manifest())).not.toContain('anwendung');
+	});
+
 	it('nennt die Zeitstempelstelle auch dem, der nur die Worte liest', () => {
 		/*
 		 * **Der Befund vom 22.09.2026.** Die Angabe stand nur in

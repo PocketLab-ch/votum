@@ -25,6 +25,12 @@
 #      fremde Autoren brechen ab); der Push geht dann ohne `--force`, und ein früherer
 #      Stand bleibt auffindbar (`SECURITY.md` nennt ihn). Ohne die Variable ist
 #      er ein neuer Anfang, gedacht nur für den ersten Stand.
+#   6. Mit `SPIEGEL_TAG=<Abbild-Tag>` einen annotierten Tag gleichen Namens auf
+#      diesen Commit, Nachricht «Votum <tag>», neutraler Autor, Datum des
+#      Commits (Entscheid 0053: die Version ist der Abbild-Tag). Der Tag muss
+#      auf `<commit>` enden, sonst Abbruch. Mit `SPIEGEL_VORGAENGER` ist er
+#      Pflicht (ohne nur mit `SPIEGEL_OHNE_TAG=1`). Gepusht wird er eigens:
+#      `git push <url> main refs/tags/<tag>`.
 #
 # **Kein Push.** Der Push ist ein eigener Schritt (Plan, Schritt 5), nach
 # einem Blick auf den Stand.
@@ -68,6 +74,21 @@ ziel="$2"
 repo="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 voll="$(git -C "$repo" rev-parse --verify --quiet "${commit}^{commit}")" || abbruch "«${commit}» ist kein Commit in ${repo}."
 kurz="$(git -C "$repo" rev-parse --short=8 "$voll")"
+# Der Tag wird vor allen Scans geprüft (Entscheid 0053): Ein falscher bricht ab, bevor
+# etwas entsteht. Ohne «-lokal», denn ein Stand aus einem abweichenden Baum ist kein
+# Commit, und der Commit im Tag muss dieser sein.
+# **Pflicht für jeden Stand mit Vorgänger** (Codeprüfung 16.11.2026): README und
+# Handbuch versprechen den Stand jeder Version unter ihrem Tag. Ohne Tag nur mit
+# `SPIEGEL_OHNE_TAG=1`, ausdrücklich.
+if [[ -n "${SPIEGEL_VORGAENGER:-}" && -z "${SPIEGEL_TAG:-}" && "${SPIEGEL_OHNE_TAG:-}" != 1 ]]; then
+	abbruch "Ein Stand mit Vorgänger braucht SPIEGEL_TAG=<Abbild-Tag> (oder ausdrücklich SPIEGEL_OHNE_TAG=1)."
+fi
+if [[ -n "${SPIEGEL_TAG:-}" ]]; then
+	[[ "$SPIEGEL_TAG" =~ ^[0-9]{8}-[0-9]{4}-[0-9a-f]{7,40}$ ]] ||
+		abbruch "SPIEGEL_TAG «${SPIEGEL_TAG}» ist kein Abbild-Tag (JJJJMMTT-HHMM-<commit>, ohne «-lokal»)."
+	[[ "$voll" == "${SPIEGEL_TAG##*-}"* ]] ||
+		abbruch "SPIEGEL_TAG «${SPIEGEL_TAG}» nennt einen anderen Commit als ${kurz}."
+fi
 
 # Erst der Ort, dann anlegen: Ein Ziel im Repo soll nicht als Verzeichnis zurückbleiben.
 ziel="$(realpath -m "$ziel")"
@@ -166,5 +187,12 @@ fi
 neu="$(git -C "$ziel" commit-tree "$baum" "${eltern[@]}" -m "Stand ${kurz}")"
 git -C "$ziel" update-ref refs/heads/main "$neu"
 git -C "$ziel" reset -q
+# **Der Tag des Stands ist die Version** (Entscheid 0053): `SPIEGEL_TAG=<Abbild-Tag>`
+# setzt einen annotierten Tag gleichen Namens auf den Commit, Nachricht «Votum <tag>»,
+# mit dem neutralen Autor und dem Datum des Commits (beide oben exportiert). Der Tag
+# muss zum Commit passen, sonst trüge der Stand die Version eines anderen Codes.
+if [[ -n "${SPIEGEL_TAG:-}" ]]; then
+	git -C "$ziel" tag -a "$SPIEGEL_TAG" -m "Votum ${SPIEGEL_TAG}" "$neu"
+fi
 fertig=1
-echo "Commit $(git -C "$ziel" log -1 --format='%h «%s», %an <%ae>, %cI' main) in ${ziel}$([[ ${#eltern[@]} -gt 0 ]] && echo ", nach $(git -C "$ziel" rev-parse --short FETCH_HEAD)" || echo ", ohne Vorgänger"). Nicht gepusht."
+echo "Commit $(git -C "$ziel" log -1 --format='%h «%s», %an <%ae>, %cI' main) in ${ziel}$([[ ${#eltern[@]} -gt 0 ]] && echo ", nach $(git -C "$ziel" rev-parse --short FETCH_HEAD)" || echo ", ohne Vorgänger")$([[ -n "${SPIEGEL_TAG:-}" ]] && echo ", Tag ${SPIEGEL_TAG}"). Nicht gepusht$([[ -n "${SPIEGEL_TAG:-}" ]] && echo "; Push mit dem Tag: git -C ${ziel} push <url> main refs/tags/${SPIEGEL_TAG}")."

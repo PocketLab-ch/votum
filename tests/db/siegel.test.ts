@@ -55,6 +55,7 @@ import { erzeugeVerlauf } from '$lib/server/pdf/verlauf';
 import { join } from 'node:path';
 import { rename } from 'node:fs/promises';
 import { holeStimmnachweis } from '$lib/server/siegel';
+import { env } from '$env/dynamic/private';
 import { siegelangaben } from '../../src/routes/tage/[id=kennung]/siegel/siegelangaben';
 import { manifestAlsJson, pruefe, type Manifest, type Manifesteintrag } from '$lib/domain/siegel';
 import { normalisiereFingerabdruck } from '$lib/domain/dienste';
@@ -1611,6 +1612,28 @@ describe('Ein Paket prüfen', () => {
 			process.env.VERSAMMLUNG_ZEITSTEMPEL_FINGERABDRUECKE = vorherAbdruecke;
 		}
 	}
+
+	it('schreibt die Version der Anwendung ins Manifest, im Entwicklungsstapel ohne Tag (Entscheid 0053)', async () => {
+		/*
+		 * `env` ist hier der Ersatz aus `tests/db/env-ersatz.ts`, eine Kopie von
+		 * `process.env` beim Laden; gesetzt wird deshalb dort, nicht in
+		 * `process.env`.
+		 */
+		const vorher = env.VOTUM_VERSION;
+		try {
+			env.VOTUM_VERSION = '20261116-0854-854363d4';
+			const { versammlung } = await abgeschlossen('Version im Manifest', '2026-12-23');
+			const s = await versiegle(handelnder(betreiber), versammlung, '2026-12-23 21:30:00');
+			expect((JSON.parse(s.manifest) as Manifest).anwendung).toEqual({ name: 'Votum', version: '20261116-0854-854363d4' });
+
+			env.VOTUM_VERSION = 'latest';
+			const zwei = await abgeschlossen('Version ohne Tag', '2026-12-24');
+			const t = await versiegle(handelnder(betreiber), zwei.versammlung, '2026-12-24 21:30:00');
+			expect((JSON.parse(t.manifest) as Manifest).anwendung).toEqual({ name: 'Votum', version: null });
+		} finally {
+			env.VOTUM_VERSION = vorher;
+		}
+	});
 
 	it('schreibt die erwartete Zeitstempelstelle ins Manifest (S-3)', async () => {
 		const s = await mitDienst(async () => {

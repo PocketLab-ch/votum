@@ -920,6 +920,12 @@ async function main() {
 			const ziel = 'https://codeberg.org/PocketLab/votum';
 			const link = leitung.locator(`footer a[href="${ziel}"]`);
 			behaupte(await link.count(), 'Auf der Übersicht fehlt der Link zum Quellcode');
+			// Entscheid 0053: daneben die Version, der Abbild-Tag, oder ohne Tag «Entwicklungsstand».
+			const fussText = (await leitung.locator('footer.quellcode').first().innerText()).replace(/\s+/g, ' ');
+			behaupte(
+				/Version \d{8}-\d{4}-[0-9a-f]+|Entwicklungsstand/.test(fussText),
+				`Die Fusszeile nennt keine Version: ${fussText.slice(0, 80)}`
+			);
 
 			const anmelden = await (
 				await leitung.request.get(`${ZIEL}/anmelden`, { headers: { cookie: '' } })

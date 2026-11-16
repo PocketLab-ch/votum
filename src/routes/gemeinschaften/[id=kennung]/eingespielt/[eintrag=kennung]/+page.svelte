@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { manifestzeitpunkt } from '$lib/domain/datum';
+	import { anwendungInWorten } from '$lib/domain/version';
 
 	let { data } = $props();
 
 	const m = $derived(data.eintrag.manifest);
+	const anwendung = $derived(anwendungInWorten((m as { anwendung?: unknown }).anwendung));
 
 	function groesse(bytes: number): string {
 		return bytes < 1024 * 1024
@@ -60,6 +62,11 @@
 		<dd>{manifestzeitpunkt(m.versiegeltAm)} durch {m.versiegeltDurch}</dd>
 		<dt>Zeitquelle</dt>
 		<dd>{m.zeitquelle}</dd>
+		<!-- Seit Entscheid 0053; ältere Pakete tragen die Angabe nicht. -->
+		{#if anwendung}
+			<dt>Anwendung</dt>
+			<dd>{anwendung}</dd>
+		{/if}
 		<dt>Siegel</dt>
 		<dd class="pruefsumme">{data.eintrag.siegel}</dd>
 		<dt>Aufgenommen</dt>
