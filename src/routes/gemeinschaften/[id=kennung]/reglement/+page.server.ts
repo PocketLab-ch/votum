@@ -8,6 +8,7 @@ import {
 	pruefungshinweis,
 	pruefungOffen,
 	regelGiltFuer,
+	regelOhneKoepfeGiltFuer,
 	regelInWorten,
 	regelReichweite
 } from '$lib/domain/reglement';
@@ -252,6 +253,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				.knoten.filter((k) => k.geschaeftsart)
 				.map((k) => [k.id, k.titel])
 		),
+		// Wo eine Regel ohne Köpfe greift, je Art (Codeprüfung Block A, N2).
+		ohneKoepfeGiltFuer: Object.fromEntries(
+			GESCHAEFTSARTEN.map((g) => [g.art, regelOhneKoepfeGiltFuer(holeRegelwerk(), g.art)])
+		),
 		reichweiten: Object.fromEntries(
 			GESCHAEFTSARTEN.map((g) => [g.art, regelReichweite(holeRegelwerk(), g.art)])
 		),
@@ -353,17 +358,22 @@ export const actions: Actions = {
 		const handelnder = handelnderAus(locals.benutzer);
 		const daten = await request.formData();
 
-		const mitQuoten = jaNein(daten.get('mitQuoten'));
+		// «Köpfe zählen nicht» verlangt die Wertquoten; das Kästchen dazu ist dann
+		// gesperrt und kommt nicht mit (ein gesperrtes Feld sendet der Browser nicht).
+		const ohneKoepfe = jaNein(daten.get('kopfeZaehlenNicht'));
+		const mitQuoten = ohneKoepfe || jaNein(daten.get('mitQuoten'));
 		try {
 			await erstelleReglementsregel(handelnder, {
 				stwegId: params.id,
 				geschaeftsart: text(daten.get('geschaeftsart')) as Geschaeftsart,
-				kopfSchwelle: {
-					zaehler: ganzzahl(daten.get('kopfZaehler')),
-					nenner: ganzzahl(daten.get('kopfNenner')),
-					art: text(daten.get('kopfArt')) as Schwellenart
-				},
-				kopfbasis: text(daten.get('kopfbasis')) as Kopfbasis,
+				kopfSchwelle: ohneKoepfe
+					? null
+					: {
+							zaehler: ganzzahl(daten.get('kopfZaehler')),
+							nenner: ganzzahl(daten.get('kopfNenner')),
+							art: text(daten.get('kopfArt')) as Schwellenart
+						},
+				kopfbasis: ohneKoepfe ? 'anwesend_vertreten' : (text(daten.get('kopfbasis')) as Kopfbasis),
 				quotenSchwelle: mitQuoten
 					? {
 							zaehler: ganzzahl(daten.get('quotenZaehler')),
@@ -415,7 +425,10 @@ export const actions: Actions = {
 		const handelnder = handelnderAus(locals.benutzer);
 		const daten = await request.formData();
 
-		const mitQuoten = jaNein(daten.get('mitQuoten'));
+		// «Köpfe zählen nicht» verlangt die Wertquoten; das Kästchen dazu ist dann
+		// gesperrt und kommt nicht mit (ein gesperrtes Feld sendet der Browser nicht).
+		const ohneKoepfe = jaNein(daten.get('kopfeZaehlenNicht'));
+		const mitQuoten = ohneKoepfe || jaNein(daten.get('mitQuoten'));
 		try {
 			const { geaendert } = await aendereReglementsregelAn(
 				handelnder,
@@ -423,12 +436,14 @@ export const actions: Actions = {
 				text(daten.get('regelId')),
 				{
 					geschaeftsart: text(daten.get('geschaeftsart')) as Geschaeftsart,
-					kopfSchwelle: {
-						zaehler: ganzzahl(daten.get('kopfZaehler')),
-						nenner: ganzzahl(daten.get('kopfNenner')),
-						art: text(daten.get('kopfArt')) as Schwellenart
-					},
-					kopfbasis: text(daten.get('kopfbasis')) as Kopfbasis,
+					kopfSchwelle: ohneKoepfe
+						? null
+						: {
+								zaehler: ganzzahl(daten.get('kopfZaehler')),
+								nenner: ganzzahl(daten.get('kopfNenner')),
+								art: text(daten.get('kopfArt')) as Schwellenart
+							},
+					kopfbasis: ohneKoepfe ? 'anwesend_vertreten' : (text(daten.get('kopfbasis')) as Kopfbasis),
 					quotenSchwelle: mitQuoten
 						? {
 								zaehler: ganzzahl(daten.get('quotenZaehler')),

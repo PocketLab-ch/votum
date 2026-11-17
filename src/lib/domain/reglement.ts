@@ -13,7 +13,7 @@
  */
 import { FachlicherFehler } from './gemeinschaft';
 import { anteilInWorten } from './beschlussfaehigkeit';
-import { schwelle as rechneSchwelle, schwelleInWorten, type Schwelle } from './mehrheit';
+import { UNABHAENGIG_VON_KOEPFEN, schwelle as rechneSchwelle, schwelleInWorten, type Schwelle } from './mehrheit';
 import { AUSSCHLUSSKLAGE_KNOTEN, betroffeneStimmenNichtMit, EINSPRACHE_KNOTEN, EINWAND_IM_SAAL, einwandImSaal, einwandStrengerAb, kennzahlenNachZaehlweise, NACH_DER_ANFECHTUNGSFRIST, sperreNachLehre, vereinbartBedingung, type Erfordernis, type Ergebniskarte, type Kennzahlen } from './entscheidbaum';
 import { bezugsgroessenHinweis, bezugsgroessensatz, GESCHAEFTSARTEN, quotenwirkungssatz, regelKannGreifen, regelNurFallgenau, UMSTRITTEN_SATZ, type Ergebnistyp, type Geschaeftsart, type Kopfbasis, type Quotenbasis, type Regelwerk, type Reglementsverhalten } from './regelwerk';
 import type { Id } from './types';
@@ -58,6 +58,47 @@ export const KOPFBASIS_HINWEIS =
 	'herrschender Lehre bei den Köpfen mit und wirkt wie ein Nein; lassen Sie dafür «Enthaltungen bleiben in der ' +
 	'Bezugsgrösse» angekreuzt.';
 
+/**
+ * Der Hinweis an der Wahl «Köpfe zählen nicht» in der Reglementsmaske
+ * (Produktentscheid 16.11.2026). Fundstellen nach `quellen`
+ * `themen/stockwerkeigentum/gesetz.md`, Art. 712m Abs. 1, Abweichung durch
+ * Vereinbarung.
+ */
+export const OHNE_KOEPFE_HINWEIS =
+	// Laien- und Fachprüfung 16.11.2026, Runden 1 und 2 (Berichte `2026-11-16-votum-wertquotenmehr-*`):
+	// das Praktische zuerst (R2-L2), die Schwelle nach dem Reglement (R2-F3); das Recht in `OHNE_KOEPFE_RECHT`.
+	'Wählen Sie das nur, wenn Ihr Reglement das Mehr allein nach Wertquoten bemisst, etwa «Mehrheit ' +
+	'der an der Versammlung vertretenen Anteile (Wertquoten)». Steht dort nur «Anteile», kann auch ' +
+	'eine Stimme je Einheit gemeint sein; klären Sie das vor der Versammlung. Stellen Sie unten die ' +
+	'Schwelle so ein, wie das Reglement sie nennt: für die vertretenen Wertquoten «mehr als» 1 von 2 ' +
+	'und «nur die anwesenden oder vertretenen», bei einer neuen Regel schon so vorbelegt; für alle ' +
+	'Wertquoten «alle Wertquoten der Gemeinschaft». Nimmt es die Enthaltungen aus der Bezugsgrösse, ' +
+	// Laien- und Fachprüfung Runde 3: Der Haken ist vorgegeben (R3-L1); die Nichtabgabe wirkt wie ein Nein (R3-L3, R3-F2).
+	'entfernen Sie den vorgegebenen Haken bei «Enthaltungen bleiben in der Bezugsgrösse». Wer anwesend ' +
+	'ist und nichts abgibt, zählt in Votum weiter mit und wirkt wie ein Nein; fragen Sie vor dem Schliessen ' +
+	'nach, wer noch nicht abgestimmt hat. Votum wendet die Regel nur an, wo das Gesetz ' +
+	'das einfache Mehr verlangt; wo es mehr verlangt, zählt es nach dem Gesetz. Abgestimmt wird mit ' +
+	'einzelnen Stimmen; von Hand zählen lässt sich nicht, weil die Wertquoten an der Einheit hängen. ' +
+	'Ob die Versammlung beschlussfähig ist, rechnet Votum unverändert nach Personen und Anteilen. Am ' +
+	'gemeinsamen Abend gilt die Regel nur für diese Gemeinschaft.';
+
+/**
+ * Der zweite Absatz zur Wahl «Köpfe zählen nicht»: woher die Abweichung ihre
+ * Geltung hat (Fachprüfung 16.11.2026, F1 bis F3 und R2-F1; Rz. 186 ad
+ * Art. 712m, Rz. 123 und 126 ad Art. 712g, BGE 143 III 537 E. 4.2.4 zum
+ * Wechsel auf eine Stimme je Einheit, auf Wertquoten übertragen eine Folgerung).
+ * Derselbe Gedanke wie im Handbuch zur Ausschlussklage («nicht geklärt …»).
+ */
+export const OHNE_KOEPFE_RECHT =
+	'Nach dem Gesetz zählen beim einfachen Mehr die Köpfe (ZGB Art. 712m Abs. 2 i.V.m. Art. 67 ' +
+	'Abs. 2). Ein Reglement darf stattdessen nach Wertquoten zählen, wenn das einstimmig eingeführt ' +
+	'wurde (SVIT-Kommentar Rz. 186 ad Art. 712m). Steht die Bestimmung seit der Begründung im ' +
+	'Reglement, ist das gegeben. Kam sie später mit weniger Stimmen hinein und hat sie niemand innert ' +
+	'eines Monats angefochten, gilt sie wohl trotzdem. Den Wechsel zu einer Stimme je Einheit hat das ' +
+	'Bundesgericht in diesem Fall nur als anfechtbar angesehen, nicht als nichtig (BGE 143 III 537 ' +
+	'E. 4.2.4). Für die Wertquoten ist das nicht entschieden. Für die Beschlussfähigkeit zählen weiter ' +
+	'die Personen (Rz. 16a ad Art. 712p).';
+
 export interface ReglementsregelEingabe {
 	/**
 	 * Auf welchen Fall des Entscheidbaums die Regel beschränkt ist (22.08.2026).
@@ -73,8 +114,17 @@ export interface ReglementsregelEingabe {
 	knotenId?: string | null;
 	stwegId: Id;
 	geschaeftsart: Geschaeftsart;
-	/** Die Kopfschwelle, etwa zwei Drittel. */
-	kopfSchwelle: Schwelle;
+	/**
+	 * Die Kopfschwelle, etwa zwei Drittel; `null` heisst «Köpfe zählen nicht».
+	 *
+	 * **Ohne Köpfe nur mit Wertquotenschwelle** (Produktentscheid 16.11.2026:
+	 * Wertquotenmehr «bauen»). Manche Reglemente lassen das einfache Mehr nach
+	 * den vertretenen Anteilen allein entscheiden (Rz. 186 ad Art. 712m, dritte
+	 * Variante). Angewandt wird eine solche Regel nur, wo das Gesetz das einfache
+	 * Mehr verlangt (`wendeReglementAn`, Vorbehalt `ohne_koepfe`). Die Kopfbasis
+	 * bleibt dann ohne Wirkung und steht auf `anwesend_vertreten`.
+	 */
+	kopfSchwelle: Schwelle | null;
 	kopfbasis: Kopfbasis;
 	/** Zusätzliche Wertquotenschwelle, oder null. */
 	quotenSchwelle: Schwelle | null;
@@ -155,6 +205,10 @@ export function pruefeReglementsregel(
 	 * Art und lief an der Schranke vorbei. Gesperrte Fälle zählen nicht mit,
 	 * dort greift ohnehin keine Regel, und ihr Grund steht an der Karte.
 	 */
+	// Ohne Köpfe trägt die Kopfbasis nichts; sie steht fest, damit kein Wert
+	// durch die Vergleiche wandert, den niemand gewählt hat.
+	if (eingabe.kopfSchwelle === null) eingabe = { ...eingabe, kopfbasis: 'anwesend_vertreten' };
+
 	if (eingabe.kopfbasis === 'alle_ausser_betroffene' && regelwerk) {
 		const faelle = regelwerk.knoten.filter(
 			(k) =>
@@ -175,8 +229,16 @@ export function pruefeReglementsregel(
 		}
 	}
 
-	pruefeSchwelle(eingabe.kopfSchwelle, 'kopfSchwelle');
+	if (eingabe.kopfSchwelle) pruefeSchwelle(eingabe.kopfSchwelle, 'kopfSchwelle');
 	if (eingabe.quotenSchwelle) pruefeSchwelle(eingabe.quotenSchwelle, 'quotenSchwelle');
+	if (!eingabe.kopfSchwelle && !eingabe.quotenSchwelle) {
+		throw new FachlicherFehler(
+			'ohne_koepfe_ohne_quoten',
+			'Zählen die Köpfe nicht, braucht die Regel eine Schwelle bei den Wertquoten; sonst ' +
+				'liesse sich nicht sagen, wann ein Antrag angenommen ist.',
+			'quotenSchwelle'
+		);
+	}
 
 	// Eine Quotenschwelle ohne Quotenbasis wäre eine Anforderung, zu der niemand
 	// weiss, worauf sie sich bezieht.
@@ -269,8 +331,8 @@ export function legeReglementsregelAn(
 			{ art: 'stweg', id: geprueft.stwegId },
 			{
 				geschaeftsart: geprueft.geschaeftsart,
-				kopf: `${geprueft.kopfSchwelle.zaehler}/${geprueft.kopfSchwelle.nenner}`,
-				kopfart: geprueft.kopfSchwelle.art,
+				kopf: bruchtext(geprueft.kopfSchwelle),
+				kopfart: geprueft.kopfSchwelle?.art ?? null,
 				kopfbasis: geprueft.kopfbasis,
 				quoten: geprueft.quotenSchwelle
 					? `${geprueft.quotenSchwelle.zaehler}/${geprueft.quotenSchwelle.nenner}`
@@ -290,12 +352,21 @@ export function legeReglementsregelAn(
  * «nichts geaendert» durch, und der Verlauf schwiege ueber die Aenderung, die
  * am Ergebnis das meiste bewegt.
  */
+/**
+ * Ein Bruch für Verlauf und Vergleich. Ohne Schwelle ein Wort statt `null`:
+ * Leere Werte lässt der Verlauf weg, und die Änderung auf «Köpfe zählen nicht»
+ * stünde dort ohne «Nachher» (Codeprüfung Block A, N3).
+ */
+function bruchtext(s: Schwelle | null): string {
+	return s ? `${s.zaehler}/${s.nenner}` : 'Köpfe zählen nicht';
+}
+
 function merkmale(r: ReglementsregelEingabe): Record<string, string | null> {
 	return {
 		geschaeftsart: r.geschaeftsart,
 		fall: r.knotenId ?? null,
-		kopf: `${r.kopfSchwelle.zaehler}/${r.kopfSchwelle.nenner}`,
-		kopfart: r.kopfSchwelle.art,
+		kopf: bruchtext(r.kopfSchwelle),
+		kopfart: r.kopfSchwelle?.art ?? null,
 		kopfbasis: r.kopfbasis,
 		quoten: r.quotenSchwelle
 			? `${r.quotenSchwelle.zaehler}/${r.quotenSchwelle.nenner}`
@@ -410,7 +481,12 @@ export type Regelvorbehalt =
 	 */
 	| 'milderung'
 	| 'gemischt'
-	| 'betroffenenzustimmung';
+	| 'betroffenenzustimmung'
+	/**
+	 * Die Regel zählt die Köpfe nicht, und das Gesetz verlangt hier mehr als das
+	 * einfache Mehr (Produktentscheid 16.11.2026: nur beim einfachen Mehr).
+	 */
+	| 'ohne_koepfe';
 
 /**
  * Ob die Regel strenger ist als das gesetzliche Erfordernis.
@@ -424,6 +500,9 @@ export type Regelvorbehalt =
  */
 function regelStrengerAlsGesetz(regel: Reglementsregel, gesetz: Erfordernis): boolean | null {
 	if (!gesetz.kopfSchwelle) return null;
+	// Ohne Köpfe gegen ein Mehr mit Köpfen: bei den Köpfen milder, mit der
+	// Wertquotenschwelle strenger, also nicht vergleichbar.
+	if (!regel.kopfSchwelle) return null;
 	if (regel.kopfbasis !== gesetz.kopfbasis) return null;
 
 	const kopfGroesser =
@@ -593,7 +672,8 @@ export function einordnungGegenGesetz(
 /** Die Masse eines Mehrs, nach denen gezählt wird: Köpfe, Wertquoten, Enthaltung. */
 export interface Mehrmasse {
 	kopfbasis: Kopfbasis;
-	kopfSchwelle: Schwelle;
+	/** `null`: Die Köpfe zählen nicht (Regel nur nach Wertquoten). */
+	kopfSchwelle: Schwelle | null;
 	quotenbasis: Quotenbasis;
 	quotenSchwelle: Schwelle | null;
 	enthaltungZaehltMit: boolean;
@@ -615,15 +695,25 @@ export function vergleicheMasse(
 	b: Mehrmasse,
 	ausschlussklage: boolean
 ): 'gleich' | 'strenger' | 'milder' | 'gemischt' {
-	let kopfBasis: Richtung;
-	if (a.kopfbasis === b.kopfbasis) kopfBasis = 0;
-	else {
-		const rang = ausschlussklage ? KOPFRANG_AUSSCHLUSSKLAGE : KOPFRANG;
-		const r = rang[a.kopfbasis];
-		const g = rang[b.kopfbasis];
-		kopfBasis = r === undefined || g === undefined ? null : r > g ? 1 : -1;
+	/*
+	 * **Ohne Köpfe ist bei den Köpfen das Mildeste** (16.11.2026), das
+	 * Spiegelbild der fehlenden Quotenschwelle unten: Wer keine Kopfbedingung
+	 * stellt, verlangt bei den Köpfen weniger als jede Schwelle.
+	 */
+	let kopf: Richtung;
+	if (!a.kopfSchwelle || !b.kopfSchwelle) {
+		kopf = !a.kopfSchwelle && !b.kopfSchwelle ? 0 : !a.kopfSchwelle ? -1 : 1;
+	} else {
+		let kopfBasis: Richtung;
+		if (a.kopfbasis === b.kopfbasis) kopfBasis = 0;
+		else {
+			const rang = ausschlussklage ? KOPFRANG_AUSSCHLUSSKLAGE : KOPFRANG;
+			const r = rang[a.kopfbasis];
+			const g = rang[b.kopfbasis];
+			kopfBasis = r === undefined || g === undefined ? null : r > g ? 1 : -1;
+		}
+		kopf = zusammen(kopfBasis, vergleicheSchwelle(a.kopfSchwelle, b.kopfSchwelle));
 	}
-	const kopf = zusammen(kopfBasis, vergleicheSchwelle(a.kopfSchwelle, b.kopfSchwelle));
 
 	let quoten: Richtung;
 	const aq = a.quotenSchwelle ? a.quotenbasis : 'keine';
@@ -1122,6 +1212,11 @@ export function wendeReglementAn(
 		if (regelNurFallgenau(erfordernis) && !regel.knotenId) {
 			return mitEinstellung({ erfordernis, regel, vorbehalt: 'nur_fallgenau' }, einstellung, lesarten.L13);
 		}
+		// Vor den Vergleichen, damit die Karte den eigenen Grund nennt statt
+		// «strenger» oder «gemischt» (Codeprüfung Block A, N1); siehe unten.
+		if (!regel.kopfSchwelle && erfordernis.typ !== 'einfaches_mehr') {
+			return mitEinstellung({ erfordernis, regel, vorbehalt: 'ohne_koepfe' }, einstellung, lesarten.L13);
+		}
 		// Nicht an der erweiterten Bewirtschaftung (`regelNurFallgenau`, Fassung
 		// 2026-10-30): Rz. 196 ad Art. 712m trifft die systematische Einführung,
 		// nicht eine Klausel für genau diesen Fall (Fachprüfung A4, R4-F-1).
@@ -1158,6 +1253,20 @@ export function wendeReglementAn(
 		if (verhalten === 'einordnen' && einordnungGegenGesetz(regel, erfordernis) === 'gemischt') {
 			return mitEinstellung({ erfordernis, regel, vorbehalt: 'gemischt' }, einstellung, lesarten.L13);
 		}
+	}
+
+	/*
+	 * **Ohne Köpfe nur beim einfachen Mehr** (Produktentscheid 16.11.2026).
+	 * Das einfache Mehr regelt das Gesetz nicht zwingend, ein Reglement darf
+	 * es nach den Wertquoten allein bemessen (Rz. 186 ad Art. 712m). Wo das
+	 * Gesetz Köpfe und Anteile oder alle verlangt, ist das Weglassen der Köpfe
+	 * eine eigene Rechtsfrage, die Votum nicht still entscheidet. Nach den
+	 * Sperren der Knoten, damit ein gesperrter Fall seinen eigenen Grund
+	 * nennt. Hier noch einmal für Erfordernisse aus Fassungen ohne
+	 * Reglementsverhalten; mit Verhalten greift schon die Prüfung oben.
+	 */
+	if (!regel.kopfSchwelle && erfordernis.typ !== 'einfaches_mehr') {
+		return mitEinstellung({ erfordernis, regel, vorbehalt: 'ohne_koepfe' }, einstellung, lesarten.L13);
 	}
 
 	/*
@@ -1238,7 +1347,14 @@ export function erfordernisAusRegel(regel: Reglementsregel): Erfordernis {
 		astId: 'a-reglement',
 		knotenId: `k-reglement-${regel.geschaeftsart}`,
 		typ: 'reglementsmehr',
-		titel: regelInWorten(regel),
+		/*
+		 * **Der Fall, nicht das Mehr** (Probe Wertquotenmehr, 17.11.2026): Bis
+		 * dahin stand hier `regelInWorten`, und im Protokoll las man «hergeleitet
+		 * als ‹mehr als die Hälfte der anwesenden oder vertretenen Wertquoten …›»
+		 * neben demselben Mehr; die Karte trug den Satz zweimal. Der Titel nennt
+		 * wie bei jedem Knoten den Fall, das Mehr steht im Erfordernis.
+		 */
+		titel: GESCHAEFTSARTEN.find((g) => g.art === regel.geschaeftsart)?.bezeichnung ?? regelInWorten(regel),
 		rechtsgrundlage: `Reglement der Gemeinschaft, ${regel.fundstelle}`,
 		kopfbasis: regel.kopfbasis,
 		quotenbasis: regel.quotenbasis,
@@ -1446,8 +1562,49 @@ export function regelGiltFuer(rw: Regelwerk, art: Geschaeftsart): string[] {
 		.map((k) => k.titel);
 }
 
+/**
+ * Worauf eine Regel **ohne Köpfe** dieser Geschäftsart angewandt wird
+ * (Codeprüfung Block A, N2): nur die Fälle mit einfachem Mehr, an denen eine
+ * Regel frei oder als Vereinbarung greift. Wo das Gesetz mehr verlangt, gilt
+ * der Vorbehalt `ohne_koepfe`; an `einordnen` und `nur_verschaerfen` ist sie
+ * nicht vergleichbar oder milder und greift ebenfalls nicht.
+ */
+export function regelOhneKoepfeGiltFuer(rw: Regelwerk, art: Geschaeftsart, knotenId?: string | null): string[] {
+	/*
+	 * **Das Rückkommen hat keinen Knoten** (Laienprüfung Runde 2, R2-L4). Eine
+	 * Regel dafür gilt nach `erfordernisFuerRueckkommen`: beim abgelehnten
+	 * Antrag ohne Vorbehalt, beim angenommenen Beschluss, wenn sie nicht milder
+	 * ist als dessen Mehr.
+	 */
+	if (art === 'rueckkommen') {
+		return [
+			'Rückkommen auf einen abgelehnten Antrag',
+			'Rückkommen auf einen angenommenen Beschluss, wenn sie nicht milder ist als dessen Mehr'
+		];
+	}
+	return rw.knoten
+		.filter(
+			(k) =>
+				k.geschaeftsart === art &&
+				(!knotenId || k.id === knotenId) &&
+				k.typ === 'einfaches_mehr' &&
+				(k.reglementsverhalten === undefined ||
+					k.reglementsverhalten === 'frei' ||
+					k.reglementsverhalten === 'vereinbart') &&
+				(knotenId || !regelNurFallgenau(k))
+		)
+		.map((k) => k.titel);
+}
+
 /** Die Regel in einem Satz, wie sie auf der Ergebniskarte steht. */
 export function regelInWorten(regel: Reglementsregel): string {
+	if (!regel.kopfSchwelle) {
+		// `pruefeReglementsregel` lässt eine Regel ohne Köpfe nur mit Quotenschwelle zu.
+		const q = regel.quotenSchwelle!;
+		const basis =
+			regel.quotenbasis === 'alle_quoten' ? 'aller Wertquoten' : 'der anwesenden oder vertretenen Wertquoten';
+		return `${schwelleInWorten(q)} ${basis}, ${UNABHAENGIG_VON_KOEPFEN}.`;
+	}
 	const kopf = `${schwelleInWorten(regel.kopfSchwelle)} ${basisWort(regel.kopfbasis)}`;
 	const quoten = regel.quotenSchwelle
 		? ` und zugleich ${schwelleInWorten(regel.quotenSchwelle)} ${basisWort(regel.quotenbasis)} Wertquoten`
@@ -1728,6 +1885,17 @@ function vorbehaltInWorten(
 				'und die Regel nimmt sie aus der Bezugsgrösse. Ihre Zustimmung würde dann nicht mehr ' +
 				'gezählt. Das Werkzeug zählt deshalb nach dem gesetzlichen Erfordernis. Ob Ihre Regel ' +
 				'für diesen Fall gedacht ist, klären Sie vor der Versammlung.'
+			);
+
+		case 'ohne_koepfe':
+			return (
+				kopf +
+				'Sie wird hier nicht angewandt: Eine Regel, bei der die Köpfe nicht zählen, wendet das ' +
+				'Werkzeug nur dort an, wo das Gesetz das einfache Mehr verlangt. Hier verlangt es mehr, ' +
+				'und Votum zählt nach dem Gesetz; nach Ihrer Regel kann es hier nicht zählen. Halten Sie ' +
+				// Fachprüfung 16.11.2026, F4 und R2-F2 (Rz. 99 ad Art. 712n); Laienprüfung L4 und R2-L3.
+				'Ihre Regel auch hier für massgebend, klären Sie das vor der Versammlung und sagen Sie vor ' +
+				`der Abstimmung an, dass nach dem Gesetz gezählt wird. ${EINWAND_IM_SAAL}`
 			);
 
 		case 'keine_abstimmung':
@@ -2346,6 +2514,28 @@ export function zahlenbeispielFuerRegel(
 ): string | null {
 	if (zahlen.kopfstimmen <= 0) return null;
 
+	/*
+	 * **Ohne Köpfe ein Beispiel nur nach Wertquoten** (16.11.2026), mit
+	 * derselben Vorsicht wie unten: Die vertretenen Wertquoten kennt das
+	 * Werkzeug vor der Versammlung nicht, also dort der Anteil in Worten.
+	 */
+	if (!regel.kopfSchwelle) {
+		const q = regel.quotenSchwelle;
+		if (!q) return null;
+		if (regel.quotenbasis === 'anwesend_vertreten') {
+			return (
+				`Nötig ist ${schwelleInWorten(q)} der anwesenden oder vertretenen Wertquoten, ` +
+				'gleich wie viele Eigentümer zustimmen.'
+			);
+		}
+		if (zahlen.gesamtquote <= 0) return null;
+		return (
+			`Nötig sind mindestens ${rechneSchwelle(zahlen.gesamtquote, q)} von ${zahlen.gesamtquote} ` +
+			'Wertquoten, gleich wie viele Eigentümer zustimmen.'
+		);
+	}
+	const kopfSchwelle = regel.kopfSchwelle;
+
 	const ohneBeklagten = e?.knotenId === AUSSCHLUSSKLAGE_KNOTEN;
 	/*
 	 * **An der Einsprache ebenso ohne die Betroffenen** (ab Fassung 2026-10-20).
@@ -2369,7 +2559,7 @@ export function zahlenbeispielFuerRegel(
 							(ohneBeklagten ? (zahlen.beklagtenwohnungen ?? 0) : 0)
 					);
 
-	const noetig = rechneSchwelle(kopfbasis, regel.kopfSchwelle);
+	const noetig = rechneSchwelle(kopfbasis, kopfSchwelle);
 	const wort = zahlen.zaehlweise === 'per_owner' ? 'Eigentümern' : 'Stimmen';
 
 	// Dieselbe Sprache wie beim gesetzlichen Beispiel. Zwei Karten mit

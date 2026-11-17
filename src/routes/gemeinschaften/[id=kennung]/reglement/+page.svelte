@@ -4,7 +4,7 @@
 	import { tick, untrack } from 'svelte';
 	import { anfangswert, angekreuzt } from '$lib/felder';
 	import { weisungsregelInWorten } from '$lib/domain/weisungsregel';
-	import { KOPFBASIS_HINWEIS } from '$lib/domain/reglement';
+	import { KOPFBASIS_HINWEIS, OHNE_KOEPFE_HINWEIS, OHNE_KOEPFE_RECHT } from '$lib/domain/reglement';
 	import Meldung from '$lib/components/Meldung.svelte';
 	import Suchauswahl from '$lib/components/Suchauswahl.svelte';
 	import Rueckfrage from '$lib/components/Rueckfrage.svelte';
@@ -14,6 +14,18 @@
 	let { data, form } = $props();
 
 	let mitQuoten = $state(false);
+	/** «Köpfe zählen nicht» (16.11.2026): dann braucht die Regel eine Wertquotenschwelle. */
+	let ohneKoepfe = $state(false);
+	/*
+	 * Die Vorbelegung der Wertquotenfelder: ohne Köpfe das einfache Mehr der
+	 * vertretenen Wertquoten (Laienprüfung 16.11.2026, L1), sonst wie bisher.
+	 * Die Felder entstehen mit dem Haken neu, `anfangswert` greift also.
+	 */
+	const quotenvorgabe = $derived(
+		ohneKoepfe
+			? { art: 'mehr_als', zaehler: 1, nenner: 2, basis: 'anwesend_vertreten' }
+			: { art: 'mindestens', zaehler: 2, nenner: 3, basis: 'alle_quoten' }
+	);
 	/** Ob die Weisungsregel zusätzlich Wertquoten verlangt («K und oder WQ»). */
 	let weisungMitQuoten = $state(untrack(() => Boolean(data.weisungsregel?.quotenSchwelle)));
 	/** Der Satz der geltenden Weisungsregel — derselbe, der später im Protokoll steht. */
@@ -58,6 +70,15 @@
 	 * 11.08.2026).
 	 */
 	let gewaehlterFall = $state('');
+	/*
+	 * Wo eine Regel ohne Köpfe angewandt wird: je Art, beim gewählten Fall nur
+	 * dieser (Codeprüfung Block A, zweiter Durchgang, B3).
+	 */
+	const ohneKoepfeFaelle = $derived(
+		(data.ohneKoepfeGiltFuer[gewaehlteArt] ?? []).filter(
+			(t) => !gewaehlterFall || t === data.fallTitel[gewaehlterFall]
+		)
+	);
 
 	/*
 	 * **Welche hinterlegte Abweichung gerade im Formular steht** (03.09.2026,
@@ -160,6 +181,7 @@
 		gewaehlteArt = regel.geschaeftsart;
 		gewaehlterFall = regel.knotenId ?? '';
 		mitQuoten = Boolean(regel.quotenSchwelle);
+		ohneKoepfe = regel.kopfSchwelle === null;
 		/*
 		 * Ohne Sprung sieht der Klick aus wie nichts: Das Formular steht bei
 		 * fünf hinterlegten Regeln rund zwei Bildschirme weiter unten. Kein
@@ -184,6 +206,7 @@
 		gewaehlteArt = 'baulich_notwendig';
 		gewaehlterFall = '';
 		mitQuoten = false;
+		ohneKoepfe = false;
 	}
 
 	/** Geschäftsarten nach Gruppe, damit die Auswahl nicht zur Liste von vierzehn wird. */
@@ -747,16 +770,39 @@
 
 			<fieldset>
 				<legend>Kopfstimmen</legend>
+				<label class="kasten-label">
+					<input
+						type="checkbox"
+						name="kopfeZaehlenNicht"
+						value="true"
+						bind:checked={ohneKoepfe}
+						onchange={() => {
+							if (ohneKoepfe) mitQuoten = true;
+						}}
+					/>
+					Köpfe zählen nicht, nur die Wertquoten
+				</label>
+				{#if ohneKoepfe}
+					<p class="hilfe">{OHNE_KOEPFE_HINWEIS}</p>
+					<p class="hilfe">{OHNE_KOEPFE_RECHT}</p>
+					<p class="hilfe">
+						{#if ohneKoepfeFaelle.length > 0}
+							Angewandt wird sie bei: {ohneKoepfeFaelle.map((t) => `«${t}»`).join(', ')}.
+						{:else}
+							Bei dieser Geschäftsart greift sie nirgends: Das Gesetz verlangt hier mehr als das einfache Mehr, oder es lässt keine Erleichterung zu.
+						{/if}
+					</p>
+				{:else}
 				<div class="reihe">
 					<label class="eng">
 						Lesart
 						<select name="kopfArt" required>
 							<option
 								value="mindestens"
-								selected={(bearbeitet?.kopfSchwelle.art ?? 'mindestens') === 'mindestens'}
+								selected={(bearbeitet?.kopfSchwelle?.art ?? 'mindestens') === 'mindestens'}
 								>mindestens</option
 							>
-							<option value="mehr_als" selected={bearbeitet?.kopfSchwelle.art === 'mehr_als'}
+							<option value="mehr_als" selected={bearbeitet?.kopfSchwelle?.art === 'mehr_als'}
 								>mehr als</option
 							>
 						</select>
@@ -769,7 +815,7 @@
 							min="1"
 							max="100"
 							required
-							{...anfangswert(String(bearbeitet?.kopfSchwelle.zaehler ?? 2))}
+							{...anfangswert(String(bearbeitet?.kopfSchwelle?.zaehler ?? 2))}
 						/>
 					</label>
 					<label class="eng">
@@ -787,7 +833,7 @@
 							min="1"
 							max="100"
 							required
-							{...anfangswert(String(bearbeitet?.kopfSchwelle.nenner ?? 3))}
+							{...anfangswert(String(bearbeitet?.kopfSchwelle?.nenner ?? 3))}
 						/>
 					</label>
 					<label class="breit">
@@ -815,11 +861,12 @@
 				</p>
 				<!-- Entscheid 0054, Punkt 5 (Frage 93): welche Bezugsgrösse zur Klausel gehört. -->
 				<p class="hilfe">{KOPFBASIS_HINWEIS}</p>
+				{/if}
 			</fieldset>
 
 			<label class="kasten-label">
-				<input type="checkbox" name="mitQuoten" value="true" bind:checked={mitQuoten} />
-				Zusätzlich eine Wertquotenschwelle
+				<input type="checkbox" name="mitQuoten" value="true" bind:checked={mitQuoten} disabled={ohneKoepfe} />
+				{ohneKoepfe ? 'Wertquotenschwelle (nötig, weil die Köpfe nicht zählen)' : 'Zusätzlich eine Wertquotenschwelle'}
 			</label>
 
 			{#if mitQuoten}
@@ -831,10 +878,10 @@
 							<select name="quotenArt">
 								<option
 									value="mindestens"
-									selected={(bearbeitet?.quotenSchwelle?.art ?? 'mindestens') === 'mindestens'}
+									selected={(bearbeitet?.quotenSchwelle?.art ?? quotenvorgabe.art) === 'mindestens'}
 									>mindestens</option
 								>
-								<option value="mehr_als" selected={bearbeitet?.quotenSchwelle?.art === 'mehr_als'}
+								<option value="mehr_als" selected={(bearbeitet?.quotenSchwelle?.art ?? quotenvorgabe.art) === 'mehr_als'}
 									>mehr als</option
 								>
 							</select>
@@ -846,7 +893,7 @@
 								name="quotenZaehler"
 								min="1"
 								max="100"
-								{...anfangswert(String(bearbeitet?.quotenSchwelle?.zaehler ?? 2))}
+								{...anfangswert(String(bearbeitet?.quotenSchwelle?.zaehler ?? quotenvorgabe.zaehler))}
 							/>
 						</label>
 						<label class="eng">
@@ -856,7 +903,7 @@
 								name="quotenNenner"
 								min="1"
 								max="100"
-								{...anfangswert(String(bearbeitet?.quotenSchwelle?.nenner ?? 3))}
+								{...anfangswert(String(bearbeitet?.quotenSchwelle?.nenner ?? quotenvorgabe.nenner))}
 							/>
 						</label>
 						<label class="breit">
@@ -864,12 +911,12 @@
 							<select name="quotenbasis">
 								<option
 									value="alle_quoten"
-									selected={(bearbeitet?.quotenbasis ?? 'alle_quoten') === 'alle_quoten'}
+									selected={(bearbeitet?.quotenSchwelle ? bearbeitet.quotenbasis : quotenvorgabe.basis) === 'alle_quoten'}
 									>alle Wertquoten der Gemeinschaft</option
 								>
 								<option
 									value="anwesend_vertreten"
-									selected={bearbeitet?.quotenbasis === 'anwesend_vertreten'}
+									selected={(bearbeitet?.quotenSchwelle ? bearbeitet.quotenbasis : quotenvorgabe.basis) === 'anwesend_vertreten'}
 									>nur die anwesenden oder vertretenen</option
 								>
 							</select>

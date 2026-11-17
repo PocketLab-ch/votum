@@ -34,7 +34,7 @@ import {
 	schreibeErfordernisIn
 } from './erfordernisse';
 import type { Geschaeftsart, Kopfbasis, Quotenbasis } from '$lib/domain/regelwerk';
-import type { Schwellenart } from '$lib/domain/mehrheit';
+import { UNABHAENGIG_VON_KOEPFEN, type Schwellenart } from '$lib/domain/mehrheit';
 import {
 	hebeWeisungsregelAuf,
 	legeWeisungsregelAn,
@@ -76,9 +76,10 @@ interface DbZeile {
 	stweg_id: string;
 	business_kind: Geschaeftsart;
 	node_id: string | null;
-	head_numerator: number;
-	head_denominator: number;
-	head_mode: Schwellenart;
+	// Leer, wo die Köpfe nicht zählen (Migration 195).
+	head_numerator: number | null;
+	head_denominator: number | null;
+	head_mode: Schwellenart | null;
 	head_base: Kopfbasis;
 	quota_numerator: number | null;
 	quota_denominator: number | null;
@@ -95,7 +96,10 @@ function ausDb(z: DbZeile): Reglementsregel {
 		stwegId: z.stweg_id,
 		geschaeftsart: z.business_kind,
 		knotenId: z.node_id,
-		kopfSchwelle: { zaehler: z.head_numerator, nenner: z.head_denominator, art: z.head_mode },
+		kopfSchwelle:
+			z.head_numerator !== null && z.head_denominator !== null && z.head_mode !== null
+				? { zaehler: z.head_numerator, nenner: z.head_denominator, art: z.head_mode }
+				: null,
 		kopfbasis: z.head_base,
 		quotenSchwelle:
 			z.quota_numerator !== null && z.quota_denominator !== null && z.quota_mode !== null
@@ -176,7 +180,8 @@ export async function erstelleReglementsregel(
 			) VALUES (
 				${regel.id}, ${operatorId}, ${regel.stwegId}, ${regel.geschaeftsart},
 				${regel.knotenId ?? null},
-				${regel.kopfSchwelle.zaehler}, ${regel.kopfSchwelle.nenner}, ${regel.kopfSchwelle.art}, ${regel.kopfbasis},
+				${regel.kopfSchwelle?.zaehler ?? null}, ${regel.kopfSchwelle?.nenner ?? null},
+				${regel.kopfSchwelle?.art ?? null}, ${regel.kopfbasis},
 				${regel.quotenSchwelle?.zaehler ?? null}, ${regel.quotenSchwelle?.nenner ?? null},
 				${regel.quotenSchwelle?.art ?? null}, ${regel.quotenbasis},
 				${regel.fundstelle}, ${regel.enthaltungZaehltMit}, ${regel.hinweis ?? null}
@@ -306,9 +311,9 @@ export async function aendereReglementsregelAn(
 			UPDATE bylaw_quorum_rule SET
 				business_kind = ${regel.geschaeftsart},
 				node_id = ${regel.knotenId ?? null},
-				head_numerator = ${regel.kopfSchwelle.zaehler},
-				head_denominator = ${regel.kopfSchwelle.nenner},
-				head_mode = ${regel.kopfSchwelle.art},
+				head_numerator = ${regel.kopfSchwelle?.zaehler ?? null},
+				head_denominator = ${regel.kopfSchwelle?.nenner ?? null},
+				head_mode = ${regel.kopfSchwelle?.art ?? null},
 				head_base = ${regel.kopfbasis},
 				quota_numerator = ${regel.quotenSchwelle?.zaehler ?? null},
 				quota_denominator = ${regel.quotenSchwelle?.nenner ?? null},
@@ -1315,7 +1320,8 @@ async function veralteteErfordernisseIn(
 					? {
 							zaehler: z.requirement_quota_numerator,
 							nenner: z.requirement_quota_denominator,
-							art: z.requirement_quota_mode
+							art: z.requirement_quota_mode,
+							basis: z.requirement_quota_base
 						}
 					: null,
 				l10Bisher(z),
@@ -1331,7 +1337,12 @@ async function veralteteErfordernisseIn(
 				neu.enthaltungZaehltMit ?? null,
 				neu.gemeinschaftslesart ?? null,
 				neu.quotenSchwelle
-					? { zaehler: neu.quotenSchwelle.zaehler, nenner: neu.quotenSchwelle.nenner, art: neu.quotenSchwelle.art ?? null }
+					? {
+							zaehler: neu.quotenSchwelle.zaehler,
+							nenner: neu.quotenSchwelle.nenner,
+							art: neu.quotenSchwelle.art ?? null,
+							basis: neu.quotenbasis
+						}
 					: null,
 				l10Jetzt(z, neu),
 				l13Zusatz(z, neu).jetzt
@@ -1346,7 +1357,7 @@ async function veralteteErfordernisseIn(
  * «von … auf …» es braucht. Die vollständige Fassung steht im Traktandum
  * selbst und in der Traktandenliste.
  */
-function mehrheitInWorten(
+export function mehrheitInWorten(
 	zaehler: number | null,
 	nenner: number | null,
 	art: string | null,
@@ -1364,7 +1375,7 @@ function mehrheitInWorten(
 	 */
 	lesart: { kennung: string; wahl: string } | null,
 	/** Laien- und Fachprüfung A5, H3: Ohne sie hiesse qualifiziert wie einfach. */
-	quoten: { zaehler: number; nenner: number; art: string | null } | null,
+	quoten: { zaehler: number; nenner: number; art: string | null; basis?: string | null } | null,
 	/**
 	 * Seit Migration 189: Die Wahl zu L10 geht in den Vergleich ein; ohne sie im
 	 * Satz stünde «von X auf X», wenn nur die Zahl der Angehörigen im Ausstand
@@ -1374,6 +1385,14 @@ function mehrheitInWorten(
 	/** Seit Migration 192: die Zählweise der Köpfe, wo sie wirkt (L13). */
 	kopfzaehlweise: string | null
 ): string {
+	/*
+	 * **Ohne Köpfe nur die Wertquoten** (Regel «Köpfe zählen nicht», 16.11.2026;
+	 * Codeprüfung Block A, M1): «kein Mehr der Anwesenden» wäre falsch, und die
+	 * Wertquoten nennen ihre eigene Bezugsgrösse.
+	 */
+	const ohneKoepfe = (zaehler === null || nenner === null) && quoten !== null;
+	const quotenWovon = quoten?.basis === 'anwesend_vertreten' ? 'der anwesenden oder vertretenen Wertquoten' : 'aller Wertquoten';
+	const quotenBruch = quoten ? `${quoten.art === 'mindestens' ? 'mindestens' : 'mehr als'} ${quoten.zaehler}/${quoten.nenner} ${quotenWovon}` : '';
 	const bruch =
 		zaehler === null || nenner === null
 			? 'kein Mehr'
@@ -1392,10 +1411,9 @@ function mehrheitInWorten(
 		? ` · Lesart L10: ${wahlInWorten('L10', angehoerigenlesart)}`
 		: '';
 	const nachKoepfen = kopfzaehlweise ? ` · Lesart L13: ${wahlInWorten('L13', kopfzaehlweise)}` : '';
-	const nachQuoten = quoten
-		? ` und ${quoten.art === 'mindestens' ? 'mindestens' : 'mehr als'} ${quoten.zaehler}/${quoten.nenner} aller Wertquoten`
-		: '';
-	return `${bruch} ${wovon}${nachQuoten}${enthaltung}${woher}${nachLesart}${nachAngehoerigen}${nachKoepfen}`;
+	const nachQuoten = quoten ? ` und ${quotenBruch}` : '';
+	const mehr = ohneKoepfe ? `${quotenBruch}, ${UNABHAENGIG_VON_KOEPFEN}` : `${bruch} ${wovon}${nachQuoten}`;
+	return `${mehr}${enthaltung}${woher}${nachLesart}${nachAngehoerigen}${nachKoepfen}`;
 }
 
 /**

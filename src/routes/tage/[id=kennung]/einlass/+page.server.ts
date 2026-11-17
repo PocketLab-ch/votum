@@ -197,6 +197,12 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 					laeuft: z.zustand === 'laufend',
 					parteiId: s.parteiId,
 					name: s.name,
+					/*
+					 * Wer die Stimme ausübt, wie auf der Anwesenheitsseite des Hauses
+					 * («Stimme: …»): bei einer Gemeinschaft als Partei ihre Vertretung.
+					 * Am Abend fehlte sie (Probe Wertquotenmehr, 17.11.2026, B6).
+					 */
+					ausgeuebtDurch: s.ausgeuebtDurch,
 					zustand: s.zustand,
 					zustandName: ZUSTANDSNAMEN[s.zustand],
 					seit: s.seit,

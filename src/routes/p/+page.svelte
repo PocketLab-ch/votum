@@ -201,7 +201,13 @@
 		<Saalbild
 			{abstimmung}
 			aufgerufen={aktuelles
-				? { ...aktuelles, noetig: data.noetig, ausstandsgrund: data.ausstandsgrund }
+				? {
+						...aktuelles,
+						noetig: data.noetig,
+						ausstandsgrund: data.ausstandsgrund,
+						// Aus dem Strom, der zum selben aufgerufenen Traktandum gehört (Probe Wertquotenmehr, B4).
+						zurueckgezogen: Boolean(stand?.zurueckgezogenAm)
+					}
 				: null}
 			traktanden={data.traktanden}
 			wandbild={data.versammlung.wandbild}

@@ -791,6 +791,9 @@ export async function holeTafel(operatorId: Id, tagId: Id): Promise<Tafelzeile[]
 			          -- nicht als Lücke; Leiste und Tafel zählen wie das Protokoll
 			          -- (Produktentscheid 02.10.2026).
 			          AND NOT a.minute_decision
+			          -- Ein zurückgezogener Antrag ist entschieden, wie im Hausprotokoll
+			          -- und im Protokoll des Abends (16.11.2026).
+			          AND a.withdrawn_at IS NULL
 			          AND NOT EXISTS (
 			            SELECT 1 FROM voting_round v
 			            WHERE v.agenda_item_id = a.id

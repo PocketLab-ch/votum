@@ -2473,20 +2473,21 @@ eine Richtung zu wählen entschiede über die Abstimmung.
 
 ### Wer was sieht
 
-| | offen | geschlossen | verkündet |
+| | offen | geschlossen | geschlossen, Gleichstand offen |
 |---|---|---|---|
-| Sitzungsleitung | Fortschritt | Fortschritt **und Ergebnis** | dasselbe |
-| Leinwand | Fortschritt | «wird verkündet» | Ergebnis |
-| Telefon | Frage und Schaltflächen | Frage geschlossen | Ergebnis |
+| Sitzungsleitung | Fortschritt | Ergebnis | Gleichstand und der Weg dazu |
+| Leinwand | Fortschritt | Ergebnis | dass der Entscheid aussteht (`wartesatz` im Strom) |
+| Telefon | Frage und Schaltflächen | Ergebnis | Frage geschlossen |
+
+Seit dem Produktentscheid vom 21.08.2026 verkündet das Schliessen selbst
+(`versammlungsstand.ts`, «Geschlossen heisst sichtbar»); ohne Ergebnis bleibt
+ein geschlossener Durchgang nur beim offenen Gleichstand oder wenn keine Auszählung
+vorliegt (Kenntnisnahme, Abbruch, ohne Auszählung beendet).
 
 Der Fortschritt sind zwei Zahlen und sonst nichts. Der Typ `Fortschritt` trägt
 kein Feld für Ja, Nein oder Enthaltung — was der Typ nicht kennt, kann keine
 Sicht versehentlich anzeigen, und wer den Zwischenstand kennt, wählt den
 Zeitpunkt des Schliessens danach (FR-37).
-
-Eine Ausnahme bei der Verkündung: Haben **alle** Stimmberechtigten gestimmt,
-erscheint das Ergebnis mit dem Schliessen, ohne dass es freigegeben werden
-müsste. Es gibt dann nichts mehr zurückzuhalten.
 
 ### Die einfache Betriebsart
 

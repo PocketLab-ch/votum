@@ -22,8 +22,9 @@
  * falsch rechnet.
  */
 import { FachlicherFehler } from '$lib/domain/gemeinschaft';
-import { erstelleEinheit, holeQuotenarten } from './einheiten';
-import { erstelleEigentuemer, ordneEigentumZu } from './eigentuemer';
+import { erstelleEinheitIn, holeQuotenarten } from './einheiten';
+import { erstelleEigentuemerIn, schreibeEigentumszuordnung } from './eigentuemer';
+import { alsBetreiber } from './db';
 import { listeGemeinschaften } from './gemeinschaften';
 import type { Handelnder } from './audit';
 import type { Id } from '$lib/domain/types';
@@ -93,23 +94,33 @@ export async function nimmGemeinschaftenAlsMitgliederAuf(
 			offen.push('Eine gewählte Gemeinschaft gibt es nicht mehr');
 			continue;
 		}
+		/*
+		 * **Je Mitglied eine Transaktion** (16.11.2026, Pendenz «Mitglieder
+		 * aufnehmen: Absage lässt eine Einheit stehen»). Vorher schrieb jeder der
+		 * drei Schritte für sich; scheiterte erst die Partei (etwa an der fehlenden
+		 * Vertretung), stand die Einheit «Anteil …» mit Quote und Verlaufseintrag
+		 * ohne Eigentümer da, und die Wertquotensumme ging nicht mehr auf. Jetzt
+		 * entsteht alles oder nichts; die übrigen Mitglieder laufen weiter für sich.
+		 */
 		try {
-			const einheit = await erstelleEinheit(handelnder, {
-				stwegId: megId,
-				kind: 'unit',
-				label: `Anteil ${name}`,
-				quotas: { [stamm]: m.quote },
-				countsAsHead: true
+			await alsBetreiber(handelnder.operatorId, async (tx) => {
+				const einheit = await erstelleEinheitIn(tx, handelnder, {
+					stwegId: megId,
+					kind: 'unit',
+					label: `Anteil ${name}`,
+					quotas: { [stamm]: m.quote },
+					countsAsHead: true
+				});
+				const partei = await erstelleEigentuemerIn(tx, handelnder, {
+					stwegId: megId,
+					kind: 'gemeinschaft',
+					displayName: name,
+					isCommunity: false,
+					memberStwegId: m.stwegId,
+					representativeName: m.vertretung || null
+				});
+				await schreibeEigentumszuordnung(tx, handelnder, einheit.id, partei.id, ab);
 			});
-			const partei = await erstelleEigentuemer(handelnder, {
-				stwegId: megId,
-				kind: 'gemeinschaft',
-				displayName: name,
-				isCommunity: false,
-				memberStwegId: m.stwegId,
-				representativeName: m.vertretung || null
-			});
-			await ordneEigentumZu(handelnder, einheit.id, partei.id, ab);
 			gelungen.push(name);
 		} catch (fehler) {
 			if (fehler instanceof FachlicherFehler) {

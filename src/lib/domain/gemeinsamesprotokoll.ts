@@ -58,10 +58,14 @@ import {
 	nachQuorumSatz,
 	einwandSatz,
 	regelfassungSatz,
+	ersetztNachRueckkommenSatz,
+	stichentscheidZeile,
 	type BeschlussfaehigkeitFehlte,
 	folgeantraegeAngenommenSatz,
 	l8Protokollzeilen,
 	type Protokollzeile,
+	rueckkommenNichtGenutztSatz,
+	rueckkommenOhneDurchgangSatz,
 	teileEntschiedenSatz,
 	zeigtBeschluss
 } from './protokoll';
@@ -285,6 +289,28 @@ export interface Abendergebnis
 	/** Vor der Abstimmung zurückgezogen — kein Fall von «abgelehnt». */
 	rueckzug: string | null;
 	/**
+	 * Der Stichentscheid einer Person, mit dem Gleichstand in Zahlen
+	 * (`gleichstandInZahlen`; Probe Wertquotenmehr, 17.11.2026, B1). Dieselbe
+	 * Zeile wie im Hausprotokoll (`stichentscheidZeile`), mit den Zahlen, weil
+	 * dieses Dokument keinen Stimmenspiegel führt.
+	 */
+	stichentscheid?: Protokollzeile['stichentscheid'];
+	gleichstand?: string | null;
+	/**
+	 * Die Vermerke zum Ausgang, die keinen Namen tragen (`Protokollhinweis.ohneNamen`):
+	 * Stichentscheid nach Wertquoten, Gleichstand ohne hinterlegte Person, nicht
+	 * angewandte Klausel. Wie im Hausprotokoll nach dem Stichentscheid.
+	 */
+	ausgangsvermerke?: string[];
+	/**
+	 * Durchgänge, die ein Rückkommen ersetzt hat, und die Nummer des
+	 * massgebenden, wo sie im Hausprotokoll als «N. Durchgang.» steht (Probe
+	 * Wertquotenmehr, 17.11.2026, B2; Produktentscheid 17.11.2026: «Wie im
+	 * Hausprotokoll»). Ohne die Zahlen des ersetzten, wie dort.
+	 */
+	ersetztNachRueckkommen?: Protokollzeile['ersetztNachRueckkommen'];
+	durchgangszeile?: number | null;
+	/**
 	 * Von Hand gezählt, mit dem Vermerk der Sitzungsleitung.
 	 *
 	 * **Auch das Tagprotokoll muss es sagen** (28.08.2026, aus dem Code-Review
@@ -326,6 +352,13 @@ export interface Abendergebnis
 	 */
 	art: 'abstimmung' | 'kenntnisnahme';
 	/**
+	 * Nach einem angenommenen Rückkommen ohne neue Abstimmung (16.11.2026,
+	 * Codeprüfung Block B, N2): dieselben zwei Sätze wie im Hausprotokoll, am
+	 * Rückkommen und am Geschäft. Fehlen sie, gab es den Fall nicht.
+	 */
+	rueckkommenOhneDurchgang?: Parameters<typeof rueckkommenOhneDurchgangSatz>[0] | null;
+	rueckkommenNichtGenutzt?: string | null;
+	/**
 	 * Das Votum zu diesem Punkt — was in der Versammlung gesagt und entschieden
 	 * wurde (FR-46).
 	 *
@@ -357,12 +390,29 @@ export interface Abendfolgeantrag extends Abendergebnis {
 	nummer: string;
 	titel: string;
 	antragswortlaut: string | null;
+	/**
+	 * Ein Rückkommensantrag statt eines Folgeantrags (16.11.2026): eigene Zeile
+	 * unter dem Antrag, auf den er zurückkommt, mit seinem Titel als Überschrift
+	 * («Rückkommen auf …»). Fehlt das Feld, ist es ein Folgeantrag.
+	 */
+	rueckkommen?: boolean;
+	/**
+	 * Am abgelehnten Rückkommen die Nummer des Traktandums im Haus, bei dessen
+	 * Ergebnis es bleibt (16.11.2026, Laienprüfung Runde 2, R2-L6).
+	 */
+	bleibtBeim?: string | null;
 }
 
 /** Ein Punkt des Abends mit den Ergebnissen aller beteiligten Gemeinschaften. */
 export interface Abendpunkt {
 	nummer: string;
 	titel: string;
+	/**
+	 * Eine eigene Überschrift statt «Nummer Titel» (16.11.2026): für ein Geschäft,
+	 * das ein Haus im Saal aufgenommen hat und das in keiner gemeinsamen Liste
+	 * steht. Es trägt die Nummer des Hauses, nicht eine des Abends.
+	 */
+	ueberschrift?: string;
 	antragswortlaut: string | null;
 	ergebnisse: Abendergebnis[];
 }
@@ -589,7 +639,7 @@ export function gemeinsamerProtokollentwurf(e: GemeinsamesProtokoll): string {
 	}
 
 	for (const p of e.punkte) {
-		z.push(`## ${p.nummer} ${p.titel}`);
+		z.push(`## ${p.ueberschrift ?? `${p.nummer} ${p.titel}`}`);
 		z.push('');
 		if (p.antragswortlaut) {
 			z.push(p.antragswortlaut);
@@ -629,7 +679,12 @@ export function gemeinsamerProtokollentwurf(e: GemeinsamesProtokoll): string {
 				 * verwechseln. Eine Ebene unter der Hauszeile, bei einem einzigen
 				 * Haus unter dem Punkt.
 				 */
-				z.push(`${einzeln ? '###' : '####'} Folgeantrag ${folgeantrag.nummer} «${folgeantrag.titel}»`);
+				z.push(
+					folgeantrag.rueckkommen
+						? // Der Titel sagt es schon: «Rückkommen auf 9.1 …» (16.11.2026).
+							`${einzeln ? '###' : '####'} ${folgeantrag.nummer} ${folgeantrag.titel}`
+						: `${einzeln ? '###' : '####'} Folgeantrag ${folgeantrag.nummer} «${folgeantrag.titel}»`
+				);
 				z.push('');
 				if (folgeantrag.antragswortlaut) {
 					z.push(`Antrag: ${folgeantrag.antragswortlaut}`);
@@ -684,6 +739,9 @@ export function gemeinsamerProtokollentwurf(e: GemeinsamesProtokoll): string {
 				// Der ersetzte Grundantrag: abgestimmt, nur trägt der Beschluss jetzt
 				// der Folgeantrag. «Noch kein Ergebnis» wäre falsch (Soll 6).
 				z.push(`${wer2}${r.ersetzung}`);
+				// Auch hier, wie im Hausprotokoll (zweiter Durchgang der Codeprüfung B, Befund 1):
+				// Rückkommen nach einer Ersetzung ohne neue Abstimmung.
+				if (r.rueckkommenOhneDurchgang) z.push(rueckkommenOhneDurchgangSatz(r.rueckkommenOhneDurchgang));
 			} else if (r.satz) {
 				z.push(`${wer2}${r.satz}`);
 				if (r.ersetzung) {
@@ -696,6 +754,17 @@ export function gemeinsamerProtokollentwurf(e: GemeinsamesProtokoll): string {
 				 * Feststellung.
 				 */
 				if (r.beschlusstext) z.push(r.beschlusstext);
+				// Wie im Hausprotokoll (Codeprüfung Block B, N2).
+				if (r.rueckkommenOhneDurchgang) z.push(rueckkommenOhneDurchgangSatz(r.rueckkommenOhneDurchgang));
+				if (r.rueckkommenNichtGenutzt) z.push(rueckkommenNichtGenutztSatz(r.rueckkommenNichtGenutzt));
+				// Am abgelehnten Rückkommen, was daraus folgt (Laienprüfung Runde 2, R2-L6).
+				if (folgeantrag?.rueckkommen && folgeantrag.bleibtBeim !== undefined) {
+					z.push(
+						folgeantrag.bleibtBeim
+							? `Damit bleibt es beim bisherigen Ergebnis zu Traktandum ${folgeantrag.bleibtBeim}.`
+							: 'Damit bleibt es beim bisherigen Ergebnis.'
+					);
+				}
 				// Ä-17 B, an derselben Stelle wie im Hausprotokoll, mit dem Haus.
 				if (r.neuAnZweiterVersammlung) {
 					const fehlte = r.neuAnZweiterErsteFehlte ?? null;
@@ -773,13 +842,30 @@ export function gemeinsamerProtokollentwurf(e: GemeinsamesProtokoll): string {
 					z.push('');
 					for (const b of r.betroffenenzeilen) z.push(`- ${b}`);
 				}
+				/*
+				 * **Frühere Durchgänge und Stichentscheid** (Probe Wertquotenmehr,
+				 * 17.11.2026, B1 und B2): nach den Zeilen zu den Betroffenen, erst
+				 * was mit früheren Durchgängen geschah, dann wer den Gleichstand
+				 * entschied, dann die Vermerke zum Ausgang, untereinander wie im
+				 * Hausprotokoll. Anders als dort stehen die Sätze zum Rückkommen
+				 * ohne neue Abstimmung und zur Ersetzung schon direkt unter dem
+				 * Ergebnis (Bestand).
+				 */
+				const ausgang = [
+					...(r.durchgangszeile ? [`- ${r.durchgangszeile}. Durchgang.`] : []),
+					...(r.ersetztNachRueckkommen ?? []).map(ersetztNachRueckkommenSatz),
+					...(r.stichentscheid ? [stichentscheidZeile(r.stichentscheid, r.gleichstand ?? null)] : []),
+					...(r.ausgangsvermerke ?? []).map((s) => `- ${s}`)
+				];
+				if (ausgang.length > 0) {
+					z.push('');
+					z.push(...ausgang);
+				}
 				if (r.erfordernis) {
 					const grundlage = r.rechtsgrundlage ? ` (${r.rechtsgrundlage})` : '';
+					const fassung = r.regelfassung ? regelfassungSatz(r.regelfassung) : null;
 					z.push('');
-					z.push(
-						`- Angewandtes Erfordernis: ${r.erfordernis}${grundlage}` +
-							(r.regelfassung ? `. ${regelfassungSatz(r.regelfassung)}` : '')
-					);
+					z.push(`- Angewandtes Erfordernis: ${r.erfordernis}${grundlage}` + (fassung ? `. ${fassung}` : ''));
 					if (r.lesart) z.push(`- ${r.lesart}`);
 					if (r.nachAndererLesart) z.push(`- ${r.nachAndererLesart}`);
 				}

@@ -127,6 +127,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			? {
 					nummer: aktuelles.nummer,
 					titel: aktuelles.knoten.titel,
+					// Der Rückzug an der Wand, wie am gemeinsamen Abend (Probe Wertquotenmehr, B4).
+					zurueckgezogen: aktuelles.knoten.rueckzug != null,
 					kurzfassung: aktuelles.knoten.kurzfassung ?? null,
 					antragswortlaut: aktuelles.knoten.antragswortlaut ?? null,
 					ersetzung: ersetzungssatz,

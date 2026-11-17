@@ -1340,7 +1340,8 @@
 						{#if e.stichentscheidOffen}
 							<p class="warnung">
 								{#if e.stichentscheidArt === 'verwalter' || e.stichentscheidArt === 'vorsitz'}
-									Stimmengleichheit: Nach dem Reglement entscheidet {e.stichentscheidArt ===
+									<!-- Mit Zahlen und Zählweise wie in der Leitung des Hauses (Probe Wertquotenmehr, B5). -->
+									Stimmengleichheit{#if e.gleichstand}{' '}({e.gleichstand}){/if}: Nach dem Reglement entscheidet {e.stichentscheidArt ===
 									'vorsitz'
 										? 'die Person im Vorsitz'
 										: 'der Verwalter'}. Tragen Sie

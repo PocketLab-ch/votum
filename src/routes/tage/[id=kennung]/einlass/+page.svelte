@@ -39,7 +39,7 @@
 	 */
 	let suche = $state('');
 	const gefiltert = $derived(
-		filtereNach(data.zeilen, suche, (z) => `${z.name} ${z.einheiten.join(' ')} ${z.gemeinschaft}`)
+		filtereNach(data.zeilen, suche, (z) => `${z.name} ${z.ausgeuebtDurch} ${z.einheiten.join(' ')} ${z.gemeinschaft}`)
 	);
 
 	/**
@@ -670,7 +670,13 @@
 				<tbody>
 					{#each gefiltert as z (z.meetingId + z.parteiId)}
 						<tr class:anwesend={z.zustand === 'anwesend'}>
-							<td>{z.name}</td>
+							<td>
+								{z.name}
+								<!-- Wie auf der Anwesenheitsseite des Hauses (Probe Wertquotenmehr, B6). -->
+								{#if z.ausgeuebtDurch !== z.name}
+									<span class="klein">Stimme: {z.ausgeuebtDurch}</span>
+								{/if}
+							</td>
 							<td class="haus">{z.gemeinschaft}</td>
 							<td>{z.zustandName}</td>
 							<td>{z.geraet ?? '—'}</td>
@@ -825,6 +831,13 @@
 {/if}
 
 <style>
+	/* «Stimme: …» unter dem Namen, wie auf der Anwesenheitsseite des Hauses (Probe Wertquotenmehr, B6). */
+	td > span.klein {
+		display: block;
+		font-size: 0.85rem;
+		color: var(--text-leise);
+	}
+
 	.zeile {
 		display: flex;
 		gap: 0.5rem;

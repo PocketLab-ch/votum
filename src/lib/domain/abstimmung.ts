@@ -16,6 +16,7 @@ import { zuordnungImVerlauf, type Zuordnung } from './freigabezuordnung';
 import { FachlicherFehler } from './gemeinschaft';
 import { EREIGNISARTEN, ereignis, type Uebergang } from './verlauf';
 import { AUSSCHLUSSKLAGE_KNOTEN, EINSPRACHE_KNOTEN, type Erfordernis } from './entscheidbaum';
+import { nurNachWertquoten } from './mehrheit';
 import type { Spontanart, Traktandumart } from './traktanden';
 import type { Ersetzungsart } from './rueckkommen';
 import type { Betriebsart } from './versammlung';
@@ -185,7 +186,8 @@ export function erfordernisluecke(e: Erfordernis, betroffene: number): Erfordern
 		};
 	}
 	if (e.typ === 'grenzfall') return null;
-	if (!e.kopfSchwelle) {
+	// Ohne Köpfe auszählbar, wo eine Wertquotenschwelle besteht (Regel «Köpfe zählen nicht», 16.11.2026).
+	if (!e.kopfSchwelle && !nurNachWertquoten(e)) {
 		return {
 			kennung: 'ohne_schwelle',
 			satz:

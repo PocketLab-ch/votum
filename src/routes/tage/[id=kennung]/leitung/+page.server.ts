@@ -111,6 +111,7 @@ import {
 	vertreterausstandsmeldung,
 	betroffenenmeldung,
 	ergebnisInWorten,
+	gleichstandInZahlen,
 	ergebnislage,
 	summenhindernis,
 	summenvermerkNoetig
@@ -524,6 +525,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				verkuendet: m.verkuendetAm !== null,
 				stichentscheidOffen: e?.auszaehlung?.stichentscheidOffen === true,
 				stichentscheidArt: e?.auszaehlung?.stichentscheidArt ?? null,
+				/*
+				 * Der Gleichstand in Zahlen und mit der Zählweise, wie ihn die Leitung
+				 * des Hauses nennt (Probe Wertquotenmehr, 17.11.2026, B5). Leer bei
+				 * geheimer Abstimmung.
+				 */
+				gleichstand: e?.auszaehlung ? gleichstandInZahlen(e.auszaehlung) : null,
 				angenommen: e?.auszaehlung?.angenommen ?? null,
 				keinBeschluss: !!e?.auszaehlung?.keinBeschluss,
 				satz:

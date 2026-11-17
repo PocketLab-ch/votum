@@ -262,11 +262,11 @@ describe('Ä-17 A: der Satz zum einzigen Eigentümer', () => {
 		expect(p).not.toBeNull();
 		const text = flach(p!.text);
 		const satz = flach(EINZIGER_EIGENTUEMER);
-		expect(text).toContain(`Beschlussfähig: 1 von 1 Stockwerkeigentümern anwesend. ${satz}`);
+		expect(text).toContain(`Beschlussfähig: 1 von 1 Eigentümern anwesend. ${satz}`);
 		// Gegenprobe: Das Haus mit zweien steht da, beschlussfähig, und der Satz
 		// kommt im ganzen Dokument nur einmal vor.
-		expect(text).toContain('Beschlussfähig: 2 von 2 Stockwerkeigentümern anwesend');
-		expect(text).not.toContain(`Beschlussfähig: 2 von 2 Stockwerkeigentümern anwesend. ${satz}`);
+		expect(text).toContain('Beschlussfähig: 2 von 2 Eigentümern anwesend');
+		expect(text).not.toContain(`Beschlussfähig: 2 von 2 Eigentümern anwesend. ${satz}`);
 		expect(anzahl(text, satz)).toBe(1);
 	});
 });
@@ -549,7 +549,7 @@ describe('Entscheid 0016: der Satz, wenn die einzige Partei mehrere Personen sin
 		expect(e).not.toContain('Alle Stockwerkanteile gehören einer Person.');
 		const p = await stelleAbendzusammenstellungZusammen(betreiber, tag, '11. November 2027, 21:00', 'Prüferin');
 		const text = flach(p!.text);
-		expect(text).toContain(`Beschlussfähig: 1 von 1 Stockwerkeigentümern anwesend. ${flach(EINZIGE_GEMEINSCHAFT)}`);
+		expect(text).toContain(`Beschlussfähig: 1 von 1 Eigentümern anwesend. ${flach(EINZIGE_GEMEINSCHAFT)}`);
 	});
 
 	it('über eine festgehaltene Feststellung: Rückgabe, Hausleitung und Protokoll nennen die Gemeinschaft', async () => {

@@ -928,6 +928,51 @@ dafür «Enthaltungen bleiben in der Bezugsgrösse» angekreuzt. Mit dieser
 Erfassung rechnet Votum wie bei der Reglementsänderung nach dem Gesetz (ZGB
 Art. 712g Abs. 3).
 
+**Wenn Ihr Reglement beim einfachen Mehr nur die Wertquoten zählt.** Lautet es
+etwa «Mehrheit der an der Versammlung vertretenen Anteile (Wertquoten)», ohne
+Köpfe, kreuzen Sie bei den Kopfstimmen «Köpfe zählen nicht, nur die Wertquoten»
+an. Stellen Sie dann die Schwelle bei den Wertquoten so ein, wie das Reglement
+sie nennt: für die vertretenen Wertquoten «mehr als» 1 von 2 und «nur die
+anwesenden oder vertretenen» (bei einer neuen Regel schon so vorbelegt), für
+alle Wertquoten «alle Wertquoten der Gemeinschaft». Nimmt es die Enthaltungen
+aus der Bezugsgrösse, entfernen Sie den vorgegebenen Haken bei «Enthaltungen
+bleiben in der Bezugsgrösse». Wer anwesend ist und nichts abgibt, zählt in Votum
+weiter mit und wirkt wie ein Nein; fragen Sie vor dem Schliessen nach, wer noch nicht
+abgestimmt hat.
+Steht im Reglement nur «Anteile», kann auch eine Stimme je Einheit gemeint
+sein; klären Sie das vor der Versammlung. Gilt die Bestimmung für das einfache
+Mehr allgemein, hinterlegen Sie die Regel für jede Geschäftsart, in der das
+Gesetz das einfache Mehr verlangt: gewöhnliche Verwaltung, Jahresgeschäfte,
+Bewirtschaftung und Organe, Hausordnung und notwendige bauliche Massnahmen,
+dazu «Rückkommen auf einen Beschluss» (der Ordnungsantrag folgt dem einfachen
+Mehr des Reglements, Rz. 98a ad Art. 712n). Wo
+keine Regel hinterlegt ist, zählt Votum nach dem Gesetz, also nach Köpfen; die
+Erfassungsseite sagt je Geschäftsart, wo Ihre Regel greift. Wo das Gesetz mehr
+verlangt als das einfache Mehr, rechnet Votum nach dem Gesetz und nennt Ihre
+Regel auf der Karte. **Beim Rückkommen** gilt für einen angenommenen Beschluss
+dasselbe Mehr wie für ihn, unter Ihrer Regel also die Wertquoten. Für das
+Rückkommen auf einen abgelehnten Antrag zählt Votum nach Köpfen (einfaches Mehr
+als Ordnungsantrag), solange Sie für «Rückkommen auf einen Beschluss» keine
+Regel hinterlegt haben; hinterlegen Sie dort dieselbe Regel ohne Köpfe. Die Köpfe stehen in
+der Auszählung weiter da, als Auskunft. Stehen hinter Ja und Nein gleich viele
+Wertquoten, entscheidet die Person, die Sie unter «Stichentscheid» bei der
+Gemeinschaft hinterlegt haben; der Stichentscheid nach Wertquoten allein löst
+diesen Gleichstand nicht auf. Bis der Entscheid eingetragen ist, sagt die Wand,
+dass er aussteht. Das Protokoll des Abends nennt danach, wer entschieden hat,
+mit Begründung und dem Gleichstand in Zahlen. Von Hand zählen lässt sich unter dieser Regel
+nicht, weil die Wertquoten an der Einheit hängen. Ob die Versammlung
+beschlussfähig ist, rechnet Votum unverändert nach Personen und Anteilen
+(Rz. 16a ad Art. 712p). Am gemeinsamen Abend gilt die Regel nur für die
+Gemeinschaft, bei der sie hinterlegt ist; jede Gemeinschaft zählt nach ihrem
+eigenen Reglement. Eine solche Abweichung muss einstimmig eingeführt sein
+(Rz. 186 ad Art. 712m); steht sie seit der Begründung im Reglement, ist das
+gegeben. Ob sie trotzdem gilt, wenn sie später mit weniger Stimmen
+hineinkam und niemand sie innert eines Monats angefochten hat, ist für die
+Wertquoten nicht entschieden; sie gilt wohl trotzdem. Dafür spricht BGE 143 III
+537 E. 4.2.4: Dort hielt das Bundesgericht den Wechsel zu einer Stimme je
+Einheit, der ohne Einstimmigkeit beschlossen worden war, nur für anfechtbar,
+nicht für nichtig.
+
 **Eine hinterlegte Abweichung berichtigen Sie mit «Ändern»** in ihrer Zeile.
 Das Formular unten holt die Werte der Regel herein, und beim Speichern bleibt
 es dieselbe Regel: Im Verlauf steht danach eine Änderung samt dem, was vorher
@@ -1445,7 +1490,8 @@ Orten gleich:
 | **Eigener Text** | Ein Hinweis zwischendurch. |
 
 Ein aufgerufenes Traktandum geht immer vor, eine laufende Abstimmung erst
-recht. Steht ein Traktandum an der Wand und Sie wollen zurück zum Bild, nehmen
+recht. Ziehen Sie ein aufgerufenes Traktandum zurück, steht das am gemeinsamen
+Abend an der Wand, je Gemeinschaft. Steht ein Traktandum an der Wand und Sie wollen zurück zum Bild, nehmen
 Sie den Aufruf zurück — auf der Sitzungsleitung, im Dreischritt unter **jetzt**.
 
 ### Die Pause
@@ -2080,7 +2126,9 @@ vollständige.
 **Den Stichentscheid** rechnet die Mappe wie die Anwendung, nur beim einfachen
 Mehr ohne Wertquoten (seit A2 und A3, für jede Art): nach Wertquoten selbst
 («ANGENOMMEN (Stichentscheid)»); entscheidet nach dem Reglement eine Person,
-steht im Ergebnis «GLEICHSTAND», und ihr Entscheid wird nachgetragen.
+steht im Ergebnis «GLEICHSTAND», und ihr Entscheid wird nachgetragen. Zählen
+nach einer Regel Ihres Reglements die Köpfe nicht, steht bei gleichen
+Wertquoten «GLEICHSTAND», wo eine Person entscheidet, und sonst «abgelehnt».
 
 **Was die Mappe nicht abbildet**, steht ebenfalls darin: die geheime Abstimmung,
 den Entscheid einer Person bei Gleichstand und die Zustimmung unmittelbar
@@ -3038,7 +3086,7 @@ Wer was wann sieht:
 | | offen | geschlossen und verkündet | geschlossen, Gleichstand offen |
 |---|---|---|---|
 | Sitzungsleitung | Fortschritt | Ergebnis | Gleichstand und der Weg dazu |
-| Leinwand | Fortschritt | Ergebnis | «wird verkündet» |
+| Leinwand | Fortschritt | Ergebnis | dass der Entscheid aussteht |
 | Telefon | Frage und Schaltflächen | Ergebnis | Frage geschlossen |
 
 Der Fortschritt sind zwei Zahlen und sonst nichts — wer den Zwischenstand kennt,
@@ -3855,7 +3903,7 @@ Gleichstand. Sind die
 Stimmen als Summen erfasst, lassen sich die Wertquoten nicht ablesen; dann
 setzen Sie eine Neuabstimmung an und erfassen die Stimmen einzeln. Sieht das
 Reglement den **Stichentscheid des Verwalters** vor, hält die Anwendung beim
-Gleichstand an einem einfachen Mehr ohne Wertquoten an, bis der Entscheid eingetragen ist; danach ist er verkündet, und
+Gleichstand an einem einfachen Mehr ohne Wertquoten an, ebenso bei gleichen Wertquoten, wo eine Regel Ihres Reglements die Köpfe nicht zählt, bis der Entscheid eingetragen ist; danach ist er verkündet, und
 der Entscheid steht mit Namen in der Auswertung und im Protokoll. Empfohlen ist
 die Ablehnung, weil das dem Gesetz entspricht und die Verwaltung so nicht
 Partei ergreift. Ob ein Verwalter den Stichentscheid haben darf, ist umstritten
@@ -5047,12 +5095,23 @@ Folgeantrag ohne Ergebnis zählt als Lücke wie jede Abstimmung, ein
 zurückgezogener nicht. Ist über den ursprünglichen Antrag wegen der
 Folgeanträge nicht abgestimmt worden, sagt ein Satz dort, warum, und er zählt
 nicht als Lücke, auch nicht in der Ablaufleiste und auf der Seite «Wie steht
-es im Saal?». Folgeanträge zu einem Rückkommen oder zu einem im Saal neu
-aufgenommenen Geschäft stehen dort noch nicht, und Votum zählt sie dort nicht
-als Lücke. Jeder Beschluss gehört aber ins Protokoll (Art. 712n Abs. 2 ZGB):
-Laden Sie das Protokoll des Abends in diesem Fall als Word-Datei herunter und
-tragen Sie Wortlaut und Ergebnis dieser Folgeanträge vor dem Unterschreiben
-selbst ein; das Ergebnis steht in der Auswertung der Gemeinschaft.
+es im Saal?». Ein zurückgezogener Antrag steht mit seinem Grund da («Vor der
+Abstimmung zurückgezogen: …») und zählt nirgends als Lücke, auch nicht der
+Antrag zum Traktandum selbst. Nennen Sie im Grund, von wem der Rückzug kam, mit
+der Rolle statt des Namens, etwa «auf Wunsch der Antragstellerin» oder «die
+Verwaltung zieht zurück»: Das Protokoll übernimmt den Grund wörtlich und geht an
+alle beteiligten Gemeinschaften, die keine Eigentümernamen erhalten. **Ein Rückkommen** steht unter dem Traktandum, auf
+das es zurückkommt, mit eigener Überschrift («9.1.1 Rückkommen auf …») und
+seinem Ergebnis, auch wenn es abgelehnt wurde; ein Folgeantrag nach dem
+Rückkommen folgt darunter. Ein gestelltes Rückkommen ohne Abstimmung zählt als
+Lücke. **Was ein Haus im Saal als Kenntnisnahme aufgenommen hat**, steht als
+eigener Punkt «Im Saal aufgenommen, ‹Haus›: ‹Nummer im Haus› ‹Titel›» und zählt
+nicht als Lücke; hat die Seite «Geschäfte» es schon in die Liste des Abends
+übernommen, steht es dort mit der Nummer des Abends. Ein neues Geschäft zur Abstimmung nimmt Votum am gemeinsamen Abend nicht
+auf: Nehmen Sie es als Kenntnisnahme auf und setzen Sie den Beschluss auf die
+Einladung zur nächsten Versammlung (siehe «Ein Traktandum aufnehmen» unter «Sonderfälle im Saal»). Einen
+Folgeantrag gibt es nur zu einem angekündigten Antrag. Wird ein Rückkommen
+abgelehnt, sagt die Zeile darunter, dass es beim bisherigen Ergebnis bleibt.
 
 Haben Sie am gemeinsamen Abend zu einer Abstimmung bewusst keinen Beschluss
 festgehalten, bleibt das Protokoll des Abends in Votum Entwurf. Lautet sein
@@ -5755,7 +5814,9 @@ erzeugen ihn neu.
   eigenen Abschnitt davor. Zählweise und Stichentscheid stehen getrennt im Kopf:
   Sie sind die Einstellung der Gemeinschaft, nicht die einer Ziffer. An der
   Einsprache kann eine andere Zählweise gelten, und der Stichentscheid greift nur
-  beim einfachen Mehr ohne Wertquoten; die Zeile des Traktandums sagt es.
+  beim einfachen Mehr ohne Wertquoten; zählt das Reglement die Köpfe nicht,
+  entscheidet bei gleichen Wertquoten nur eine Person. Die Zeile des Traktandums
+  sagt es.
 - **der Abschnitt «Anfechtung»** vor dem Überblick, sobald ein Beschluss vorliegt:
   wer bei angenommenem und bei abgelehntem Antrag anfechten kann und ab wann die
   Monatsfrist läuft; Abberufung und Einsprache mit eigenem Absatz, wenn sie

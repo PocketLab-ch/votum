@@ -12,7 +12,7 @@
  */
 import { istKalendertag } from './datum';
 import { FachlicherFehler } from './gemeinschaft';
-import { ALLE, EINFACHE_MEHRHEIT, mehrheitsschwelle, quotenschwelle, type Schwelle } from './mehrheit';
+import { ALLE, EINFACHE_MEHRHEIT, mehrheitsschwelle, nurNachWertquoten, quotenschwelle, type Schwelle } from './mehrheit';
 import type { HeadCountMode } from './types';
 import { EREIGNISARTEN, ereignis, uebergang, type Uebergang } from './verlauf';
 import {
@@ -352,8 +352,11 @@ export function gesetzesmassVon(e: Erfordernis): Gesetzesmass {
 export const RUECKKOMMEN_TITEL = 'Wie der Beschluss, der aufgehoben werden soll: ';
 
 /** Ob ein Mass ein Mehr trägt, nach dem sich zählen lässt (Codeprüfung Block 6, H1). */
-export function gesetzesmassZaehlbar(g: Pick<Gesetzesmass, 'typ' | 'kopfSchwelle'>): boolean {
-	return g.typ !== 'grenzfall' && g.typ !== 'keine_abstimmung' && g.kopfSchwelle !== null;
+export function gesetzesmassZaehlbar(
+	g: Pick<Gesetzesmass, 'typ' | 'kopfSchwelle' | 'quotenSchwelle' | 'quotenbasis'>
+): boolean {
+	// Auch nur nach Wertquoten, wo eine Regel die Köpfe nicht zählt (16.11.2026).
+	return g.typ !== 'grenzfall' && g.typ !== 'keine_abstimmung' && (g.kopfSchwelle !== null || nurNachWertquoten(g));
 }
 
 /** Ob überhaupt ein Erfordernis feststeht. Beim Grenzfall steht keines. */
@@ -1145,6 +1148,20 @@ export function bezeichnungMitBasis(rw: Regelwerk, e: Erfordernis): string {
 	const def = typdefinition(rw, e.typ);
 	if (e.typ === 'keine_abstimmung' || e.typ === 'grenzfall' || e.typ === 'einstimmigkeit') {
 		return def.bezeichnung;
+	}
+	/*
+	 * **Ohne Köpfe ohne Kopfbasis** (Probe Wertquotenmehr, 17.11.2026). Die
+	 * Marke lautete «Reglementsmehr der anwesenden oder vertretenen; bei den
+	 * Wertquoten die der anwesenden oder vertretenen»: eine Kopfbasis, die nichts
+	 * zählt, und dieselbe Basis zweimal. Wo allein die Wertquoten zählen, nennt
+	 * sie die Wertquoten und sagt, dass die Köpfe nicht zählen.
+	 */
+	if (nurNachWertquoten(e)) {
+		const quoten =
+			e.quotenbasis === 'alle_quoten'
+				? 'aller Wertquoten, auch der abwesenden'
+				: 'der anwesenden oder vertretenen Wertquoten';
+		return `${def.bezeichnung} ${quoten}; die Köpfe zählen nicht`;
 	}
 	const kopf: string[] = [];
 	// Wie in `mehrheitMitBasis`: Der Beklagte fällt an der Ausschlussklage

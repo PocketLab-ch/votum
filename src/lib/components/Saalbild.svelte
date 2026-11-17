@@ -38,6 +38,8 @@
 	interface Aufgerufen {
 		nummer: string;
 		titel: string;
+		/** Vor der Abstimmung zurückgezogen (Probe Wertquotenmehr, 17.11.2026, B4). */
+		zurueckgezogen?: boolean;
 		kurzfassung?: string | null;
 		antragswortlaut?: string | null;
 		art?: string;
@@ -341,8 +343,16 @@
 		-->
 		{#if !abstimmung.ergebnis.geheim}
 		<dl>
-			<div>
-				<dt>Kopfstimmen</dt>
+			<!--
+				Ohne Köpfe die Wertquoten zuerst und die Köpfe als Auskunft (Regel «Köpfe
+				zählen nicht», Codeprüfung Block A, N6; Laienprüfung 16.11.2026, L6).
+			-->
+			<div
+				class:auskunft={abstimmung.ergebnis.koepfeAlsAuskunft === true}
+			>
+				<dt>
+					Kopfstimmen{#if abstimmung.ergebnis.koepfeAlsAuskunft}{' '}(zur Auskunft){/if}
+				</dt>
 				<!--
 					**Der Kopfspiegel** (Plan 30.09.2026, «Offen aus Block 1», Punkt 3):
 					Wo nichts gegen eine Schwelle gerechnet wurde, stehen nur Ja, Nein
@@ -382,7 +392,8 @@
 	<div class="bild warten">
 		<p class="traktandum">{abstimmung.titel}</p>
 		<h1>Abstimmung geschlossen</h1>
-		<p class="satz">Das Ergebnis wird von der Sitzungsleitung verkündet.</p>
+		<!-- Beim offenen Stichentscheid der Satz dazu (Probe Wertquotenmehr, B4). -->
+		<p class="satz">{abstimmung.wartesatz ?? 'Das Ergebnis steht noch nicht fest.'}</p>
 	</div>
 {:else if beschlussfaehigkeit}
 	<!-- ── Der Punkt, der die Beschlussfähigkeit zum Gegenstand hat ────────
@@ -412,10 +423,13 @@
 		{#if aufgerufen.antragswortlaut}
 			<blockquote>{aufgerufen.antragswortlaut}</blockquote>
 		{/if}
-		{#if aufgerufen.noetig}
+		{#if aufgerufen.zurueckgezogen}
+			<!-- Statt «nötig»: Es wird nicht abgestimmt (Probe Wertquotenmehr, B4). -->
+			<p class="noetig">Zurückgezogen, es wird nicht abgestimmt.</p>
+		{:else if aufgerufen.noetig}
 			<p class="noetig">{aufgerufen.noetig}</p>
 		{/if}
-		{#if aufgerufen.ausstandsgrund}
+		{#if aufgerufen.ausstandsgrund && !aufgerufen.zurueckgezogen}
 			<p class="ausstandsgrund">{aufgerufen.ausstandsgrund}</p>
 		{/if}
 		{#if aufgerufen.erfordernis}
@@ -678,6 +692,11 @@
 
 	dl div {
 		min-width: 0;
+	}
+
+	/* Die Köpfe als Auskunft nach den Wertquoten (Regel «Köpfe zählen nicht»). */
+	dl .auskunft {
+		order: 2;
 	}
 
 	dt {

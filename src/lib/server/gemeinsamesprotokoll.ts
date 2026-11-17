@@ -21,7 +21,7 @@
  * (`beschlussfaehigkeitFehlteAmBeschluss`).
  */
 import { NOTWENDIGE_MASSNAHME_KNOTEN } from '$lib/domain/entscheidbaum';
-import { andereLesartenVon, andereLesartInWorten, zweitesErgebnisImProtokoll } from '$lib/domain/auszaehlung';
+import { andereLesartenVon, andereLesartInWorten, ergebnislage, zweitesErgebnisImProtokoll } from '$lib/domain/auszaehlung';
 import { gemeinsameListe, nummernJeTraktandum } from '$lib/domain/gemeinsameliste';
 import {
 	gemeinsamerProtokollentwurf,
@@ -68,7 +68,7 @@ import type { SnapshotParty } from '$lib/domain/types';
 import { holeDurchgaenge } from './abstimmung';
 import { holeMomentaufnahme } from './freigabe';
 import { holeAnwesenheitsregeln } from './reglement';
-import { zustimmungBetroffenerGefragt, type Auszaehlung } from '$lib/domain/auszaehlung';
+import { gleichstandInZahlen, zustimmungBetroffenerGefragt, type Auszaehlung } from '$lib/domain/auszaehlung';
 
 import { holePapierabgaben } from './papierabgabe';
 import { holeUebersicht } from './anwesenheit';
@@ -169,7 +169,10 @@ function beschlussfaehigkeitssatz(z: {
 	const zahlen =
 		b.eigentuemerGesamt === null || b.eigentuemerGesamt === undefined
 			? `${b.kopfstimmenAnwesend} von ${b.kopfstimmenGesamt} Kopfstimmen anwesend`
-			: `${b.eigentuemerAnwesend} von ${b.eigentuemerGesamt} Stockwerkeigentümern anwesend`;
+			: // «Eigentümern», nicht «Stockwerkeigentümern»: Am Abend tagt oft eine
+				// Miteigentümergemeinschaft mit, für die Art. 712p nicht gilt (Laien- und
+				// Fachprüfung 17.11.2026, L5, F4). Gezählt werden weiter Personen.
+				`${b.eigentuemerAnwesend} von ${b.eigentuemerGesamt} Eigentümern anwesend`;
 	if (!b.erfuellt) return `Nicht beschlussfähig: ${b.fehlt || zahlen}`;
 	// Wie `feststellungssatz`: bei einem einzigen Eigentümer mit der Lehrmeinung (Ä-17).
 	return `Beschlussfähig: ${zahlen}` + (b.eigentuemerGesamt === 1 ? `. ${satzZumEinzigen(b.einzigeParteiGemeinsam, true)}` : '');
@@ -284,22 +287,34 @@ export async function stelleAbendzusammenstellungZusammen(
 				 * **Die Folgeanträge je Antrag** (Produktentscheid 08.11.2026). Sie
 				 * entstehen am Abend je Haus, hängen über `parentId` am Antrag und
 				 * stehen in keiner gemeinsamen Liste. Auch der Folgeantrag eines
-				 * Folgeantrags gehört unter den Antrag, an dem die Kette beginnt;
-				 * ein Rückkommen bleibt, wie es ist.
+				 * Folgeantrags gehört unter den Antrag, an dem die Kette beginnt.
+				 *
+				 * **Und die Rückkommen** (16.11.2026, vor der ersten echten
+				 * Versammlung als gemeinsamer Abend): Sie hängen über
+				 * `rueckkommenZielId` am Antrag, auch ein Rückkommen auf ein
+				 * Rückkommen, und hatten im Dokument keine eigene Zeile; ein
+				 * abgelehntes stand gar nicht darin. Folgeanträge zu einem
+				 * Rückkommen gibt es nicht (`hindernisAlsGrundantrag`, `spontan`).
 				 */
 				const jeKennung = new Map(traktanden.map((t) => [t.knoten.id, t]));
 				const folgeantraegeJeAntrag = new Map<Id, (typeof traktanden)[number][]>();
+				const obenAn = (t: (typeof traktanden)[number]) =>
+					t.knoten.spontanart === 'folgeantrag'
+						? t.knoten.parentId
+						: t.knoten.spontanart === 'rueckkommen'
+							? (t.knoten.rueckkommenZielId ?? null)
+							: null;
 				for (const f of traktanden) {
-					if (f.knoten.spontanart !== 'folgeantrag') continue;
+					if (f.knoten.spontanart !== 'folgeantrag' && f.knoten.spontanart !== 'rueckkommen') continue;
 					let antrag = f;
 					const gesehen = new Set<Id>();
-					while (antrag.knoten.spontanart === 'folgeantrag' && antrag.knoten.parentId) {
-						const eltern = jeKennung.get(antrag.knoten.parentId);
+					for (let oben = obenAn(antrag); oben; oben = obenAn(antrag)) {
+						const eltern = jeKennung.get(oben);
 						if (!eltern || gesehen.has(eltern.knoten.id)) break;
 						gesehen.add(eltern.knoten.id);
 						antrag = eltern;
 					}
-					if (antrag === f || antrag.knoten.spontanart === 'folgeantrag') continue;
+					if (antrag === f || antrag.knoten.spontanart) continue;
 					const liste = folgeantraegeJeAntrag.get(antrag.knoten.id) ?? [];
 					liste.push(f);
 					folgeantraegeJeAntrag.set(antrag.knoten.id, liste);
@@ -373,6 +388,13 @@ export async function stelleAbendzusammenstellungZusammen(
 						l8JeTraktandum,
 						nummerJeTraktandum,
 						folgeantraegeJeAntrag,
+						/*
+						 * Im Saal aufgenommene Geschäfte (16.11.2026), am Abend in der
+						 * Regel Kenntnisnahmen (`NICHT_ANGEKUENDIGT_AM_ABEND`); mit einem
+						 * Beschluss von Hand auch mit Ergebnis (Codeprüfung Block B, M1).
+						 */
+						imSaal: traktanden.filter((t) => t.knoten.spontanart === 'neu' && !t.knoten.parentId),
+						gemeinschaftsname: z.gemeinschaft,
 						stimmkraft,
 						folgeantragslage,
 						nachQuorumJeTraktandum,
@@ -488,8 +510,10 @@ export async function stelleAbendzusammenstellungZusammen(
 		traktandumId: Id,
 		zeileDesHauses: Hauszeile | undefined,
 		abstimmung: boolean,
-		/** Die Zeile eines Folgeantrags, nicht die des Hauses zum Punkt. */
-		folgeantrag: boolean
+		/*
+		 * Die Angabe «Zeile eines Folgeantrags» ist entfallen (16.11.2026): Seit der
+		 * Rückzug an jeder Zeile gilt, unterschied sie nichts mehr.
+		 */
 	): { offen: boolean; felder: Omit<Abendergebnis, 'nummer' | 'gemeinschaft' | 'abweichenderTitel'> } => {
 		/*
 		 * **Der Beschlussvermerk dieses Hauses** (Block 7): Der Text im
@@ -519,14 +543,15 @@ export async function stelleAbendzusammenstellungZusammen(
 				? ('erste' as const)
 				: (v?.stufe ?? null);
 		/*
-		 * **Der Rückzug nur am Folgeantrag** (Produktentscheid 08.11.2026):
-		 * Zurückgezogen ist er entschieden wie im Hausprotokoll (`ohneErgebnis`),
-		 * und das Dokument bliebe sonst ohne Ausweg Entwurf; ein Beschlussvermerk
-		 * ist dort nicht möglich. Nicht neben einem Ergebnis: Dann trägt der Satz
-		 * den Durchgang. Die Zeile des Hauses bleibt, wie sie war (siehe `rueckzug`
-		 * unten).
+		 * **Der Rückzug an jeder Zeile** (Produktentscheid 08.11.2026 für den
+		 * Folgeantrag; 16.11.2026 auch an der Zeile des Hauses, vor der ersten
+		 * echten Versammlung als gemeinsamer Abend): Zurückgezogen ist ein Antrag
+		 * entschieden wie im Hausprotokoll (`ohneErgebnis`), und das Dokument
+		 * bliebe sonst ohne Ausweg Entwurf. Die Tafel zählt ihn ebenso nicht mehr
+		 * (`holeTafel`, `withdrawn_at`). Nicht neben einem Ergebnis: Dann trägt der
+		 * Satz den Durchgang.
 		 */
-		const zurueckgezogen = folgeantrag && !zeileDesHauses?.satz ? (zeileDesHauses?.rueckzug ?? null) : null;
+		const zurueckgezogen = !zeileDesHauses?.satz ? (zeileDesHauses?.rueckzug ?? null) : null;
 		// Ein ersetzter Grundantrag ist entschieden, nur beim Folgeantrag (Soll 6).
 		// Nicht nach einer Neuabstimmung am Folgeantrag: Dort ist noch kein
 		// Ergebnis (Codeprüfung B2b, M4).
@@ -579,11 +604,39 @@ export async function stelleAbendzusammenstellungZusammen(
 								.filter((t): t is string => t !== null)
 								.join(' ') || null
 						: null,
-					// Am Folgeantrag der Grund aus der Auswertung (oben,
-					// `zurueckgezogen`). An der Zeile des Hauses leer wie bisher:
-					// Dort zählt ein zurückgezogener Antrag weiter als offen, wie
-					// auf der Tafel; das anzugleichen ist ein eigener Schritt.
+					// Der Grund aus der Auswertung (oben, `zurueckgezogen`), an jeder Zeile.
 					rueckzug: zurueckgezogen,
+					/*
+					 * **Stichentscheid und frühere Durchgänge wie im Hausprotokoll**
+					 * (Probe Wertquotenmehr, 17.11.2026, B1 und B2). Nur neben einem
+					 * Ergebnis; der Kern setzt sie in dessen Zweig.
+					 */
+					stichentscheid:
+						zeileDesHauses?.satz && zeileDesHauses.stichentscheid
+							? { ...zeileDesHauses.stichentscheid, begruendung: zeileDesHauses.stichentscheid.begruendung ?? null }
+							: null,
+					gleichstand: zeileDesHauses?.auszaehlung ? gleichstandInZahlen(zeileDesHauses.auszaehlung) : null,
+					ausgangsvermerke: (zeileDesHauses?.auszaehlung?.protokollhinweise ?? [])
+						.filter((h) => h.ort === 'ausgang' && h.ohneNamen)
+						.map((h) => h.ohneNamen!),
+					ersetztNachRueckkommen: zeileDesHauses?.ersetztNachRueckkommen ?? [],
+					/*
+					 * «N. Durchgang.» wie im Hausprotokoll, wo ein Rückkommen den
+					 * früheren ersetzt hat; nicht nach einer Neuabstimmung davor
+					 * oder nach Eintritt der Beschlussfähigkeit, deren Sätze den
+					 * massgebenden selbst nennen (`protokollentwurf`).
+					 */
+					durchgangszeile: (() => {
+						const d = zeileDesHauses?.durchgang ?? null;
+						if (!d || d < 2 || (zeileDesHauses?.ersetztNachRueckkommen ?? []).length === 0) return null;
+						if ((zeileDesHauses?.neuabstimmungen ?? []).some((n) => n.nummer < d)) return null;
+						if (v?.nachQuorumJeTraktandum.get(traktandumId)) return null;
+						return d;
+					})(),
+					// Nach einem angenommenen Rückkommen ohne neue Abstimmung, wie im
+					// Hausprotokoll (Codeprüfung Block B, N2).
+					rueckkommenOhneDurchgang: zeileDesHauses?.rueckkommenOhneDurchgang ?? null,
+					rueckkommenNichtGenutzt: zeileDesHauses?.rueckkommenNichtGenutzt ?? null,
 					handzaehlung: zeileDesHauses?.handzaehlung ?? null,
 					ausstandswirkung: zeileDesHauses?.auszaehlung?.ausstandswirkung ?? null,
 					/*
@@ -719,7 +772,7 @@ export async function stelleAbendzusammenstellungZusammen(
 			const art = unterpunkte.find((u) => u.traktanden.some((x) => x.traktandumId === t.traktandumId))?.art
 				?? zeile.art;
 			const abstimmung = art !== 'kenntnisnahme' && art !== 'sammelpunkt';
-			const haus = angabenDesHauses(v, t.traktandumId, zeileDesHauses, abstimmung, false);
+			const haus = angabenDesHauses(v, t.traktandumId, zeileDesHauses, abstimmung);
 			zaehle(abstimmung, haus.offen);
 			/*
 			 * **Die Folgeanträge dieses Hauses zum Antrag, je mit eigener Zeile**
@@ -730,7 +783,7 @@ export async function stelleAbendzusammenstellungZusammen(
 			const folgeantraege = (v?.folgeantraegeJeAntrag.get(t.traktandumId) ?? []).map((f) => {
 				const zeileDesFolgeantrags = v!.zeilenJeNummer.get(f.nummer);
 				const abstimmt = (zeileDesFolgeantrags?.art ?? f.knoten.art) === 'abstimmung';
-				const fa = angabenDesHauses(v, f.knoten.id, zeileDesFolgeantrags, abstimmt, true);
+				const fa = angabenDesHauses(v, f.knoten.id, zeileDesFolgeantrags, abstimmt);
 				zaehle(abstimmt, fa.offen);
 				return {
 					...fa.felder,
@@ -738,7 +791,26 @@ export async function stelleAbendzusammenstellungZusammen(
 					gemeinschaft: t.gemeinschaft,
 					abweichenderTitel: null,
 					titel: f.knoten.titel,
-					antragswortlaut: f.knoten.antragswortlaut ?? null
+					antragswortlaut: f.knoten.antragswortlaut ?? null,
+					...(f.knoten.spontanart === 'rueckkommen'
+						? {
+								rueckkommen: true,
+								/*
+								 * Abgelehnt: Es bleibt beim bisherigen Ergebnis (Laienprüfung
+								 * Runde 2, R2-L6). Sonst läse sich «Abgelehnt» unter «Rückkommen
+								 * auf 9.1 …» wie die Ablehnung der Sache.
+								 */
+								...(ergebnislage(zeileDesFolgeantrags?.auszaehlung) === 'abgelehnt'
+									? {
+											// Das Ziel des Rückkommens, nicht der Anfang der Kette
+											// (Codeprüfung Block B, N1: Rückkommen auf einen Folgeantrag).
+											bleibtBeim: f.knoten.rueckkommenZielId
+												? (v!.nummerJeTraktandum.get(f.knoten.rueckkommenZielId) ?? null)
+												: null
+										}
+									: {})
+							}
+						: {})
 				};
 			});
 
@@ -759,6 +831,41 @@ export async function stelleAbendzusammenstellungZusammen(
 			antragswortlaut: zeile.antragswortlaut,
 			ergebnisse
 		});
+	}
+
+	/*
+	 * **Im Saal aufgenommen** (16.11.2026), in der Reihenfolge der Tafel: je Haus
+	 * ein eigener Punkt mit der Nummer des Hauses, durch denselben Zeilenbau wie
+	 * jede Hauszeile, also mit Ergebnis, Votum, Rügen und Pendenzen (Codeprüfung
+	 * Block B, M1 und M2). Was die Seite «Geschäfte» schon in die gemeinsame
+	 * Liste übernommen hat (`vereinheitlicheListe`), steht dort und nicht noch
+	 * einmal hier (M3). Eine Kenntnisnahme schuldet kein Ergebnis und zählt nicht.
+	 */
+	const inListe = new Set(liste.flatMap((l) => l.traktanden.map((t) => t.traktandumId)));
+	for (const z of tafel) {
+		const v = jeVersammlung.get(z.meetingId);
+		for (const t of v?.imSaal ?? []) {
+			if (inListe.has(t.knoten.id)) continue;
+			const zeileDesHauses = v!.zeilenJeNummer.get(t.nummer);
+			const abstimmung = (zeileDesHauses?.art ?? t.knoten.art) === 'abstimmung';
+			const haus = angabenDesHauses(v, t.knoten.id, zeileDesHauses, abstimmung);
+			zaehle(abstimmung, haus.offen);
+			punkte.push({
+				nummer: t.nummer,
+				titel: t.knoten.titel,
+				ueberschrift: `Im Saal aufgenommen, ${v!.gemeinschaftsname}: ${t.nummer} ${t.knoten.titel}`,
+				antragswortlaut: t.knoten.antragswortlaut ?? null,
+				ergebnisse: [
+					{
+						nummer: t.nummer,
+						gemeinschaft: v!.gemeinschaftsname,
+						abweichenderTitel: null,
+						...haus.felder,
+						folgeantraege: []
+					}
+				]
+			});
+		}
 	}
 
 	/*
@@ -795,7 +902,8 @@ export async function stelleAbendzusammenstellungZusammen(
 		text: gemeinsamerProtokollentwurf(eingabe),
 		luecke,
 		versammlungen: tafel.length,
-		punkte: punkte.length,
+		// Nur die Liste des Abends, ohne im Saal Aufgenommenes (zweiter Durchgang der Codeprüfung B, Befund 2).
+		punkte: punkte.filter((p) => !p.ueberschrift).length,
 		offeneErgebnisse,
 		abstimmungenGesamt,
 		ohneZuordnung

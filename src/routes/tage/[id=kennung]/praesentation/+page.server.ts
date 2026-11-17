@@ -127,6 +127,10 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	 * Es gehört dann nur dieser einen Gemeinschaft — was die Zeile darunter
 	 * sagt.
 	 */
+	// Einmal je Haus geholt, für den Rückfall `einzelpunkt` und den Rückzug unten (Codeprüfung, N5).
+	const traktandenJeHaus = new Map(
+		await Promise.all(haeuser.map(async (h) => [h.versammlungId, await holeTraktanden(op, h.versammlungId)] as const))
+	);
 	let einzelpunkt: {
 		nummer: string;
 		titel: string;
@@ -136,7 +140,7 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	} | null = null;
 	if (!punkt && laufendesTraktandum) {
 		for (const h of haeuser) {
-			const traktanden = await holeTraktanden(op, h.versammlungId);
+			const traktanden = traktandenJeHaus.get(h.versammlungId) ?? [];
 			const t = traktanden.find((x) => x.knoten.id === laufendesTraktandum);
 			if (t) {
 				einzelpunkt = {
@@ -170,6 +174,26 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		const eigner = aufgerufene.findIndex((a) => a.traktandumId === laufendesTraktandum);
 		if (eigner >= 0) traktandumJeHaus.set(haeuser[eigner].versammlungId, laufendesTraktandum);
 	}
+
+	/*
+	 * **Der Rückzug an der Wand** (Probe Wertquotenmehr, 17.11.2026, B4). Nach
+	 * einem Rückzug zeigte die Wand den Antrag unverändert, als stünde er noch an.
+	 * Je Haus des Schrittes, ob sein Traktandum zurückgezogen ist; ohne Grund und
+	 * ohne Namen, die stehen im Protokoll. Dazu die Marke für den Nachzug, gleich
+	 * gebildet wie aus dem Strom (`zurueckgezogenAm` je Haus, in der Reihenfolge
+	 * der Häuser).
+	 */
+	const rueckzugVon = (versammlungId: string, traktandumId: string | null | undefined) =>
+		traktandumId
+			? (traktandenJeHaus.get(versammlungId)?.find((t) => t.knoten.id === traktandumId)?.knoten.rueckzug ?? null)
+			: null;
+	const rueckzugsmarke = haeuser
+		.map((h, i) => rueckzugVon(h.versammlungId, aufgerufene[i].traktandumId)?.am ?? '-')
+		.join(',');
+	const kurzImSchritt = kurznamen(haeuser.map((h) => h.name));
+	const zurueckgezogen = haeuser
+		.map((h, i) => (rueckzugVon(h.versammlungId, traktandumJeHaus.get(h.versammlungId)) ? kurzImSchritt[i] : null))
+		.filter((n): n is string => n !== null);
 
 	/*
 	 * **Pause und Wandbild mit ihrem Text** (Code-Review 24.08.2026, Befund 5).
@@ -348,6 +372,11 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 			traktandumImSchritt: traktandumJeHaus.get(h.versammlungId) ?? null
 		})),
 		einzelpunkt,
+		/** Die Häuser des Schrittes, deren Traktandum zurückgezogen ist (B4). */
+		zurueckgezogen,
+		/** Alle Häuser des Schrittes haben zurückgezogen. */
+		alleZurueckgezogen: zurueckgezogen.length > 0 && zurueckgezogen.length === traktandumJeHaus.size,
+		rueckzugsmarke,
 		/**
 		 * Der Punkt, den der Server beim Laden für den laufenden hielt — die
 		 * Vergleichsgrösse für das Neuladen.

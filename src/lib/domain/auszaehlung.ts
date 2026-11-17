@@ -31,7 +31,8 @@
 import { istKalendertag } from './datum';
 import { kopfgewicht, traegtKopfstimme } from './eigentuemer';
 import { FachlicherFehler, personenstufe, quotenstufe } from './gemeinschaft';
-import { schwelle as schwellenwert, schwelleInWorten } from './mehrheit';
+import { UNABHAENGIG_VON_KOEPFEN, nurNachWertquoten, schwelle as schwellenwert, schwelleInWorten } from './mehrheit';
+export { nurNachWertquoten } from './mehrheit';
 import {
 	AUSSCHLUSSKLAGE_KNOTEN,
 	angehoerigenlesartWirkt,
@@ -2187,7 +2188,12 @@ function zweitesErgebnis(
 	 * Kopfmehr nichts (Wächter im Test, gemessen an L4). Bei L1 nicht, weil die
 	 * Köpfe sich nicht ändern.
 	 */
-	const offen = b !== null && b.stichentscheidOffen && b.quoten.erreicht && b.betroffene.erfuellt;
+	// Ohne Köpfe liegt der Gleichstand bei den Wertquoten selbst; dann fehlen sie nicht (Codeprüfung Block A, M4).
+	const offen =
+		b !== null &&
+		b.stichentscheidOffen &&
+		(b.quoten.erreicht || nurNachWertquoten(anderes)) &&
+		b.betroffene.erfuellt;
 	return {
 		...worte,
 		feststellbar: b !== null && !offen,
@@ -2197,7 +2203,8 @@ function zweitesErgebnis(
 				? { nichtFeststellbarWeil: 'stichentscheid' as const }
 				: {}),
 		angenommen: b && !offen ? b.angenommen : null,
-		koepfe: b ? auszug(b.koepfe) : null,
+		// Ohne Köpfe keine Kopfzeile mit «nötig» (Codeprüfung Block A, M4).
+		koepfe: b && anderes.kopfSchwelle ? auszug(b.koepfe) : null,
 		quoten: b && anderes.quotenbasis !== 'keine' && anderes.quotenSchwelle ? auszug(b.quoten) : null,
 		abweichend: b !== null && !offen && b.angenommen !== a.angenommen
 	};
@@ -2344,7 +2351,24 @@ export function stichentscheidGrenzeKartensatz(
 	e: Erfordernis | null | undefined,
 	tieBreak: Stichentscheid
 ): string | null {
-	if (!e || !e.kopfSchwelle || tieBreak === 'keiner' || stichentscheidMoeglich(e)) return null;
+	if (!e || tieBreak === 'keiner') return null;
+	/*
+	 * **Ohne Köpfe entscheidet bei Gleichstand nur eine Person** (16.11.2026).
+	 * Hat die Gemeinschaft allein den Stichentscheid nach Wertquoten
+	 * hinterlegt, löst er einen Gleichstand nach Wertquoten nicht auf.
+	 */
+	if (nurNachWertquoten(e) && stichentscheidMoeglich(e) && !personenstufe(tieBreak)) {
+		return QUOTENGLEICHSTAND_OHNE_PERSON_KARTE;
+	}
+	// «Mindestens die Hälfte» ohne Köpfe: Der Gleichstand ist angenommen, nichts anzusagen.
+	if (
+		nurNachWertquoten(e) &&
+		e.quotenSchwelle!.zaehler * 2 === e.quotenSchwelle!.nenner &&
+		e.quotenSchwelle!.art === 'mindestens'
+	) {
+		return null;
+	}
+	if ((!e.kopfSchwelle && !nurNachWertquoten(e)) || stichentscheidMoeglich(e)) return null;
 	return (
 		'Ihre Gemeinschaft hat bei Stimmengleichheit einen Stichentscheid hinterlegt. Nach ihrer Einstellung gilt die Klausel bei ' +
 		'diesem Traktandum nicht: Es verlangt ein anderes Mehr als das einfache ohne Wertquoten, und das ' +
@@ -2383,7 +2407,7 @@ function festerVergleichKartensatz(e: Erfordernis | null | undefined): string | 
 	const a = masseVon(e);
 	const b = masseVon(gesetz);
 	const ohneBetroffene = betroffeneStimmenNichtMit({ kopfbasis: 'anwesend_vertreten', knotenId: e.knotenId });
-	// Ohne Kopfschwelle lässt sich nicht vergleichen; wie bei der Einladung gilt das als milder.
+	// Ohne Kopf- und ohne Wertquotenschwelle lässt sich nicht vergleichen; das gilt als milder.
 	const richtung = a && b ? vergleicheMasse(a, b, ohneBetroffene) : 'gemischt';
 	const milder =
 		richtung === 'milder' ||
@@ -2415,7 +2439,8 @@ function festerVergleichKartensatz(e: Erfordernis | null | undefined): string | 
 }
 
 function masseVon(e: Erfordernis): Mehrmasse | null {
-	if (!e.kopfSchwelle) return null;
+	// Ohne Köpfe vergleichbar, wo nur Wertquoten zählen (Codeprüfung Block A, M4): `vergleicheMasse` ordnet das ein.
+	if (!e.kopfSchwelle && !nurNachWertquoten(e)) return null;
 	return {
 		kopfbasis: kopfbasisZumVergleich(e.knotenId, e.kopfbasis),
 		kopfSchwelle: e.kopfSchwelle,
@@ -4253,10 +4278,49 @@ export interface Protokollhinweis {
 	 * (Codeprüfung P11, H1, 08.11.2026). Es geht an die Eigentümer aller
 	 * beteiligten Gemeinschaften und trägt keine Namen (10.09.2026); eine
 	 * Zeile, die das Hausprotokoll mit Namen führt, steht dort nur, wo sie
-	 * diese Fassung hat. Gesetzt bisher allein an den ruhenden Vollmachten der
-	 * Verwaltung (Entscheid 3); fehlt sie, fehlt die Zeile im Abenddokument.
+	 * diese Fassung hat. Gesetzt an den ruhenden Vollmachten der Verwaltung
+	 * (Entscheid 3) und an den Vermerken zum Ausgang, die keinen Namen tragen
+	 * (`namensfrei`); fehlt sie, fehlt die Zeile im Abenddokument.
 	 */
 	ohneNamen?: string;
+}
+
+/**
+ * Ein Vermerk zum Ausgang, der keinen Namen trägt und deshalb auch ins
+ * Abenddokument gehört (Probe Wertquotenmehr, 17.11.2026, B1): der
+ * Stichentscheid nach Wertquoten, der Gleichstand ohne hinterlegte Person und
+ * die nicht angewandte Klausel. Am Abend fehlten sie bis dahin, obwohl dort
+ * dasselbe Ergebnis steht wie im Hausprotokoll.
+ */
+function namensfrei(satz: string): Protokollhinweis {
+	return { ort: 'ausgang', satz, ohneNamen: satz };
+}
+
+/**
+ * Der Gleichstand in Zahlen, für die Zeile zum Stichentscheid im Protokoll des
+ * Abends (Probe Wertquotenmehr, 17.11.2026, B1): «500 zu 500 Wertquoten»,
+ * «2 zu 2 Kopfstimmen», bei der Kaskade beides. Die Zählweise steht im Wort:
+ * Wo nur die Wertquoten zählen, ist der Gleichstand einer der Wertquoten, wie
+ * im Hinweis an die Leitung (`verwalterKlauselHinweis`).
+ *
+ * Auch beim offenen Stichentscheid, für die Leitung des Abends (B5): Sie nennt
+ * die Zahlen und die Zählweise wie die Leitung des Hauses.
+ *
+ * `null` ohne Stichentscheid einer Person und bei geheimer Abstimmung: Auch ein
+ * Patt ist eine Angabe über die Verteilung (Produktentscheid 28.09.2026).
+ */
+export function gleichstandInZahlen(a: Auszaehlung): string | null {
+	if ((!a.durchStichentscheid && !a.stichentscheidOffen) || a.geheim) return null;
+	if (a.stichentscheidArt !== 'verwalter' && a.stichentscheidArt !== 'vorsitz') return null;
+	const koepfe = `${a.koepfe.ja} zu ${a.koepfe.nein} Kopfstimmen`;
+	if (a.wertquotenGleich) {
+		return `${koepfe} und ${a.wertquotenGleich.ja} zu ${a.wertquotenGleich.nein} Wertquoten`;
+	}
+	// Ohne Köpfe hat die Kopfzählung keine Schwelle; gleich stehen dann die Wertquoten.
+	if (a.koepfe.schwelle === null && a.quoten.schwelle !== null && a.quoten.ja === a.quoten.nein) {
+		return `${a.quoten.ja} zu ${a.quoten.nein} Wertquoten, nach denen hier allein gezählt wird`;
+	}
+	return koepfe;
 }
 
 /**
@@ -5160,6 +5224,21 @@ function schwelleIstHaelfte(e: Erfordernis): boolean {
  * Zählwege.
  */
 export function stichentscheidMoeglich(e: Erfordernis): boolean {
+	/*
+	 * **Ohne Köpfe am einfachen Mehr nach Wertquoten** (16.11.2026): Dort ist
+	 * die Wertquotenschwelle die Hälfte, an der ein Patt entstehen kann. Der
+	 * Gleichstand liegt dann bei den Wertquoten, und entscheiden kann nur eine
+	 * Person (`zaehleAus`).
+	 */
+	if (!e.kopfSchwelle) {
+		// Nur bei «mehr als die Hälfte»: Bei «mindestens» ist der Gleichstand schon
+		// angenommen, es gibt nichts aufzulösen (Featureprüfung, Prüfer A, Zusammenspiel 2).
+		return (
+			nurNachWertquoten(e) &&
+			e.quotenSchwelle!.zaehler * 2 === e.quotenSchwelle!.nenner &&
+			e.quotenSchwelle!.art === 'mehr_als'
+		);
+	}
 	return schwelleIstHaelfte(e) && !e.quotenSchwelle;
 }
 
@@ -5212,9 +5291,14 @@ function verwalterKlauselHinweis(
 	nein: number,
 	entscheid?: Stichentscheidbefund,
 	person: 'verwalter' | 'vorsitz' = 'verwalter',
-	quoten?: { ja: number; nein: number }
+	quoten?: { ja: number; nein: number },
+	/** Wo die Köpfe nicht zählen, liegt der Gleichstand bei den Wertquoten (16.11.2026). */
+	ohneKoepfe = false
 ): string {
-	const gleich = quoten
+	const gleich = ohneKoepfe
+		? `Gleichstand bei den Wertquoten (${ja} zu ${nein}), nach denen hier allein gezählt wird. ` +
+			'Nach dem Reglement dieser Gemeinschaft '
+		: quoten
 		? `Gleichstand bei den Kopfstimmen (${ja} zu ${nein}) und bei den Wertquoten ` +
 			`(${quoten.ja} zu ${quoten.nein}). Nach dem Reglement dieser Gemeinschaft `
 		: `Gleichstand bei den Kopfstimmen (${ja} zu ${nein}). Nach dem Reglement dieser Gemeinschaft `;
@@ -5285,6 +5369,42 @@ function verwalterKlauselHinweis(
 		`entschieden${entscheid.begruendung ? `: ${entscheid.begruendung}` : '.'}${zaehlung}`
 	);
 }
+
+/**
+ * Gleichstand nach Wertquoten unter einer Regel ohne Köpfe, entschieden oder
+ * offen bei einer Person (16.11.2026). Derselbe Wortlaut wie beim
+ * Kopfgleichstand (`verwalterKlauselHinweis`), nur mit den Wertquoten als
+ * Gleichstand; Empfehlung und Weg sind dieselben.
+ */
+function quotengleichstandPersonHinweis(
+	quote: number,
+	entscheid: Stichentscheidbefund | undefined,
+	person: 'verwalter' | 'vorsitz'
+): string {
+	return verwalterKlauselHinweis(quote, quote, entscheid, person, undefined, true);
+}
+
+/**
+ * Gleichstand nach Wertquoten unter einer Regel ohne Köpfe, wo die
+ * Gemeinschaft nur den Stichentscheid nach Wertquoten hinterlegt hat: Er löst
+ * diesen Gleichstand nicht auf, der Antrag ist abgelehnt (16.11.2026).
+ */
+function quotengleichstandOhnePersonHinweis(quote: number, geheim: boolean): string {
+	return (
+		(geheim ? 'Gleichstand bei den Wertquoten' : `Gleichstand bei den Wertquoten (${quote} zu ${quote})`) +
+		', nach denen hier allein gezählt wird. Der hinterlegte Stichentscheid nach Wertquoten löst ' +
+		// Laienprüfung 16.11.2026, L7: die Einstellung, nicht «das Reglement».
+		'ihn nicht auf, und für die Gemeinschaft ist keine Person für den Stichentscheid hinterlegt. ' +
+		'Der Antrag ist damit abgelehnt.'
+	);
+}
+
+/** Der Satz an die Leitung vor der Abstimmung zum selben Fall (`stichentscheidGrenzeKartensatz`). */
+const QUOTENGLEICHSTAND_OHNE_PERSON_KARTE =
+	'Ihre Gemeinschaft hat bei Stimmengleichheit den Stichentscheid nach Wertquoten hinterlegt. Bei ' +
+	'diesem Traktandum zählen nur die Wertquoten; stehen sie gleich, löst die Klausel nichts auf. Sagen ' +
+	'Sie der Versammlung vor der Abstimmung, dass der Antrag dann abgelehnt ist. Nennt Ihr Reglement ' +
+	'eine Person für den Stichentscheid, tragen Sie sie vorher bei der Gemeinschaft ein.';
 
 // ── Der Kern ────────────────────────────────────────────────────────────────
 
@@ -5557,7 +5677,8 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 			'erfordernis'
 		);
 	}
-	if (!e.kopfSchwelle) {
+	// Ohne Köpfe zählbar, wo eine Wertquotenschwelle besteht (Regel «Köpfe zählen nicht», 16.11.2026).
+	if (!e.kopfSchwelle && !nurNachWertquoten(e)) {
 		throw new FachlicherFehler(
 			'ohne_schwelle',
 			`Das Erfordernis «${e.titel}» nennt keine Kopfschwelle. Ohne sie lässt sich nicht sagen, ` +
@@ -6181,8 +6302,15 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 	// Eine leere Basis nimmt nichts an. `schwelle(0, …)` gäbe null zurück, und
 	// «ja >= 0» wäre bei niemandem im Saal erfüllt — ein Beschluss ohne
 	// Beschliessende.
-	koepfe.schwelle = koepfe.basis > 0 ? schwellenwert(koepfe.basis, e.kopfSchwelle) : null;
-	koepfe.erreicht = koepfe.schwelle !== null && koepfe.ja >= koepfe.schwelle;
+	/*
+	 * **Ohne Köpfe bleibt die Kopfzahl eine Auskunft** (Regel «Köpfe zählen
+	 * nicht», 16.11.2026), das Spiegelbild der Wertquoten ohne Schwelle unten:
+	 * keine Schwelle, keine Schranke. Den Gleichstand prüft dann der Abschnitt
+	 * nach den Wertquoten.
+	 */
+	const ohneKoepfe = !e.kopfSchwelle;
+	koepfe.schwelle = e.kopfSchwelle && koepfe.basis > 0 ? schwellenwert(koepfe.basis, e.kopfSchwelle) : null;
+	koepfe.erreicht = ohneKoepfe || (koepfe.schwelle !== null && koepfe.ja >= koepfe.schwelle);
 
 	// ── Stichentscheid bei Stimmengleichheit ───────────────────────────────
 	//
@@ -6264,9 +6392,8 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 					`dieser Gemeinschaft entscheidet die Anteilsberechtigung: ${quotenJa} Wertquoten dafür, ` +
 					`${quotenNein} dagegen — der Antrag ist damit angenommen.`
 			);
-			protokollhinweise.push({
-				ort: 'ausgang',
-				satz: quotenstichentscheidProtokollInWorten(
+			protokollhinweise.push(namensfrei(
+				quotenstichentscheidProtokollInWorten(
 					koepfe.ja,
 					koepfe.nein,
 					quotenJa,
@@ -6274,16 +6401,15 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 					true,
 					lage.geheim === true
 				)
-			});
+			));
 		} else {
 			hinweise.push(
 				`Gleichstand bei den Kopfstimmen (${koepfe.ja} zu ${koepfe.nein}). Nach dem Reglement ` +
 					`entscheidet die Anteilsberechtigung, und auch dort führt der Antrag nicht: ` +
 					`${quotenJa} Wertquoten dafür, ${quotenNein} dagegen.`
 			);
-			protokollhinweise.push({
-				ort: 'ausgang',
-				satz: quotenstichentscheidProtokollInWorten(
+			protokollhinweise.push(namensfrei(
+				quotenstichentscheidProtokollInWorten(
 					koepfe.ja,
 					koepfe.nein,
 					quotenJa,
@@ -6291,7 +6417,7 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 					false,
 					lage.geheim === true
 				)
-			});
+			));
 		}
 	} else if (gleichstand && person) {
 		/*
@@ -6323,7 +6449,7 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 
 	// A5, Punkt 12b; wer die Klausel erwartet, liest sonst nur «nicht erreicht».
 	if (stichentscheidNichtAngewandt(lage, koepfe)) {
-		protokollhinweise.push({ ort: 'ausgang', satz: STICHENTSCHEID_NICHT_ANGEWANDT });
+		protokollhinweise.push(namensfrei(STICHENTSCHEID_NICHT_ANGEWANDT));
 	}
 
 	/*
@@ -6386,6 +6512,44 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 		quoten.erreicht = quoten.schwelle !== null && quoten.ja >= quoten.schwelle;
 	}
 
+	/*
+	 * **Gleichstand nach Wertquoten, wo die Köpfe nicht zählen** (16.11.2026).
+	 * Dieselbe Doppelbedingung wie bei den Köpfen oben: gleich viele Wertquoten
+	 * dafür und dagegen **und** die Ja-Quoten genau die halbe Bezugsgrösse;
+	 * bleiben Enthaltungen in der Basis, ist es kein Patt, sondern ein verfehltes
+	 * Mehr (Rz. 181 f. ad Art. 712m). Entscheiden kann nur eine Person; die
+	 * Wertquoten, die sonst den Kopfgleichstand auflösen, stehen hier selbst
+	 * gleich.
+	 */
+	if (
+		ohneKoepfe &&
+		m.tieBreak !== 'keiner' &&
+		!quoten.erreicht &&
+		stichentscheidMoeglich(e) &&
+		quotenJa > 0 &&
+		quotenJa === quotenNein &&
+		quotenJa * 2 === quoten.basis
+	) {
+		const wer = personenstufe(m.tieBreak);
+		if (wer) {
+			stichentscheidArt = wer;
+			const entscheid = lage.stichentscheid;
+			if (!entscheid) {
+				stichentscheidOffen = true;
+			} else {
+				durchStichentscheid = true;
+				if (entscheid.wahl === 'yes') quoten.erreicht = true;
+			}
+			hinweise.push(quotengleichstandPersonHinweis(quotenJa, entscheid, wer));
+		} else {
+			const satz = quotengleichstandOhnePersonHinweis(quotenJa, lage.geheim === true);
+			hinweise.push(satz);
+			// Nicht bei geheimer Abstimmung: Auch ein Patt ist eine Angabe über die
+			// Verteilung, wie beim Vermerk `stichentscheidNichtAngewandt` (Codeprüfung Block A, N4).
+			if (lage.geheim !== true) protokollhinweise.push(namensfrei(satz));
+		}
+	}
+
 	if (e.quotenbasis === 'alle_quoten') {
 		/*
 		 * **Über alle Parteien der Momentaufnahme, nicht über die Eimer**
@@ -6440,9 +6604,8 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 	if (quotenstichentscheidJa && !angenommen) {
 		const q = quotenstichentscheidJa;
 		hinweise[q.hinweis] = hinweise[q.hinweis].replace(' — der Antrag ist damit angenommen.', '.');
-		protokollhinweise[q.protokoll] = {
-			ort: 'ausgang',
-			satz: quotenstichentscheidProtokollInWorten(
+		protokollhinweise[q.protokoll] = namensfrei(
+			quotenstichentscheidProtokollInWorten(
 				q.kopfJa,
 				q.kopfNein,
 				q.quotenJa,
@@ -6450,7 +6613,7 @@ function zaehleOhneWirkung(lage: Auszaehlungslage): Auszaehlung {
 				null,
 				lage.geheim === true
 			)
-		};
+		);
 	}
 
 	return {
@@ -6596,7 +6759,8 @@ export function mitAllenJa(a: Auszaehlung): boolean | undefined {
  * die getrennte Erklärung (Veto).
  */
 export function geheimeWertung(a: Auszaehlung, e: Erfordernis): string {
-	const teile = [`Kopfstimmen: ${a.koepfe.erreicht ? 'erreicht' : 'nicht erreicht'}`];
+	// Ohne Köpfe gibt es kein Kopfmehr, das erreicht sein könnte (Codeprüfung Block A, M2).
+	const teile = nurNachWertquoten(e) ? [] : [`Kopfstimmen: ${a.koepfe.erreicht ? 'erreicht' : 'nicht erreicht'}`];
 	if (e.quotenbasis !== 'keine' && e.quotenSchwelle !== null) {
 		teile.push(`Wertquoten: ${a.quoten.erreicht ? 'erreicht' : 'nicht erreicht'}`);
 	}
@@ -6688,7 +6852,9 @@ export function ergebnisInWorten(
 		// Angabe über die Verteilung, und sie gehört nicht in den Saal.
 		const gleichstand = a.geheim
 			? 'Stimmengleichheit.'
-			: `Stimmengleichheit bei ${a.koepfe.ja} zu ${a.koepfe.nein} Kopfstimmen.`;
+			: nurNachWertquoten(e)
+				? `Stimmengleichheit bei ${a.quoten.ja} zu ${a.quoten.nein} Wertquoten.`
+				: `Stimmengleichheit bei ${a.koepfe.ja} zu ${a.koepfe.nein} Kopfstimmen.`;
 		if (a.stichentscheidArt === 'verwalter' || a.stichentscheidArt === 'vorsitz') {
 			return (
 				`${gleichstand} Nach dem Reglement ` +
@@ -6709,15 +6875,17 @@ export function ergebnisInWorten(
 
 	const koepfe =
 		`${a.koepfe.ja} Ja von ${a.koepfe.basis} ${a.koepfe.basis === 1 ? 'Kopfstimme' : 'Kopfstimmen'}` +
-		(a.koepfe.schwelle !== null ? `, nötig ${a.koepfe.schwelle}` : '');
+		(a.koepfe.schwelle !== null ? `, nötig ${a.koepfe.schwelle}` : '') +
+		(nurNachWertquoten(e) ? ', zur Auskunft' : '');
 	const quoten =
 		a.quoten.schwelle !== null
 			? `${a.quoten.ja} Ja von ${a.quoten.basis} Wertquoten, nötig ${a.quoten.schwelle}`
 			: null;
 
 	if (a.angenommen) {
-		const teile = [koepfe];
-		if (quoten) teile.push(quoten);
+		// Ohne Köpfe die Wertquoten zuerst, die Köpfe danach als Auskunft (Laienprüfung 16.11.2026, L6).
+		const teile = quoten && nurNachWertquoten(e) ? [quoten, koepfe] : [koepfe];
+		if (quoten && !nurNachWertquoten(e)) teile.push(quoten);
 		// Der Stichentscheid gehört in den Satz und nicht in eine Fussnote: Wer den
 		// Beschluss anficht, greift genau hier an.
 		const schluss = a.durchStichentscheid ? ` — ${stichentscheidsatz(a)}` : '';
@@ -7349,6 +7517,9 @@ export function erfordernisInWorten(e: Erfordernis): string {
 	if (e.quotenSchwelle && e.quotenbasis !== 'keine') {
 		teile.push(`${schwelleInWorten(e.quotenSchwelle)} ${quotenbasisInWorten(e.quotenbasis)}`);
 	}
+	// Ohne Köpfe sagt der Druck es ausdrücklich (16.11.2026); ein fehlender
+	// Kopfteil läse sich sonst wie ein vergessener.
+	if (nurNachWertquoten(e)) return `${teile[0]}, ${UNABHAENGIG_VON_KOEPFEN}`;
 	// Endet die Kopfbasis mit dem Nebensatz der Einsprache («…, der verkauft,
 	// vermietet oder belastet»), schliesst ein Komma ihn vor dem «und».
 	const nebensatz = teile[0]?.endsWith(ohneBetroffeneZusatz(EINSPRACHE_KNOTEN)) ?? false;
@@ -7528,7 +7699,7 @@ export function mehrheitsvorschau(lage: Omit<Auszaehlungslage, 'stimmen'>): Mehr
 	return {
 		kopf,
 		quoten,
-		satz: `Nötig: ${teile.join(' und ')}.`,
+		satz: `Nötig: ${teile.join(' und ')}${nurNachWertquoten(e) ? `, ${UNABHAENGIG_VON_KOEPFEN}` : ''}.`,
 		anwesenheitsabhaengig,
 		regelInWorten,
 		ausstandshinweis: ausstand,
@@ -7677,7 +7848,7 @@ export function summenhindernis(e: Erfordernis): string | null {
 	if (e.typ === 'keine_abstimmung') {
 		return 'Dieses Traktandum wird zur Kenntnis genommen; es gibt nichts auszuzählen.';
 	}
-	if (e.typ === 'grenzfall' || !e.kopfSchwelle) {
+	if (e.typ === 'grenzfall' || (!e.kopfSchwelle && !nurNachWertquoten(e))) {
 		return (
 			'Für dieses Traktandum steht kein Mehrheitserfordernis fest. Ohne Schwelle liesse sich ' +
 			'nicht sagen, ob der Antrag angenommen ist.'
@@ -7691,7 +7862,7 @@ export function summenhindernis(e: Erfordernis): string | null {
 	 */
 	if (e.quotenbasis !== 'keine' && e.quotenSchwelle) {
 		return (
-			`«${e.titel}» verlangt neben den Köpfen eine Mehrheit der Wertquoten. Die hängt an der ` +
+			`«${e.titel}» verlangt ${e.kopfSchwelle ? 'neben den Köpfen ' : ''}eine Mehrheit der Wertquoten. Die hängt an der ` +
 			'Einheit: Aus gezählten Händen lässt sich nicht ablesen, welche Einheiten zugestimmt ' +
 			'haben. Hier braucht es die einzelnen Stimmen.'
 		);
@@ -8202,7 +8373,7 @@ function zaehleSummenOhneLesart(
 
 	// A5, Punkt 12b: wie in der Einzelzählung, für beide Zählwege.
 	if (stichentscheidNichtAngewandt(lage, koepfe)) {
-		protokollhinweise.push({ ort: 'ausgang', satz: STICHENTSCHEID_NICHT_ANGEWANDT });
+		protokollhinweise.push(namensfrei(STICHENTSCHEID_NICHT_ANGEWANDT));
 	}
 
 	return {

@@ -633,7 +633,7 @@
 							name="grund"
 							required
 							minlength="3"
-							placeholder="z. B. Offerte liegt noch nicht vor"
+							placeholder="z. B. Die Antragstellerin zieht zurück, die Offerte fehlt noch"
 						/>
 					</label>
 					<button type="submit" class="leise" data-fokus="eingriff:{traktandumId}">

@@ -42,7 +42,7 @@
 import { playwrightPfad } from './playwright-pfad.mjs';
 import { createHash, generateKeyPairSync } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { absageGrund, nachAbsendung, nachladeWarter } from './absendung.mjs';
+import { absageGrund, datenRuhe, nachAbsendung, nachladeWarter } from './absendung.mjs';
 import { bereit, netzWiederholungen, warteNachNavigation } from './bereit.mjs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { rueckfragenBestaetigen } from './rueckfrage.mjs';
@@ -645,6 +645,12 @@ async function main() {
 			if (r.url().includes('/__data.json')) mitKopfzeilen.add(r.request());
 		});
 		seite.on('requestfailed', (r) => {
+			// Belegt, was einen Datenabruf abbrach (17.11.2026): ohne diese Zeile
+			// stand nur «Failed to fetch» da, und die Ursache war Herleitung.
+			if (r.url().includes('/__data.json'))
+				console.log(
+					`   [Netz ${wer}] __data.json abgebrochen: ${r.failure()?.errorText} (Schritt ${schrittzahl})`
+				);
 			if (
 				r.url().includes('/__data.json') &&
 				r.failure()?.errorText === 'net::ERR_ABORTED' &&
@@ -2504,6 +2510,69 @@ async function main() {
 				`Die Auswahl der Betroffenen nennt die Einheiten nicht: «${betroffenentext.slice(0, 240)}»`
 			);
 			return 'Einzelne, gemeinsame und Betroffene mit Einheit beschriftet';
+		});
+
+		/*
+		 * **Regel «Köpfe zählen nicht»** (Auftrag
+		 * `2026-11-16-votum-erste-versammlung-wertquoten-abend-h1.md`, Block A,
+		 * Kriterien 1 und 10). Die Wahl in der Maske, ihr Hinweis, die Reichweite
+		 * und die Vorbelegung der Wertquoten; nach dem Hinterlegen der Satz in der
+		 * Liste. Danach wieder aufgehoben, damit der übrige Lauf nach dem Gesetz
+		 * zählt. Die Geschäftsart bleibt auf der Vorgabe (notwendige bauliche
+		 * Massnahmen, einfaches Mehr); dort hinterlegt dieser Lauf sonst nichts.
+		 */
+		await schritt('Regel «Köpfe zählen nicht»: Maske, Satz in der Liste, wieder aufheben', async () => {
+			await leitung.goto(`${ZIEL}/gemeinschaften/${gemeinschaftId}/reglement`, {
+				waitUntil: 'domcontentloaded'
+			});
+			const form = leitung.locator('#abweichungsformular');
+			await form.waitFor({ state: 'visible', timeout: 30000 });
+			const haken = form.locator('input[name="kopfeZaehlenNicht"]');
+			await haken.check();
+			await form.locator('input[name="quotenZaehler"]').waitFor({ state: 'visible', timeout: 10000 });
+			const text = (await form.innerText()).replace(/\s+/g, ' ');
+			behaupte(
+				text.includes('Wählen Sie das nur, wenn Ihr Reglement das Mehr allein nach Wertquoten bemisst'),
+				'Der Hinweis zur Wahl «Köpfe zählen nicht» fehlt'
+			);
+			behaupte(text.includes('Angewandt wird sie bei:'), 'Die Reichweite der Regel ohne Köpfe fehlt');
+			behaupte(
+				(await form.locator('input[name="kopfZaehler"]').count()) === 0,
+				'Die Kopffelder stehen trotz «Köpfe zählen nicht» da'
+			);
+			const vorbelegt = [
+				await form.locator('select[name="quotenArt"]').inputValue(),
+				await form.locator('input[name="quotenZaehler"]').inputValue(),
+				await form.locator('input[name="quotenNenner"]').inputValue(),
+				await form.locator('select[name="quotenbasis"]').inputValue()
+			].join(' ');
+			behaupte(
+				vorbelegt === 'mehr_als 1 2 anwesend_vertreten',
+				`Die Wertquoten sind nicht auf das einfache Mehr vorbelegt: «${vorbelegt}»`
+			);
+			const fundstelle = `Art. 99 Reglement (Prüflauf ${LAUF})`;
+			await fuelle(leitung, '#abweichungsformular input[name="fundstelle"]', fundstelle);
+			await abschicken(leitung, form.locator('button[type="submit"]').first());
+			const zeile = leitung.locator('tr', { hasText: fundstelle }).first();
+			await zeile.waitFor({ state: 'visible', timeout: 15000 });
+			const satz = (await zeile.innerText()).replace(/\s+/g, ' ');
+			/*
+			 * Aufheben vor der Zusicherung, damit eine rote Zusicherung keine Regel
+			 * im Bestand lässt (dieselbe Lehre wie beim Vermerk unten).
+			 */
+			await abschicken(leitung, zeile.locator('form[action="?/aufheben"] button[type="submit"]'));
+			behaupte(
+				satz.includes('mehr als die Hälfte der anwesenden oder vertretenen Wertquoten, unabhängig von der Zahl der Eigentümer'),
+				`Der Satz der Regel in der Liste stimmt nicht: «${satz.slice(0, 200)}»`
+			);
+			await leitung.goto(`${ZIEL}/gemeinschaften/${gemeinschaftId}/reglement`, {
+				waitUntil: 'domcontentloaded'
+			});
+			behaupte(
+				(await leitung.locator('tr', { hasText: fundstelle }).count()) === 0,
+				'Die Regel ohne Köpfe steht nach dem Aufheben noch da'
+			);
+			return 'hinterlegt, Satz geprüft, aufgehoben';
 		});
 
 		/**
@@ -8932,8 +9001,17 @@ async function main() {
 				(r) => r.url().includes('?/beschlussvermerk') && r.request().method() === 'POST',
 				{ timeout: 15000 }
 			);
+			/*
+			 * **Erst neu laden, wenn das Formular nachgeladen hat** (17.11.2026).
+			 * Nach der Antwort holt `update()` den Stand; das `reload` direkt
+			 * danach brach diesen Abruf ab, und der Lauf scheiterte zweimal
+			 * hintereinander an «Failed to fetch» (`datenRuhe` in `absendung.mjs`).
+			 */
+			const nachladen = nachladeWarter(leitung);
 			await haken.check();
 			await gesetzt;
+			await nachladen;
+			await datenRuhe(leitung);
 			await leitung.reload({ waitUntil: 'domcontentloaded' });
 			behaupte(await haken.isChecked(), 'Der Haken steht nach dem Neuladen nicht: am Server nicht gesetzt');
 			return 'Absage am leeren Feld, gesetzt, mit dem Leeren gefallen, wieder gesetzt';

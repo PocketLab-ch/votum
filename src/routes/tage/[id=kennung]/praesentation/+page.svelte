@@ -186,7 +186,9 @@
 				// beim ersten Beitrag einmal grundlos nach.
 				`${data.wandbild?.art ?? 'traktanden'}@${data.wandbild?.geaendertAm ?? ''}`,
 				data.feststellung?.wann ?? '-',
-				data.laufendesTraktandum ?? '-'
+				data.laufendesTraktandum ?? '-',
+				// Der Rückzug am aufgerufenen Traktandum je Haus (Probe Wertquotenmehr, B4).
+				data.rueckzugsmarke
 			].join('|')
 		),
 		{},
@@ -242,7 +244,8 @@
 				 */
 				stromMarke ?? '-',
 				stromFest ?? '-',
-				juengsterPunkt ?? '-'
+				juengsterPunkt ?? '-',
+				haeuser.map((h) => h.stand?.zurueckgezogenAm ?? '-').join(',')
 			].join('|')
 		);
 	});
@@ -355,6 +358,7 @@
 			{#if data.einzelpunkt.art === 'kenntnisnahme'}
 				<p class="art">Kenntnisnahme — hier wird nicht abgestimmt.</p>
 			{/if}
+			{@render rueckzug()}
 		</section>
 	{:else if data.punkt}
 		<section class="punkt">
@@ -373,6 +377,7 @@
 			{#if data.punkt.art === 'kenntnisnahme'}
 				<p class="art">Kenntnisnahme — hier wird nicht abgestimmt.</p>
 			{/if}
+			{@render rueckzug()}
 		</section>
 	{:else}
 		<section class="punkt liste">
@@ -403,6 +408,18 @@
 		**Nicht während der Pause**: Die legt sich über alles, auch über eine
 		offene Abstimmung — dort kann gerade niemand abstimmen.
 	-->
+	<!--
+		Der Rückzug am Punkt (Probe Wertquotenmehr, 17.11.2026, B4): Vorher stand
+		der Antrag nach einem Rückzug unverändert da. Ohne Grund und ohne Namen.
+	-->
+	{#snippet rueckzug()}
+		{#if data.alleZurueckgezogen}
+			<p class="art">Zurückgezogen, es wird nicht abgestimmt.</p>
+		{:else if data.zurueckgezogen.length > 0}
+			<p class="art">Zurückgezogen in {data.zurueckgezogen.join(', ')}; dort wird nicht abgestimmt.</p>
+		{/if}
+	{/snippet}
+
 	{#if !pause && esWirdAbgestimmt}
 		<section class="abstimmungen">
 			{#each abstimmende as a (a.meetingId)}

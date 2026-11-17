@@ -39,7 +39,7 @@
  * Ausrichtung. Sie bleibt im Textfeld lesbar und übersteht eine Bearbeitung von
  * Hand. Wer Spalten ausrichtet, zerlegt sie beim ersten Tippen.
  */
-import { datumLang, uhrzeit as uhrzeitAusZeitpunkt } from './datum';
+import { datumLang, istKalendertag, uhrzeit as uhrzeitAusZeitpunkt } from './datum';
 import { mitQuelle } from './gemeinschaft';
 import { ausstandsbefund, beteiligungDerAnwesenden, type Anwesenheitszustand } from './anwesenheit';
 import {
@@ -1289,9 +1289,91 @@ export function quoteneinheit(nenner: number): string {
  * dass Votum ein Programm ist, hielt es für ein Dokument, das er nie bekam.
  * Massgebend sind Gesetz und Reglement; die Angabe dient der
  * Nachvollziehbarkeit (Rz. 131 ad Art. 712n).
+ *
+ * **Nur mit einem Datum** (Probe Wertquotenmehr, 17.11.2026, B3). Ein
+ * Erfordernis aus einer Regel des Reglements trägt die Kennung
+ * `reglement-<geschäftsart>` (`erfordernisAusRegel`); `datumLang` gab sie
+ * unverändert zurück, und im Protokoll stand «Stand reglement-rueckkommen».
+ * Endet die Kennung auf ein Datum (auch `ordnungsantrag-2026-08-05`), steht
+ * dieses; sonst entfällt der Satz, und die Fundstelle im Reglement davor trägt
+ * die Herkunft allein. `null` heisst: nichts anhängen.
  */
-export function regelfassungSatz(fassung: string): string {
-	return `Berechnungsregeln der Software Votum, Stand ${datumLang(fassung)}.`;
+export function regelfassungSatz(fassung: string): string | null {
+	const datum = fassung.slice(-10);
+	if (!istKalendertag(datum)) return null;
+	return `Berechnungsregeln der Software Votum, Stand ${datumLang(datum)}.`;
+}
+
+/**
+ * Die Zeile zum Stichentscheid einer Person, im Hausprotokoll und im
+ * Protokoll des Abends (Probe Wertquotenmehr, 17.11.2026, B1).
+ *
+ * **Eine Stelle für beide Dokumente.** Am Abend fehlte die Zeile ganz; dort
+ * stand nur «bei Stimmengleichheit hat nach dem Reglement der Verwalter
+ * entschieden», ohne Person, Begründung und Zahlen, obwohl die Auswertung alles
+ * kannte. Das Abenddokument hat keinen Stimmenspiegel; deshalb nennt es den
+ * Gleichstand in der Klammer (`gleichstand`), das Hausprotokoll führt ihn im
+ * Spiegel darüber und lässt sie weg.
+ *
+ * **Mit dem Namen, auch am Abend** (Produktentscheid 17.11.2026: «Immer mit
+ * Namen»). Die Person entscheidet in ihrem Amt, wie die Sitzungsleitung, deren
+ * Name dort schon im Kopf steht, und wer anficht, muss wissen, wer entschieden
+ * hat. Die Regel, dass das Abenddokument keine Eigentümernamen trägt
+ * (10.09.2026), betrifft Stimmabgabe und Anwesenheit, nicht ein Amt.
+ */
+export function stichentscheidZeile(
+	s: { wer: string; wahl: 'yes' | 'no'; begruendung: string | null; eigentuemer?: boolean },
+	/** Der Gleichstand in Zahlen, etwa «500 zu 500 Wertquoten»; leer im Hausprotokoll und bei geheimer Abstimmung. */
+	gleichstand: string | null = null
+): string {
+	return (
+		`- Bei Stimmengleichheit${gleichstand ? ` (${gleichstand})` : ''} entschied ${s.wer}` +
+		// Ohne den Vermerk sähe eine Stimme zu viel aus wie ein Zählfehler
+		// (Fachprüfung 07.10.2026, F3).
+		(s.eigentuemer
+			? ' im Vorsitz, selbst Stockwerkeigentümer (der Stichentscheid ist in der Zählung ' +
+				'nicht enthalten)'
+			: '') +
+		': ' +
+		(s.wahl === 'yes' ? 'Annahme' : 'Ablehnung') +
+		(s.begruendung ? `. Begründung: ${s.begruendung}` : '')
+	);
+}
+
+/**
+ * Der Satz zu einem Durchgang, den ein Rückkommen ersetzt hat, im
+ * Hausprotokoll und im Protokoll des Abends (Probe Wertquotenmehr, 17.11.2026,
+ * B2; Produktentscheid 17.11.2026: «Wie im Hausprotokoll»). Am Abend fehlte
+ * der erste, abgelehnte Durchgang ganz.
+ *
+ * Die Versammlung hat entschieden, nicht die Leitung: Hier steht die Wirkung,
+ * anders als bei der Neuabstimmung (Fachprüfung 30.09.2026, F-3). Das Ergebnis
+ * in Worten, die Zahlen auf Anfrage. «Erneut abgestimmt», nicht «neu
+ * entschieden», und ohne lesbares Ergebnis kein «Beschluss»: Mit offenem
+ * Stichentscheid ist nichts entschieden (Codeprüfung 30.09.2026, M3).
+ *
+ * **Der Folgeantrag wird als Ersetzer genannt** (Produktentscheid 08.10.2026,
+ * Laien- und Fachprüfung 09.10.2026): Im Randfall (erster Durchgang am
+ * Grundantrag, dann Folgeantrag nach Rückkommen, dann wieder der Grundantrag)
+ * ersetzte nicht die erneute Abstimmung am Grundantrag den Durchgang, sondern
+ * der Folgeantrag. «Damit ersetzt» liesse beide Lesarten offen, und nach
+ * Rz. 133 und 133b ad Art. 712n wirkt der protokollierte Wortlaut; deshalb
+ * fällt das «damit» in diesem Zweig.
+ */
+export function ersetztNachRueckkommenSatz(r: {
+	nummer: number;
+	ergebnis: 'angenommen' | 'abgelehnt' | null;
+	folgeantrag?: string | null;
+}): string {
+	return (
+		'- Auf dieses Traktandum wurde zurückgekommen und erneut abgestimmt. ' +
+		(r.ergebnis
+			? r.folgeantrag
+				? `Der Beschluss aus dem ${r.nummer}. Durchgang («${r.ergebnis}») ist durch den Folgeantrag zu Traktandum ${r.folgeantrag} ersetzt; `
+				: `Der Beschluss aus dem ${r.nummer}. Durchgang («${r.ergebnis}») ist damit ersetzt; `
+			: `Der ${r.nummer}. Durchgang gilt damit nicht mehr; `) +
+		`seine Zahlen ${AUF_ANFRAGE}.`
+	);
 }
 
 const ZUSTANDSRANG: Record<Anwesenheitszustand, number> = {
@@ -2021,7 +2103,9 @@ export function protokollentwurf(e: Protokolleingabe): string {
 			z.push(
 				`Erforderliche Mehrheit: ${t.erfordernis}` +
 					(herkunft ? ` (${herkunft})` : '') +
-					(t.regelfassung && !t.mehrheitGesetzt ? `. ${regelfassungSatz(t.regelfassung)}` : '')
+					(t.regelfassung && !t.mehrheitGesetzt && regelfassungSatz(t.regelfassung)
+						? `. ${regelfassungSatz(t.regelfassung)}`
+						: '')
 			);
 			if (t.lesart) z.push(t.lesart);
 			z.push('');
@@ -2312,32 +2396,9 @@ export function protokollentwurf(e: Protokolleingabe): string {
 				const davor = !!t.durchgang && n.nummer < t.durchgang;
 				z.push(neuabstimmungssatz(n, davor ? t.durchgang : null, !!t.durchgang && !davor));
 			}
-			for (const r of ersetzt) {
-				// Die Versammlung hat entschieden, nicht die Leitung: Hier steht die
-				// Wirkung, anders als bei der Neuabstimmung (Fachprüfung 30.09.2026,
-				// F-3). Das Ergebnis in Worten, die Zahlen auf Anfrage. «Erneut
-				// abgestimmt», nicht «neu entschieden», und ohne lesbares Ergebnis
-				// kein «Beschluss»: Mit offenem Stichentscheid ist nichts entschieden
-				// (Codeprüfung 30.09.2026, M3).
-				//
-				// **Der Folgeantrag wird als Ersetzer genannt** (Produktentscheid
-				// 08.10.2026, Laien- und Fachprüfung 09.10.2026): Im Randfall
-				// (erster Durchgang am Grundantrag, dann Folgeantrag nach
-				// Rückkommen, dann wieder der Grundantrag) ersetzte nicht die
-				// erneute Abstimmung am Grundantrag den Durchgang, sondern der
-				// Folgeantrag. «Damit ersetzt» liesse beide Lesarten offen, und
-				// nach Rz. 133 und 133b ad Art. 712n wirkt der protokollierte
-				// Wortlaut; deshalb fällt das «damit» in diesem Zweig.
-				z.push(
-					'- Auf dieses Traktandum wurde zurückgekommen und erneut abgestimmt. ' +
-						(r.ergebnis
-							? r.folgeantrag
-								? `Der Beschluss aus dem ${r.nummer}. Durchgang («${r.ergebnis}») ist durch den Folgeantrag zu Traktandum ${r.folgeantrag} ersetzt; `
-								: `Der Beschluss aus dem ${r.nummer}. Durchgang («${r.ergebnis}») ist damit ersetzt; `
-							: `Der ${r.nummer}. Durchgang gilt damit nicht mehr; `) +
-						`seine Zahlen ${AUF_ANFRAGE}.`
-				);
-			}
+			// Begründung des Wortlauts bei `ersetztNachRueckkommenSatz`, die auch das
+			// Protokoll des Abends nimmt.
+			for (const r of ersetzt) z.push(ersetztNachRueckkommenSatz(r));
 			if (ohneBeschlussNachRueckkommen) {
 				z.push(
 					// «Kein Beschluss», nicht «das Mehr nicht erreicht»: Auch eine
@@ -2360,7 +2421,7 @@ export function protokollentwurf(e: Protokolleingabe): string {
 			}
 			if (t.rueckkommenOhneDurchgang) z.push(rueckkommenOhneDurchgangSatz(t.rueckkommenOhneDurchgang));
 			if (t.rueckkommenNichtGenutzt) {
-				z.push(`- Erneut abgestimmt wurde nicht; siehe Traktandum ${t.rueckkommenNichtGenutzt}.`);
+				z.push(rueckkommenNichtGenutztSatz(t.rueckkommenNichtGenutzt));
 			}
 			/*
 			 * **Nach einem Rückkommen über einen Folgeantrag** (Produktentscheid
@@ -2453,22 +2514,10 @@ export function protokollentwurf(e: Protokolleingabe): string {
 				 * daneben «angenommen»/«abgelehnt» schrieb. Der Entwurf geht an
 				 * die Eigentümer und nennt den Entscheid jetzt in derselben Form
 				 * wie die Auswertung (Entscheid 04.10.2026, zweiter Blick zu
-				 * Lauf B, Frage zur Protokollzeile).
+				 * Lauf B, Frage zur Protokollzeile). Ohne Zahlen: Die stehen im
+				 * Spiegel darüber.
 				 */
-				z.push(
-					`- Bei Stimmengleichheit entschied ${t.stichentscheid.wer}` +
-						// Ohne den Vermerk sähe eine Stimme zu viel aus wie ein Zählfehler
-						// (Fachprüfung 07.10.2026, F3).
-						(t.stichentscheid.eigentuemer
-							? ' im Vorsitz, selbst Stockwerkeigentümer (der Stichentscheid ist in der Zählung ' +
-								'nicht enthalten)'
-							: '') +
-						': ' +
-						(t.stichentscheid.wahl === 'yes' ? 'Annahme' : 'Ablehnung') +
-						(t.stichentscheid.begruendung
-							? `. Begründung: ${t.stichentscheid.begruendung}`
-							: '')
-				);
+				z.push(stichentscheidZeile(t.stichentscheid));
 			}
 			/*
 			 * **Die Vermerke zum Ausgang** (Fachprüfung 08.10.2026). Sie
@@ -3462,7 +3511,7 @@ export function neuAnZweiterAnfechtungssatz(vonHand: boolean, gemeinschaft?: str
  * ersetzt hat, nennt der Satz ihn (B2b, zweiter Randfall, Produktentscheid
  * 15.10.2026); sonst lief der Verweis «siehe Traktandum 9» ins Leere.
  */
-function rueckkommenOhneDurchgangSatz(
+export function rueckkommenOhneDurchgangSatz(
 	r: NonNullable<Protokollzeile['rueckkommenOhneDurchgang']>
 ): string {
 	const bleibt = r.folgeantrag
@@ -3487,6 +3536,11 @@ function rueckkommenOhneDurchgangSatz(
 		'werden, auch an einer eigens einberufenen; Anträge dazu gehen möglichst bald an die ' +
 		'Stelle, die die Versammlung einberuft.'
 	);
+}
+
+/** Am angenommenen Rückkommen ohne neue Abstimmung; auch im Abenddokument (16.11.2026). */
+export function rueckkommenNichtGenutztSatz(traktandum: string): string {
+	return `- Erneut abgestimmt wurde nicht; siehe Traktandum ${traktandum}.`;
 }
 
 /**

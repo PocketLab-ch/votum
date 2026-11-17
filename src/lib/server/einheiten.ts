@@ -262,10 +262,22 @@ export async function erstelleEinheit(
 	handelnder: Handelnder & { operatorId: string },
 	eingabe: EinheitEingabe
 ): Promise<Einheit> {
-	return alsBetreiber(handelnder.operatorId, async (tx) => {
-		const arten = await leseQuotenarten(tx, eingabe.stwegId);
-		return legeAnInTx(tx, handelnder, eingabe, arten);
-	});
+	return alsBetreiber(handelnder.operatorId, (tx) => erstelleEinheitIn(tx, handelnder, eingabe));
+}
+
+/**
+ * Dieselbe Arbeit in einer **laufenden** Transaktion (16.11.2026), für Abläufe,
+ * die mehrere Schritte zusammen schreiben oder gar nicht: das Aufnehmen eines
+ * Mitglieds (`mitgliedsgemeinschaften.ts`), wo eine Absage bei der Partei sonst
+ * die Einheit samt Quote und Verlaufseintrag stehen liess.
+ */
+export async function erstelleEinheitIn(
+	tx: postgres.TransactionSql,
+	handelnder: Handelnder & { operatorId: string },
+	eingabe: EinheitEingabe
+): Promise<Einheit> {
+	const arten = await leseQuotenarten(tx, eingabe.stwegId);
+	return legeAnInTx(tx, handelnder, eingabe, arten);
 }
 
 /**

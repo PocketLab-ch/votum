@@ -164,9 +164,9 @@ export async function holeReglementsregelnIn(
 			id: string;
 			stweg_id: string;
 			business_kind: string;
-			head_numerator: number;
-			head_denominator: number;
-			head_mode: string;
+			head_numerator: number | null;
+			head_denominator: number | null;
+			head_mode: string | null;
 			head_base: string;
 			quota_numerator: number | null;
 			quota_denominator: number | null;
@@ -200,11 +200,11 @@ export async function holeReglementsregelnIn(
 		 * er gerade denkt.
 		 */
 		knotenId: z.node_id,
-		kopfSchwelle: {
-			zaehler: z.head_numerator,
-			nenner: z.head_denominator,
-			art: z.head_mode as never
-		},
+		// Leer, wo die Köpfe nicht zählen (Migration 195); derselbe Leser wie in `reglement.ts`.
+		kopfSchwelle:
+			z.head_numerator !== null && z.head_denominator !== null && z.head_mode !== null
+				? { zaehler: z.head_numerator, nenner: z.head_denominator, art: z.head_mode as never }
+				: null,
 		kopfbasis: z.head_base as never,
 		quotenSchwelle:
 			z.quota_numerator !== null && z.quota_denominator !== null

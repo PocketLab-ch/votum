@@ -93,6 +93,29 @@ function gekuerzt(s: Schwelle): Schwelle {
 }
 
 /**
+ * Der Zusatz, wo eine Regel die Köpfe nicht zählt (Produktentscheid
+ * 16.11.2026: in der Maske «Köpfe zählen nicht»). Auf Leinwand, Druck und im
+ * Protokoll positiv gefasst (Laienprüfung 16.11.2026, L5: «die Köpfe zählen
+ * nicht» las sich für kleine Eigentümer wie «Ihre Stimme zählt nicht»). Eine
+ * Quelle, damit der Wortlaut nicht an jeder Stelle ein wenig anders lautet.
+ */
+export const UNABHAENGIG_VON_KOEPFEN = 'unabhängig von der Zahl der Eigentümer';
+
+/**
+ * Ob das Erfordernis nur nach Wertquoten zählt: keine Kopfschwelle, aber eine
+ * Wertquotenschwelle (Regel «Köpfe zählen nicht», Produktentscheid
+ * 16.11.2026). Bis dahin hiess ein Erfordernis ohne Kopfschwelle immer «nicht
+ * auszählbar».
+ */
+export function nurNachWertquoten(e: {
+	kopfSchwelle: Schwelle | null;
+	quotenSchwelle: Schwelle | null;
+	quotenbasis: string;
+}): boolean {
+	return !e.kopfSchwelle && !!e.quotenSchwelle && e.quotenbasis !== 'keine';
+}
+
+/**
  * Der Bruch in Worten, für die Ergebniskarte.
  *
  * **Gekürzt, bevor nachgeschlagen wird** (04.09.2026, aus dem Code-Review). Die

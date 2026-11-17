@@ -1,3 +1,4 @@
+import { nurNachWertquoten } from '$lib/domain/mehrheit';
 import { KONSULTATIV_OFFEN, KONSULTATIV_OFFEN_NEU } from '$lib/domain/konsultativ';
 /**
  * Der Stand einer Versammlung, wie ihn der Ereignisstrom trägt (AD-11).
@@ -60,7 +61,9 @@ import type { Id } from '$lib/domain/types';
 async function abstimmungsstand(
 	operatorId: Id,
 	meetingId: Id,
-	aufgerufenesTraktandumId: Id | null
+	aufgerufenesTraktandumId: Id | null,
+	/** Einmal geholt in `ermittleStand`, das sie auch für den Rückzug braucht. */
+	traktanden: Awaited<ReturnType<typeof holeTraktanden>>
 ): Promise<Abstimmungsstand | null> {
 	const alleDurchgaenge = await holeDurchgaenge(operatorId, meetingId);
 	const durchgaenge = alleDurchgaenge.filter((d) => !d.ueberholtAm);
@@ -70,7 +73,6 @@ async function abstimmungsstand(
 	const zumTraktandum = aufgerufenesTraktandumId
 		? durchgaenge.filter((d) => d.traktandumId === aufgerufenesTraktandumId)
 		: [];
-	const traktanden = await holeTraktanden(operatorId, meetingId);
 	/*
 	 * **Der Folgeantrag ohne Beschluss nach dem Rückkommen** (Plan Folgeantrag
 	 * nach Rückkommen, Soll 6). Sein Durchgang ist dann überholt, und am
@@ -152,7 +154,8 @@ async function abstimmungsstand(
 		zeilen:
 			(await zaehleStimmzeilen(operatorId, massgebend.id)) +
 			(await zaehleVetozeilen(operatorId, massgebend.id)),
-		ergebnis: null
+		ergebnis: null,
+		wartesatz: null
 	};
 
 	/*
@@ -176,7 +179,11 @@ async function abstimmungsstand(
 
 	const e = await holeErgebnis(operatorId, meetingId, massgebend.id);
 	if (!e.auszaehlung || !massgebend.erfordernis) return stand;
-	if (e.auszaehlung.stichentscheidOffen) return stand;
+	if (e.auszaehlung.stichentscheidOffen) {
+		// Was aussteht, gehört an die Wand, nicht ein Ergebnis (B4).
+		stand.wartesatz = ergebnisInWorten(e.auszaehlung, massgebend.erfordernis);
+		return stand;
+	}
 
 	// Von Hand festgehalten: Gegen kein Erfordernis wurde gerechnet, also geht
 	// auch keines in den Strom, weder das des Traktandums noch der Platzhalter
@@ -209,6 +216,7 @@ async function abstimmungsstand(
 		 * Befund 6).
 		 */
 		ohneNoetig: e.auszaehlung.keinBeschluss?.grund === 'konsultativ',
+		koepfeAlsAuskunft: nurNachWertquoten(massgebend.erfordernis),
 		geheim,
 		koepfe: geheim
 			? blind
@@ -298,11 +306,14 @@ export async function ermittleStand(
 	const versammlung = await holeVersammlung(operatorId, meetingId);
 	if (!versammlung) return null;
 
-	const [uebersicht, regeln, feststellungen] = await Promise.all([
+	const [uebersicht, regeln, feststellungen, traktanden] = await Promise.all([
 		holeUebersicht(operatorId, meetingId),
 		holeAnwesenheitsregeln(operatorId, versammlung.stwegId),
-		holeFeststellungen(operatorId, meetingId)
+		holeFeststellungen(operatorId, meetingId),
+		holeTraktanden(operatorId, meetingId)
 	]);
+	const zurueckgezogenAm =
+		traktanden.find((t) => t.knoten.id === versammlung.aktuellesTraktandumId)?.knoten.rueckzug?.am ?? null;
 	/*
 	 * **Die Marke der letzten Feststellung** (Auftraggeber, 25.08.2026): «Wenn
 	 * Beschlussfähigkeit festgehalten wird, also mit dem Button auf
@@ -336,6 +347,7 @@ export async function ermittleStand(
 			saalmeldungen: 0,
 			aktuellesTraktandumId: versammlung.aktuellesTraktandumId ?? null,
 			aufgerufenSeit: versammlung.aufgerufenSeit ?? null,
+			zurueckgezogenAm,
 			festgestelltAm,
 			wandbild: wandbildmarke(versammlung),
 			pause: versammlung.pause?.seit ?? null,
@@ -371,13 +383,15 @@ export async function ermittleStand(
 		saalmeldungen: (await holeOffeneSaalmeldungen(operatorId, meetingId)).length,
 		aktuellesTraktandumId: versammlung.aktuellesTraktandumId ?? null,
 		aufgerufenSeit: versammlung.aufgerufenSeit ?? null,
+		zurueckgezogenAm,
 		festgestelltAm,
 		wandbild: wandbildmarke(versammlung),
 		pause: versammlung.pause?.seit ?? null,
 		abstimmung: await abstimmungsstand(
 			operatorId,
 			meetingId,
-			versammlung.aktuellesTraktandumId ?? null
+			versammlung.aktuellesTraktandumId ?? null,
+			traktanden
 		)
 	};
 }

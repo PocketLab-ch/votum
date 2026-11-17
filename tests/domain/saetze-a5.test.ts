@@ -372,12 +372,15 @@ describe('A5, Punkt 11: die Einstellhalle im Miteigentum', () => {
 describe('A5, Punkt 12a: die Grenze am Versprechen zum Stichentscheid', () => {
 	it('steht im Gemeinschaftsformular', () => {
 		const formular = text('src/lib/components/GemeinschaftFormular.svelte');
-		expect(formular.match(/Votum wendet die Klausel nur beim einfachen Mehr ohne Wertquoten an/g)).toHaveLength(2);
+		// 16.11.2026: dazu das einfache Mehr nach Wertquoten allein (Regel «Köpfe zählen nicht»).
+		expect(
+			formular.match(/Votum wendet die Klausel nur beim einfachen Mehr an, nach Köpfen\s+ohne Wertquoten; zählt/g)
+		).toHaveLength(2);
 	});
 
 	it('steht im Protokollsatz zum Stichentscheid', () => {
 		expect(
-			text('src/lib/domain/gemeinschaft.ts').match(/Die Klausel wird nur beim einfachen Mehr ohne Wertquoten angewandt/g)
+			text('src/lib/domain/gemeinschaft.ts').match(/Die Klausel wird nur beim einfachen Mehr angewandt, nach Köpfen ohne /g)
 		).toHaveLength(1);
 	});
 

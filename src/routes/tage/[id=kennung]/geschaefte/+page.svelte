@@ -356,7 +356,12 @@
 					{#if z.art === 'kenntnisnahme'}
 						<span class="marke">Kenntnisnahme</span>
 					{:else if z.art === 'sammelpunkt'}
-						<span class="marke leise">ohne Beschluss</span>
+						<!--
+							Beschlossen wird in den Unterpunkten je Gemeinschaft. «ohne Beschluss»
+							las sich neben offenen Abstimmungen wie eine Kenntnisnahme (Probe
+							Wertquotenmehr, 17.11.2026).
+						-->
+						<span class="marke leise">Beschluss je Gemeinschaft</span>
 					{/if}
 					{#if z.abweichend}
 						<span class="marke abweichend" title="Der Wortlaut ist gegenüber dem Anlegen geändert">

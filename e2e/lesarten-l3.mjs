@@ -171,7 +171,8 @@ try {
 		await gehe('/gemeinschaften/neu');
 		// A5, Punkt 12a: die Grenze am Versprechen zum Stichentscheid.
 		behaupte(
-			(await seite.content()).replace(/\s+/g, ' ').includes('Votum wendet die Klausel nur beim einfachen Mehr ohne Wertquoten an'),
+			// 16.11.2026: dazu das einfache Mehr nach Wertquoten allein (Regel «Köpfe zählen nicht»).
+			(await seite.content()).replace(/\s+/g, ' ').includes('Votum wendet die Klausel nur beim einfachen Mehr an, nach Köpfen ohne Wertquoten'),
 			'Die Grenze des Stichentscheids fehlt im Formular'
 		);
 		await seite.fill('input[name="name"]', NAME);

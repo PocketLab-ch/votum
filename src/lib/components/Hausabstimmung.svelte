@@ -93,8 +93,16 @@
 		<!-- Bei geheimer Abstimmung kein Zahlenspiegel (Produktentscheid 28.09.2026). -->
 		{#if !abstimmung.ergebnis.geheim}
 		<dl>
-			<div>
-				<dt>Kopfstimmen</dt>
+			<!--
+				Ohne Köpfe die Wertquoten zuerst und die Köpfe als Auskunft (Regel «Köpfe
+				zählen nicht», Codeprüfung Block A, N6; Laienprüfung 16.11.2026, L6).
+			-->
+			<div
+				class:auskunft={abstimmung.ergebnis.koepfeAlsAuskunft === true}
+			>
+				<dt>
+					Kopfstimmen{#if abstimmung.ergebnis.koepfeAlsAuskunft}{' '}(zur Auskunft){/if}
+				</dt>
 				<!-- Kopfspiegel: ohne Schwelle nur Ja, Nein und Enthaltung (Block 2). -->
 				<dd>
 					{abstimmung.ergebnis.koepfe.ja} ja · {abstimmung.ergebnis.koepfe.nein} nein ·
@@ -134,7 +142,8 @@
 			gehört nicht an die Wand — aber dass es aussteht, schon.
 		-->
 		<p class="urteil warten">Geschlossen</p>
-		<p class="leise">Das Ergebnis wird verkündet.</p>
+		<!-- Beim offenen Stichentscheid der Satz dazu statt eines Versprechens (Probe Wertquotenmehr, B4). -->
+		<p class="leise">{abstimmung.wartesatz ?? 'Das Ergebnis steht noch nicht fest.'}</p>
 	{/if}
 </article>
 
@@ -226,6 +235,11 @@
 		flex-direction: column;
 		gap: 0.3rem;
 		font-size: clamp(0.8rem, 1.15vw, 1.15rem);
+	}
+
+	/* Die Köpfe als Auskunft nach den Wertquoten (Regel «Köpfe zählen nicht»). */
+	dl .auskunft {
+		order: 2;
 	}
 
 	dt {

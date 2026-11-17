@@ -124,7 +124,8 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 				nummer: t.nummer,
 				titel: t.knoten.titel,
 				grund:
-					`${e.titel}: ${schwelleInWorten(p.kopfSchwelle)} der Anwesenden oder Vertretenen, ` +
+					// Ohne Köpfe braucht es immer die Rechnung (Quotenschwelle); hier steht nur das Kopfmehr.
+					`${e.titel}: ${p.kopfSchwelle ? schwelleInWorten(p.kopfSchwelle) : '—'} der Anwesenden oder Vertretenen, ` +
 					'bei gleichen Kopfstimmen im Saal auszuzählen.'
 			});
 			continue;

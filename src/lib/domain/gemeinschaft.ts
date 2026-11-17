@@ -545,7 +545,9 @@ export function stichentscheidInWorten(
 		 * (`stichentscheidMoeglich` in `auszaehlung.ts`).
 		 */
 		return (
-			`${anfang}, ${beleg}. Die Klausel wird nur beim einfachen Mehr ohne Wertquoten angewandt: ` +
+			// 16.11.2026: auch beim einfachen Mehr nach Wertquoten allein (Regel «Köpfe zählen nicht»).
+			`${anfang}, ${beleg}. Die Klausel wird nur beim einfachen Mehr angewandt, nach Köpfen ohne ` +
+			'Wertquoten oder, wo das Reglement die Köpfe nicht zählt, nach Wertquoten allein. ' +
 			'Der Entscheid wird eingetragen, mit dem ' +
 			`Namen der entscheidenden Person. ${empfehlung}. ` +
 			'Eine Annahme durch Stichentscheid lässt sich innert eines Monats beim Gericht anfechten, ' +

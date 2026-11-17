@@ -801,6 +801,39 @@ try {
 		behaupte(w.text.includes('Schritthaus A'), `Die Wand nennt Haus A nicht: «${w.text.slice(0, 200)}»`);
 		return `${j} ‖ Wand «${w.nummer} ${w.titel}»`;
 	});
+
+	/*
+	 * **4: Das Protokoll des Abends** (Auftrag
+	 * `2026-11-16-votum-erste-versammlung-wertquoten-abend-h1.md`, Block B,
+	 * Kriterien 4, 5 und 10). Das Rückkommen aus 3d steht mit eigener Zeile
+	 * unter dem Budget in A. Danach wird die Wahl in A, jetzt aufgerufen,
+	 * zurückgezogen: Sie steht mit Grund im Protokoll und nicht mehr als
+	 * «noch kein Ergebnis». Die Versammlungen bleiben offen; das Dokument ist
+	 * deshalb Entwurf, gemessen wird die Zeile, nicht der Vermerk.
+	 */
+	await schritt('4a: Das Rückkommen steht im Protokoll des Abends mit eigener Zeile', async () => {
+		await gehe(`/tage/${tag}/protokoll`);
+		const text = await seite.locator('pre.text').innerText();
+		behaupte(/^#{3,4} \S+ Rückkommen auf /m.test(text), 'Keine eigene Zeile für das Rückkommen im Protokoll des Abends');
+		return (text.match(/^#{3,4} \S+ Rückkommen auf .*/m) ?? [''])[0];
+	});
+
+	await schritt('4b: Die Wahl in A zurückziehen, das Protokoll nennt den Rückzug', async () => {
+		await gehe(`/tage/${tag}/leitung`);
+		behaupte(/Wahl der Stimmenzähler/.test(await jetztText()), '«Jetzt» ist nicht die Wahl in A');
+		const wort = seite.locator('button.wort', { hasText: 'Zurückziehen' }).first();
+		behaupte(await wort.count(), 'Kein Eingriff «Zurückziehen» an der Wahl in A');
+		await wort.click();
+		const grund = 'Prüflauf: die Antragstellerin zieht zurück';
+		await seite.locator('form[action="?/zurueckziehen"] input[name="grund"]').first().fill(grund);
+		await abschicken(seite.locator('form[action="?/zurueckziehen"] button[type="submit"]'));
+		const m = await meldungstext();
+		behaupte(/zurückgezogen/.test(m), `Zurückziehen: «${m}»`);
+		await gehe(`/tage/${tag}/protokoll`);
+		const text = await seite.locator('pre.text').innerText();
+		behaupte(text.includes(`Vor der Abstimmung zurückgezogen: ${grund}`), 'Der Rückzug fehlt im Protokoll des Abends');
+		return m;
+	});
 } finally {
 	await browser.close();
 }

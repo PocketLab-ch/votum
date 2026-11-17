@@ -206,8 +206,8 @@
 		Stichentscheid durch <strong>{stichentscheid.wer}</strong>{stichentscheid.eigentuemer
 			? ' im Vorsitz, selbst Stockwerkeigentümer (in der Zählung nicht enthalten)'
 			: ''}:
-		{stichentscheid.wahl === 'yes' ? 'angenommen' : 'abgelehnt'}{#if stichentscheid.begruendung}
-			— {stichentscheid.begruendung}{/if}
+		<!-- Der Leerschlag ausdrücklich: Am Anfang des Blocks schluckt Svelte ihn (Probe Wertquotenmehr). -->
+		{stichentscheid.wahl === 'yes' ? 'angenommen' : 'abgelehnt'}{#if stichentscheid.begruendung}{'. Begründung: '}{stichentscheid.begruendung}{/if}
 	</p>
 {/if}
 

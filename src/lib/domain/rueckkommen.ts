@@ -21,6 +21,7 @@
  * Versammlung eine Abstimmung ab, die ihr zusteht. Deshalb sind es zwei Wege
  * und nicht einer mit zwei Begründungen.
  */
+import { nurNachWertquoten } from './mehrheit';
 import { FachlicherFehler } from './gemeinschaft';
 import { RUECKKOMMEN_AUF_GESETZTES_MEHR, RUECKKOMMEN_TITEL, type Erfordernis } from './entscheidbaum';
 import { keinBeschlussKurz, type KeinBeschluss } from './ausnahmen';
@@ -58,19 +59,29 @@ export function mindestensSoStreng(a: Erfordernis, b: Erfordernis): boolean | nu
 	if (b.typ === 'einstimmigkeit') return a.typ === 'einstimmigkeit';
 	if (a.typ === 'einstimmigkeit') return true;
 
-	if (!a.kopfSchwelle || !b.kopfSchwelle) return null;
-	if (a.kopfbasis !== b.kopfbasis) return null;
+	/*
+	 * **Ohne Köpfe** (Regel «Köpfe zählen nicht», 16.11.2026): Wer die Köpfe
+	 * weglässt, wo der Beschluss sie zählte, erleichtert; wer sie hinzunimmt,
+	 * verschärft bei den Köpfen, und es entscheiden die Wertquoten unten. Ohne
+	 * Kopf- und ohne Wertquotenschwelle bleibt es nicht vergleichbar.
+	 */
+	if (!a.kopfSchwelle || !b.kopfSchwelle) {
+		if ((!a.kopfSchwelle && !nurNachWertquoten(a)) || (!b.kopfSchwelle && !nurNachWertquoten(b))) return null;
+		if (!a.kopfSchwelle && b.kopfSchwelle) return false;
+	} else {
+		if (a.kopfbasis !== b.kopfbasis) return null;
 
-	// Ganzzahlig über Kreuz, damit aus 2/3 gegen 1/2 kein Gleitkomma wird.
-	const kopfKleiner = a.kopfSchwelle.zaehler * b.kopfSchwelle.nenner
-		< b.kopfSchwelle.zaehler * a.kopfSchwelle.nenner;
-	if (kopfKleiner) return false;
-	const kopfGleich = a.kopfSchwelle.zaehler * b.kopfSchwelle.nenner
-		=== b.kopfSchwelle.zaehler * a.kopfSchwelle.nenner;
-	// Bei gleichem Bruch entscheidet die Art: «mehr als die Hälfte» ist strenger
-	// als «mindestens die Hälfte» — bei 20 Stimmen sind das 11 gegen 10.
-	if (kopfGleich && a.kopfSchwelle.art === 'mindestens' && b.kopfSchwelle.art === 'mehr_als') {
-		return false;
+		// Ganzzahlig über Kreuz, damit aus 2/3 gegen 1/2 kein Gleitkomma wird.
+		const kopfKleiner = a.kopfSchwelle.zaehler * b.kopfSchwelle.nenner
+			< b.kopfSchwelle.zaehler * a.kopfSchwelle.nenner;
+		if (kopfKleiner) return false;
+		const kopfGleich = a.kopfSchwelle.zaehler * b.kopfSchwelle.nenner
+			=== b.kopfSchwelle.zaehler * a.kopfSchwelle.nenner;
+		// Bei gleichem Bruch entscheidet die Art: «mehr als die Hälfte» ist strenger
+		// als «mindestens die Hälfte» — bei 20 Stimmen sind das 11 gegen 10.
+		if (kopfGleich && a.kopfSchwelle.art === 'mindestens' && b.kopfSchwelle.art === 'mehr_als') {
+			return false;
+		}
 	}
 
 	/*

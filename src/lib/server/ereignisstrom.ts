@@ -76,6 +76,13 @@ export interface Stromnachricht {
 	 */
 	aufgerufenSeit: string | null;
 	/**
+	 * Wann das aufgerufene Traktandum zurückgezogen wurde, oder `null`: eine
+	 * Uhrzeit, kein Grund und kein Name (AD-11). Die gemeinsame Wand lädt daran
+	 * neu und zeigt den Rückzug; vorher zeigte sie den Antrag unverändert weiter
+	 * (Probe Wertquotenmehr, 17.11.2026, B4).
+	 */
+	zurueckgezogenAm: string | null;
+	/**
 	 * Wann die Beschlussfähigkeit zuletzt festgehalten wurde — eine Uhrzeit,
 	 * kein Befund (AD-11).
 	 *
@@ -207,6 +214,13 @@ export interface Abstimmungsstand {
 	zeilen: number;
 	/** Nur nach der Freigabe. Zahlen ohne Namen (AD-11, NFR-17). */
 	ergebnis: Ergebnisstand | null;
+	/**
+	 * Geschlossen, aber der Stichentscheid steht aus: der Satz dazu, wie ihn die
+	 * Leitung vorliest (`ergebnisInWorten`), ohne Namen. Bis dahin sagte die Wand
+	 * «Das Ergebnis wird verkündet», als läge eines vor (Probe Wertquotenmehr,
+	 * 17.11.2026, B4). Leer, solange offen abgestimmt wird oder ein Ergebnis da ist.
+	 */
+	wartesatz: string | null;
 }
 
 export interface Ergebnisstand {
@@ -240,6 +254,13 @@ export interface Ergebnisstand {
 	 * ohne «nötig». Gegen die Schwelle wurde nichts entschieden.
 	 */
 	ohneNoetig?: boolean;
+	/**
+	 * Die Köpfe zählen nicht (Regel nur nach Wertquoten): Wand und Kachel zeigen
+	 * sie nach den Wertquoten, als Auskunft. Ein Merkmal statt der Ableitung aus
+	 * zwei Nullwerten; eine leere Kopfbasis ergäbe sonst dasselbe Bild
+	 * (Codeprüfung Block A, zweiter Durchgang, B5).
+	 */
+	koepfeAlsAuskunft?: boolean;
 	/**
 	 * Geheime Abstimmung: Die beiden Spiegel darunter sind blind gestellt (nur
 	 * Nullen), und keine Anzeige nennt Zahlen (Produktentscheid 28.09.2026).

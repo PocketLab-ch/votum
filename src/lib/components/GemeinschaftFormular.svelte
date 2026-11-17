@@ -483,7 +483,8 @@
 						</tbody>
 					</table>
 					<p class="hilfe">
-						Vorbelegt sind gleiche Teile: {mitgliedswahl.length} Anteile am Nenner {nenner}.
+						<!-- Der Anteil je Mitglied, wie auf der Eigentümerseite (Probe Wertquotenmehr). -->
+						Vorbelegt sind gleiche Teile: je {anteilVorschlag} von {nenner}.
 						Steht im Reglement etwas anderes, ändern Sie die Zahlen.
 					</p>
 				{/if}
@@ -745,8 +746,9 @@
 				<span class="hilfe">
 					Wählen Sie das, wenn Ihr Reglement es so sagt, etwa in einem Artikel «Bei
 					Stimmengleichheit entscheidet der Verwalter». Votum hält beim Gleichstand an und lässt
-					den Entscheid eintragen. Votum wendet die Klausel nur beim einfachen Mehr ohne Wertquoten an;
-					bei jedem anderen Mehr ist der Antrag bei Stimmengleichheit abgelehnt. Nennt das Reglement
+					den Entscheid eintragen. Votum wendet die Klausel nur beim einfachen Mehr an, nach Köpfen
+					ohne Wertquoten; zählt eine Regel Ihres Reglements die Köpfe nicht, auch nach Wertquoten
+					allein. Bei jedem anderen Mehr ist der Antrag bei Stimmengleichheit abgelehnt. Nennt das Reglement
 					ausdrücklich auch ein anderes Mehr, ist nicht geklärt, ob sie dort gilt. Empfohlen ist die
 					Ablehnung, weil der Beschluss nach dem Gesetz bei Stimmengleichheit nicht gefasst ist
 					und die Verwaltung so nicht Partei ergreift.
@@ -771,7 +773,8 @@
 					Wählen Sie das, wenn Ihr Reglement den Vorsitzenden nennt und nicht den Verwalter. Den
 					Vorsitz kann die Versammlung einer anderen Person geben; entscheidend ist, wer ihn im
 					Saal führt. Votum hält beim Gleichstand an und lässt den Entscheid mit Namen eintragen.
-					Votum wendet die Klausel nur beim einfachen Mehr ohne Wertquoten an; bei jedem anderen
+					Votum wendet die Klausel nur beim einfachen Mehr an, nach Köpfen ohne Wertquoten; zählt eine
+					Regel Ihres Reglements die Köpfe nicht, auch nach Wertquoten allein. Bei jedem anderen
 					Mehr ist der Antrag bei Stimmengleichheit abgelehnt. Nennt das Reglement ausdrücklich auch
 					ein anderes Mehr, ist nicht geklärt, ob sie dort gilt. Ist die Person im Vorsitz selbst
 					Stockwerkeigentümer, gibt Votum ihr keine Richtung vor;

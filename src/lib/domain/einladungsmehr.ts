@@ -47,6 +47,7 @@
  *
  * Rein: kein Zugriff auf Datenbank oder Uhr, der heutige Tag kommt herein.
  */
+import { nurNachWertquoten } from './mehrheit';
 import { FachlicherFehler } from './fehler';
 import {
 	betroffeneStimmenNichtMit,
@@ -75,9 +76,15 @@ import {
 import type { Versammlungszustand } from './versammlung';
 import type { Universalvariante } from './ausnahmen';
 
-/** Ob ein Erfordernis ein Mehr trägt, nach dem sich zählen lässt. */
-function zaehlbar(e: Erfordernis): e is Erfordernis & { kopfSchwelle: NonNullable<Erfordernis['kopfSchwelle']> } {
-	return erfordernisSteht(e) && e.typ !== 'keine_abstimmung' && e.kopfSchwelle !== null;
+/**
+ * Ob ein Erfordernis ein Mehr trägt, nach dem sich zählen lässt: mit
+ * Kopfschwelle oder, seit der Regel «Köpfe zählen nicht» (16.11.2026), nur nach
+ * Wertquoten. `vergleicheMasse` ordnet beides.
+ */
+function zaehlbar(e: Erfordernis): boolean {
+	return (
+		erfordernisSteht(e) && e.typ !== 'keine_abstimmung' && (e.kopfSchwelle !== null || nurNachWertquoten(e))
+	);
 }
 
 /**

@@ -37,7 +37,7 @@
  * wieder da ist.
  */
 import type { Kopfbasis, Quotenbasis } from './regelwerk';
-import type { Schwelle } from './mehrheit';
+import { nurNachWertquoten, type Schwelle } from './mehrheit';
 import type { HeadCountMode, Snapshot, Stichentscheid } from './types';
 import {
 	ausstandslesartSatz,
@@ -105,7 +105,8 @@ export interface Mappenposten {
 	/** Der Titel des Erfordernisses, etwa «Qualifiziertes Mehr». */
 	erfordernis: string;
 	kopfbasis: Kopfbasis;
-	kopfSchwelle: Schwelle;
+	/** `null`: Die Köpfe zählen nicht, es zählt nur die Wertquotenschwelle (16.11.2026). */
+	kopfSchwelle: Schwelle | null;
 	quotenbasis: Quotenbasis;
 	quotenSchwelle: Schwelle | null;
 	/**
@@ -374,7 +375,8 @@ function rechnungNoetig(posten: Mappenrechnung, kopfstimmenUngleich: boolean, st
 		posten.kopfbasis !== 'anwesend_vertreten' ||
 		posten.enthaltungZaehltMit === false ||
 		posten.ohneBetroffene === true ||
-		!istEinfachesMehr(posten.kopfSchwelle) ||
+		// Ohne Köpfe rechnet schon die Quotenschwelle oben.
+		(posten.kopfSchwelle !== null && !istEinfachesMehr(posten.kopfSchwelle)) ||
 		kopfstimmenUngleich
 	);
 }
@@ -912,16 +914,21 @@ export function baueAuszaehlmappe(a: Mappenangaben): Blatt {
 			beschriftung: 'Nötig (Kopfstimmen)',
 			stil: 'fett',
 			wert: ({ r, sp }, zeilenNr) =>
-				formel(schwellenformel(`${sp}${zeilenNr('Bezugsgrösse Kopfstimmen')}`, r.kopfSchwelle))
+				r.kopfSchwelle
+					? formel(schwellenformel(`${sp}${zeilenNr('Bezugsgrösse Kopfstimmen')}`, r.kopfSchwelle))
+					: // Ohne Köpfe eine Auskunft, keine Schranke (16.11.2026).
+						text('entfällt', 'leise')
 		},
 		{
 			beschriftung: 'Kopfmehr erreicht',
 			stil: 'fett',
-			wert: ({ sp }, zeilenNr) =>
-				formel(
-					`IF(${sp}${zeilenNr('Nötig (Kopfstimmen)')}="","nein",` +
-						`IF(${sp}${zeilenNr('Ja (Kopfstimmen)')}>=${sp}${zeilenNr('Nötig (Kopfstimmen)')},"ja","nein"))`
-				)
+			wert: ({ r, sp }, zeilenNr) =>
+				!r.kopfSchwelle
+					? text('entfällt, gezählt wird nur nach Wertquoten', 'leise')
+					: formel(
+							`IF(${sp}${zeilenNr('Nötig (Kopfstimmen)')}="","nein",` +
+								`IF(${sp}${zeilenNr('Ja (Kopfstimmen)')}>=${sp}${zeilenNr('Nötig (Kopfstimmen)')},"ja","nein"))`
+						)
 		},
 		{
 			beschriftung: 'Ja (Wertquoten)',
@@ -1045,9 +1052,11 @@ export function baueAuszaehlmappe(a: Mappenangaben): Blatt {
 			stil: 'fett',
 			wert: ({ r: p, sp }, zeilenNr) => {
 				const z = (name: string) => `${sp}${zeilenNr(name)}`;
-				const erreicht = p.quotenSchwelle
-					? `AND(${z('Kopfmehr erreicht')}="ja",${z('Quotenmehr erreicht')}="ja")`
-					: `${z('Kopfmehr erreicht')}="ja"`;
+				const erreicht = !p.kopfSchwelle
+					? `${z('Quotenmehr erreicht')}="ja"`
+					: p.quotenSchwelle
+						? `AND(${z('Kopfmehr erreicht')}="ja",${z('Quotenmehr erreicht')}="ja")`
+						: `${z('Kopfmehr erreicht')}="ja"`;
 				let ergebnis = `IF(${erreicht},"ANGENOMMEN",${sonstBeiGleichstand(p, z)})`;
 				// L5: ohne die Beschlussfähigkeit einer ersten kein Beschluss.
 				if (p.nurBeschlussfaehigWieErste && beschlussfaehigZelle) {
@@ -1096,6 +1105,19 @@ export function baueAuszaehlmappe(a: Mappenangaben): Blatt {
 	 */
 	function sonstBeiGleichstand(p: Mappenrechnung, z: (name: string) => string): string {
 		if (!p.stichentscheidMoeglich || stichentscheid === 'keiner') return '"abgelehnt"';
+		/*
+		 * **Ohne Köpfe liegt der Gleichstand bei den Wertquoten** (16.11.2026),
+		 * mit derselben Doppelbedingung wie im Kern. Auflösen kann ihn nur eine
+		 * Person; der Stichentscheid nach Wertquoten allein lässt es abgelehnt.
+		 */
+		if (!p.kopfSchwelle) {
+			const wer = personenstufe(stichentscheid);
+			if (!wer) return '"abgelehnt"';
+			const jaQ = z('Ja (Wertquoten)');
+			const gleichQ =
+				`AND(${jaQ}>0,${jaQ}=${z('Nein (Wertquoten)')},${jaQ}*2=${z('Bezugsgrösse Wertquoten')})`;
+			return `IF(${gleichQ},"GLEICHSTAND: ${wer === 'verwalter' ? 'Verwalter' : 'Vorsitz'} entscheidet","abgelehnt")`;
+		}
 		const gleich =
 			`AND(${z('Ja (Kopfstimmen)')}>0,${z('Ja (Kopfstimmen)')}=${z('Nein (Kopfstimmen)')},` +
 			`${z('Ja (Kopfstimmen)')}*2=${z('Bezugsgrösse Kopfstimmen')})`;
@@ -1256,7 +1278,12 @@ export function stichentscheidMappensatz(s: Stichentscheid): string {
 		`${wer === 'dem Verwalter' ? 'Dem Verwalter' : 'Der Verwaltung'} ist deshalb die Ablehnung empfohlen. `;
 	return (
 		'Nach der Einstellung Ihrer Gemeinschaft gilt ein Stichentscheid nur beim einfachen Mehr nach ' +
-		'Köpfen, ohne Wertquoten; welches Mehr gilt, steht in der Zeile «Nötiges Mehr». Bei jedem ' +
+		'Köpfen, ohne Wertquoten' +
+		// 16.11.2026: Die Person entscheidet auch dort, wo eine Regel die Köpfe nicht zählt.
+		(person
+			? '. Zählt Ihr Reglement die Köpfe nicht, gilt er auch beim einfachen Mehr nach Wertquoten. Welches'
+			: '; welches') +
+		' Mehr gilt, steht in der Zeile «Nötiges Mehr». Bei jedem ' +
 		'anderen Mehr ist ein Antrag bei Stimmengleichheit abgelehnt. Nennt Ihr Reglement ausdrücklich ' +
 		'auch das qualifizierte Mehr, ist nicht geklärt, ob das gilt. Die Mappe rechnet ohne diese ' +
 		'Klausel. Wollen Sie sie anwenden, sagen Sie das vor der Abstimmung über dieses Traktandum und ' +
@@ -1267,6 +1294,10 @@ export function stichentscheidMappensatz(s: Stichentscheid): string {
 		'Gleichstand heisst: Ja und Nein sind gleich viele und ergeben zusammen die Zahl in der Zeile ' +
 		'«Bezugsgrösse Kopfstimmen». Sind sie gleich viele, ergeben aber weniger, fehlt dem Antrag das ' +
 		'Mehr. ' +
+		(person
+			? 'Zählen die Köpfe nicht, gilt dasselbe für die Wertquoten und die Zeile «Bezugsgrösse ' +
+				'Wertquoten». '
+			: '') +
 		(quoten
 			? 'Beim einfachen Mehr nach Köpfen rechnet die Zeile «Ergebnis» den Stichentscheid nach ' +
 				'Wertquoten: Bei Gleichstand gewinnt die Seite, hinter der mehr Wertquoten stehen. '
@@ -1374,7 +1405,7 @@ export function mappenrechnungAus(
 	e: Erfordernis,
 	m: Pick<Snapshot, 'headCountMode'>
 ): Mappenrechnung | null {
-	if (!e.kopfSchwelle) return null;
+	if (!e.kopfSchwelle && !nurNachWertquoten(e)) return null;
 	return {
 		erfordernis: e.titel,
 		kopfbasis: e.kopfbasis,

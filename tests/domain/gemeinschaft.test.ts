@@ -399,8 +399,11 @@ describe('Zählweise in Worten', () => {
 		 */
 		const satz = stichentscheidInWorten('verwalter', 'Art. 7 Ziff. 5');
 		// A5, Punkt 12a: die Grenze steht am Versprechen.
-		expect(satz).toContain('Die Klausel wird nur beim einfachen Mehr ohne Wertquoten angewandt');
-		expect(satz).toContain('nur beim einfachen Mehr ohne Wertquoten angewandt');
+		// 16.11.2026: auch beim einfachen Mehr nach Wertquoten allein (Regel «Köpfe zählen nicht»).
+		expect(satz).toContain(
+			'Die Klausel wird nur beim einfachen Mehr angewandt, nach Köpfen ohne Wertquoten oder, wo das ' +
+				'Reglement die Köpfe nicht zählt, nach Wertquoten allein.'
+		);
 		expect(satz).toContain('Der Entscheid wird eingetragen');
 		expect(satz).toContain('Dem Verwalter wird empfohlen, den Antrag abzulehnen');
 		expect(satz).toContain('Rz. 187');
@@ -441,7 +444,7 @@ describe('Zählweise in Worten', () => {
 		expect(allein).toContain('die Person im Vorsitz als entscheidende Person');
 		// A5, Punkt 12a: die Grenze gehört in jeden Personensatz; das Wort
 		// «Wertquoten» steht seitdem auch hier, in der Grenze.
-		expect(allein).toContain('nur beim einfachen Mehr ohne Wertquoten');
+		expect(allein).toContain('nur beim einfachen Mehr angewandt, nach Köpfen ohne Wertquoten');
 	});
 
 	it('lässt jede Fundstelle in Ruhe, die mehr sagt als Artikel und Absatz', () => {

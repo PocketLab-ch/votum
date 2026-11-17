@@ -1880,9 +1880,10 @@
 						</tbody>
 					</table>
 					<p class="hilfe voll">
-						Vorbelegt sind gleiche Teile: {mitgliedswahl.length} von {data.gemeinschaft
-							.quotaDenominator} des Nenners. Steht im Reglement etwas anderes, ändern Sie die
-						Zahlen.
+						<!-- Der Anteil, nicht die Zahl der Mitglieder: «1 von 1000 des Nenners» stand bei
+						     einem Mitglied mit 1000 vorbelegt (Probe Wertquotenmehr, 17.11.2026). -->
+						Vorbelegt sind gleiche Teile: je {anteilVorschlag} von {data.gemeinschaft.quotaDenominator}.
+						Steht im Reglement etwas anderes, ändern Sie die Zahlen.
 					</p>
 				{/if}
 

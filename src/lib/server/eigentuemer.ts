@@ -107,6 +107,15 @@ export async function erstelleEigentuemer(
 	return alsBetreiber(handelnder.operatorId, (tx) => schreibeZeile(tx, handelnder, eingabe));
 }
 
+/** Dieselbe Arbeit in einer laufenden Transaktion (16.11.2026, siehe `erstelleEinheitIn`). */
+export async function erstelleEigentuemerIn(
+	tx: postgres.TransactionSql,
+	handelnder: Handelnder & { operatorId: string },
+	eingabe: EigentuemerEingabe
+): Promise<Eigentuemer> {
+	return schreibeZeile(tx, handelnder, eingabe);
+}
+
 /** Eine Zeile der Erfassungsmaske: eine Person, die mitberechtigt ist. */
 export interface MitberechtigtenEingabe {
 	name: string;

@@ -408,13 +408,11 @@ describe('Abenddokument: Folgeanträge mit eigener Zeile (Produktentscheid 08.11
 		// entscheidet nicht über ihn.
 		expect(z.offeneErgebnisse).toBe(1);
 		/*
-		 * **Bekannte Abweichung, gemessen** (08.11.2026): Die Tafel kennt den
-		 * Rückzug nicht und zählt den zurückgezogenen Folgeantrag als offen,
-		 * wie schon jeden zurückgezogenen Antrag; ebenso zählt das
-		 * Abenddokument einen zurückgezogenen Grundantrag. Wird das
-		 * angeglichen, fällt diese Zeile und gehört auf Gleichheit gestellt.
+		 * **Angeglichen** (16.11.2026): Die Tafel zählt einen zurückgezogenen
+		 * Antrag nicht mehr als offen (`withdrawn_at`), wie das Abenddokument.
+		 * Bis dahin stand hier `summe = offen + 1`.
 		 */
-		expect(summe).toBe(z.offeneErgebnisse + 1);
+		expect(summe).toBe(z.offeneErgebnisse);
 	});
 
 	it('nie abgestimmter Folgeantrag: offen wie im Hausprotokoll, bis der Beschlussvermerk ihn trägt', async () => {

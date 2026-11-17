@@ -87,7 +87,8 @@
 				data.versammlung.zustand,
 				data.versammlung.aktuellesTraktandumId ?? '-',
 				data.stand?.wandbild ?? '-',
-				data.versammlung.pause?.seit ?? '-'
+				data.versammlung.pause?.seit ?? '-',
+				data.stand?.zurueckgezogenAm ?? '-'
 			].join('|')
 		),
 		{},
@@ -104,7 +105,8 @@
 				stand.zustand ?? data.versammlung.zustand,
 				stand.aktuellesTraktandumId ?? '-',
 				stand.wandbild ?? '-',
-				stand.pause ?? '-'
+				stand.pause ?? '-',
+				stand.zurueckgezogenAm ?? '-'
 			].join('|')
 		);
 	});
