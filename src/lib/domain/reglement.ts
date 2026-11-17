@@ -22,11 +22,15 @@ import { zeichenzahl } from './zeichenzahl';
 import { istKalendertag } from './datum';
 import {
 	erfordernisNachAndererLesart,
+	fondsentnahmewahl,
 	KOPFZAEHLWEISE_ARTIKEL,
+	knotenNachLesart,
 	kopfzaehlweiseVerdraengt,
+	LESARTEN_VORGABE,
 	mitKopfzaehlweise,
 	wendeLesartAn,
 	type Einsprachewahl,
+	type Fondsentnahmewahl,
 	type Kopfzaehlweise,
 	type Lesartenwahl
 } from './lesarten';
@@ -480,6 +484,12 @@ export type Regelvorbehalt =
 	 * Spiegelbild von `verschaerfung` (Einsprache, Rz. 186 ad Art. 712c).
 	 */
 	| 'milderung'
+	/**
+	 * An einer Karte mit L17 unter der strengeren Auffassung (ab Fassung
+	 * 2026-11-20): Die Regel ist in mindestens einer Hinsicht milder als das
+	 * gerechnete Mehr oder lässt sich nicht einordnen.
+	 */
+	| 'milder_nach_lesart'
 	| 'gemischt'
 	| 'betroffenenzustimmung'
 	/**
@@ -829,6 +839,12 @@ export interface Regelanwendung {
 	 */
 	lesart?: string;
 	/**
+	 * Eine Regel für genau diesen Fall, die nicht angewandt wurde, weil an ihrer
+	 * Stelle eine allgemeine gilt (L17 «streng», Fassung 2026-11-20): der Satz für
+	 * den Vorbehalt der Karte (`fondsentnahmeVerdraengtSatz`).
+	 */
+	verdraengt?: string;
+	/**
 	 * Was aus der Einstellung der Gemeinschaft zu den Enthaltungen wurde, wo sie
 	 * für dieses Erfordernis in Frage kam. Fehlt das Feld, hat die Gemeinschaft
 	 * keine, oder das Erfordernis ist kein einfaches Mehr der Anwesenden.
@@ -1172,9 +1188,38 @@ export function wendeReglementAn(
 					(!r.knotenId || r.knotenId === erfordernis.knotenId)
 			)
 		: [];
-	const regel = passende.find((r) => r.knotenId) ?? passende[0] ?? null;
+	let regel = passende.find((r) => r.knotenId) ?? passende[0] ?? null;
 
 	if (!regel) return mitEinstellung({ erfordernis, regel: null, vorbehalt: null }, einstellung, lesarten.L13);
+
+	/*
+	 * **Nach der strengeren Auffassung gilt eine strengere Regel, auch die
+	 * allgemeine** (L17 «streng»; Produktentscheid 17.11.2026, Fachprüfung F-5).
+	 * Ist die Regel für genau diesen Fall milder, schlüge sie die allgemeine
+	 * sonst, und es gälte keine. Dann gilt eine allgemeine, die nicht milder
+	 * ist; die fallgenaue nennt die Karte im Vorbehalt (`verdraengt`).
+	 *
+	 * **Nicht an der vereinbarten Verwendung** (Codeprüfung, Durchgang 3, M1):
+	 * Dort rechnet die Vorgabe schon die Zustimmung aller, strenger geht keine
+	 * allgemeine Regel, und der Satz zur gültigen milderen Regel widerspräche dem
+	 * Satz der Karte (`FONDSENTNAHME_VEREINBART_MILDER`, Fachprüfung R2-F-3).
+	 */
+	const l17 = fondsentnahmewahl(erfordernis);
+	let verdraengt: Reglementsregel | null = null;
+	if (
+		l17 === 'streng' &&
+		erfordernis.typ !== 'einstimmigkeit' &&
+		regel.knotenId &&
+		l17Regelvorbehalt(l17, regel, erfordernis)
+	) {
+		const allgemein = passende.find(
+			(r) => !r.knotenId && r.kopfSchwelle && l17Regelvorbehalt(l17, r, erfordernis) === null
+		);
+		if (allgemein) {
+			verdraengt = regel;
+			regel = allgemein;
+		}
+	}
 
 	if (erfordernis.typ === 'grenzfall' || erfordernis.typ === 'keine_abstimmung') {
 		return { erfordernis, regel, vorbehalt: erfordernis.typ };
@@ -1217,6 +1262,19 @@ export function wendeReglementAn(
 		if (!regel.kopfSchwelle && erfordernis.typ !== 'einfaches_mehr') {
 			return mitEinstellung({ erfordernis, regel, vorbehalt: 'ohne_koepfe' }, einstellung, lesarten.L13);
 		}
+		/*
+		 * **An den Karten mit L17 entscheidet die Lesart, welche Regel gilt**
+		 * (`l17Regelvorbehalt`). Nach `ohne_koepfe`, damit eine fallgenaue Regel
+		 * ohne Köpfe unter der strengeren Auffassung ihren eigenen Grund nennt;
+		 * unter dem SVIT-Kommentar rechnet die Karte das einfache Mehr, und
+		 * `ohne_koepfe` greift dort nicht. Wurde oben auf eine allgemeine Regel
+		 * getauscht, kommt keiner der beiden Vorbehalte mehr in Frage: Getauscht
+		 * wird nur auf eine Regel mit Köpfen, die `l17Regelvorbehalt` schon
+		 * bestanden hat. Die Prüfung hier trifft dann die getauschte und lässt sie
+		 * durch.
+		 */
+		const l17Vorbehalt = l17Regelvorbehalt(l17, regel, erfordernis);
+		if (l17Vorbehalt) return mitEinstellung({ erfordernis, regel, vorbehalt: l17Vorbehalt }, einstellung, lesarten.L13);
 		// Nicht an der erweiterten Bewirtschaftung (`regelNurFallgenau`, Fassung
 		// 2026-10-30): Rz. 196 ad Art. 712m trifft die systematische Einführung,
 		// nicht eine Klausel für genau diesen Fall (Fachprüfung A4, R4-F-1).
@@ -1318,6 +1376,7 @@ export function wendeReglementAn(
 		},
 		regel: gelesen,
 		vorbehalt: null,
+		...(verdraengt ? { verdraengt: fondsentnahmeVerdraengtSatz(verdraengt) } : {}),
 		...(gelesen === regel
 			? {}
 			: {
@@ -1389,11 +1448,19 @@ export function erfordernisAusRegel(regel: Reglementsregel): Erfordernis {
  *
  * `null` heisst: Die Regel greift überall, kein Satz nötig.
  */
-export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | null {
+export function regelReichweite(
+	rw: Regelwerk,
+	art: Geschaeftsart,
+	/** Die Lesarten der Gemeinschaft; ohne sie die Vorgabe (L17 «streng»). */
+	lesarten: Lesartenwahl = LESARTEN_VORGABE
+): string | null {
 	const knoten = rw.knoten.filter(
 		(k) => k.geschaeftsart === art && k.typ !== 'grenzfall' && k.typ !== 'keine_abstimmung'
 	);
 	if (knoten.length === 0) return null;
+	const nurFallgenau = (k: (typeof knoten)[number]) => regelNurFallgenauNachLesart(k, lesarten);
+	// Die Karten mit L17 (ab Fassung 2026-11-20): Was eine Regel dort bewirkt, hängt an der Wahl.
+	const fondsentnahme = knoten.filter((k) => k.lesart?.kennung === 'L17');
 
 	const titel = (liste: typeof knoten) => liste.map((k) => `«${k.titel}»`).join(' und ');
 	// Die Sperre nach der strengeren Lesart zählt nicht «nach dem Gesetz» (Ä-12,
@@ -1402,7 +1469,17 @@ export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | nul
 	const zwingend = knoten.filter(
 		(k) => k.reglementsverhalten === 'gesperrt_zwingend' && !sperreNachLehre(k)
 	);
-	const vereinbarung = knoten.filter((k) => k.reglementsverhalten === 'gesperrt_vereinbarung');
+	/*
+	 * Die Bezahlung ausserhalb des Zwecks (ab Fassung 2026-11-20) trägt
+	 * `gesperrt_vereinbarung`, aber dort ist nichts umstritten: Nach beiden
+	 * Auffassungen braucht es die Zustimmung aller. Eigener Satz; die Kennung
+	 * steht wörtlich hier wie in `regelNurFallgenau`, weil der Kern die
+	 * Fassungsdaten nicht einbinden kann.
+	 */
+	const ausserhalbDesZwecks = knoten.filter((k) => k.id === FONDSENTNAHME_AUSSERHALB_KNOTEN);
+	const vereinbarung = knoten.filter(
+		(k) => k.reglementsverhalten === 'gesperrt_vereinbarung' && k.id !== FONDSENTNAHME_AUSSERHALB_KNOTEN
+	);
 	const vereinbart = knoten.filter((k) => k.reglementsverhalten === 'vereinbart');
 	const schranke = knoten.filter((k) => k.reglementsverhalten === 'gesperrt_reglement');
 	const mildern = knoten.filter((k) => k.reglementsverhalten === 'nur_mildern');
@@ -1424,7 +1501,7 @@ export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | nul
 			'Eine Regel für diese Geschäftsart wird zurzeit nirgends angewandt; sie steht als ' +
 				'Vermerk auf der Ergebniskarte.'
 		);
-	} else if (!knoten.some((k) => regelKannGreifen(k.reglementsverhalten) && !regelNurFallgenau(k))) {
+	} else if (!knoten.some((k) => regelKannGreifen(k.reglementsverhalten) && !nurFallgenau(k))) {
 		// Nur Fälle, die eine eigens hinterlegte Regel verlangen (Grundordnung mit
 		// der Einsprache, ab Fassung 2026-10-20; Codeprüfung N3): Eine Regel für
 		// alle Geschäfte der Art greift weiterhin nirgends.
@@ -1457,13 +1534,18 @@ export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | nul
 			/*
 			 * **Kein «nicht automatisch» mehr** (Codeprüfung Runde 2, M2): Es
 			 * unterstellte einen Weg von Hand. Ab 2026-10-15 tragen das Verhalten
-			 * nur noch luxuriöse Massnahme und Verkauf, und dort ist umstritten,
-			 * ob eine andere Ordnung überhaupt gilt (Fachprüfung Runde 2, B7).
+			 * luxuriöse Massnahme und Verkauf, und dort ist umstritten, ob eine
+			 * andere Ordnung überhaupt gilt (Fachprüfung Runde 2, B7). Ab 2026-11-20
+			 * auch die Bezahlung aus dem Fonds ausserhalb des Zwecks; sie hat oben
+			 * einen eigenen Satz und fehlt in dieser Liste.
 			 */
 			`Bei ${titel(vereinbarung)} wird Ihre Regel nicht angewandt, weil umstritten ist, ob ` +
 				'eine andere Ordnung dort gilt; gezählt wird nach dem Gesetz. Die Karte nennt, was der ' +
 				'Kommentar dazu sagt.'
 		);
+	}
+	if (ausserhalbDesZwecks.length > 0) {
+		saetze.push(`Bei ${titel(ausserhalbDesZwecks)} ${REICHWEITE_FONDSENTNAHME_AUSSERHALB}`);
 	}
 	if (vereinbart.length > 0) {
 		saetze.push(
@@ -1520,6 +1602,11 @@ export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | nul
 				'vergleichbare wendet das Werkzeug dort nicht an.'
 		);
 	}
+	if (fondsentnahme.length > 0) {
+		saetze.push(
+			`Bei ${titel(fondsentnahme)} ${lesarten.L17 === 'svit' ? REICHWEITE_FONDSENTNAHME_SVIT : REICHWEITE_FONDSENTNAHME_STRENG}`
+		);
+	}
 	if (einordnen.length > 0) {
 		saetze.push(
 			`Bei ${titel(einordnen)} wird Ihre Regel angewandt, wenn sie in jeder Hinsicht ` +
@@ -1530,6 +1617,128 @@ export function regelReichweite(rw: Regelwerk, art: Geschaeftsart): string | nul
 	}
 	if (saetze.length === 0) return null;
 	return saetze.join(' ');
+}
+
+/** Die Karte der Bezahlung aus dem Fonds ausserhalb des Zwecks (Fassung 2026-11-20). */
+const FONDSENTNAHME_AUSSERHALB_KNOTEN = 'k-erneuerungsfonds-entnahme-ausserhalb';
+
+/** Der Satz der Reichweite an dieser Karte, hinter «Bei «…»» (Rz. 139 ad Art. 712l). */
+export const REICHWEITE_FONDSENTNAHME_AUSSERHALB =
+	'wird Ihre Regel nicht angewandt: Ausserhalb des Zwecks braucht die Bezahlung aus dem Fonds nach beiden ' +
+	'Auffassungen die Zustimmung aller (SVIT-Kommentar Rz. 139 ad Art. 712l).';
+
+/** Der Satz der Reichweite an den Karten mit L17 nach der strengeren Auffassung, hinter «Bei «…»». */
+export const REICHWEITE_FONDSENTNAHME_STRENG =
+	'wird Ihre Regel nur angewandt, wenn sie in keiner Hinsicht milder ist als das gerechnete Mehr. Das gilt ' +
+	'auch für eine Regel, die alle Geschäfte dieser Geschäftsart erfasst. So ist es für Ihre Gemeinschaft auf der ' +
+	'Seite «Lesarten» eingestellt (strengere Auffassung).';
+
+/** Derselbe Satz nach dem SVIT-Kommentar. */
+export const REICHWEITE_FONDSENTNAHME_SVIT =
+	'wird nur eine Regel angewandt, die Sie für genau diesen Fall hinterlegen, milder wie strenger. So ist es ' +
+	'für Ihre Gemeinschaft auf der Seite «Lesarten» eingestellt (Auffassung des SVIT-Kommentars).';
+
+/**
+ * Ob an diesem Knoten nur eine Regel für genau diesen Fall greift, mit der Wahl
+ * der Gemeinschaft zu L17: An den Karten mit L17 nach dem SVIT-Kommentar ja
+ * (`wendeReglementAn`), sonst wie `regelNurFallgenau`. Für Reglementsseite und
+ * Reichweite; die Anwendung selbst liest die Wahl am Erfordernis.
+ */
+export function regelNurFallgenauNachLesart(
+	k: Parameters<typeof regelNurFallgenau>[0] & { lesart?: { kennung: string } },
+	lesarten: Pick<Lesartenwahl, 'L17'>
+): boolean {
+	return regelNurFallgenau(k) || (k.lesart?.kennung === 'L17' && l17NurFallgenau(lesarten.L17));
+}
+
+/**
+ * Ob an den Karten mit L17 nach dieser Wahl nur eine Regel für genau diesen
+ * Fall gilt: nach dem SVIT-Kommentar ja. Danach genügt das einfache Mehr nach
+ * Köpfen (Rz. 139 ad Art. 712l), und Votum behandelt die Bezahlung nicht als
+ * wichtigere Verwaltungshandlung; eine Regel für die ganze Geschäftsart
+ * `verwaltung_wichtig` trifft sie dann nicht. Die eine Stelle für Anwendung
+ * (`l17Regelvorbehalt`), Reglementsseite und Reichweite
+ * (`regelNurFallgenauNachLesart`).
+ */
+function l17NurFallgenau(wahl: Fondsentnahmewahl | undefined): boolean {
+	return wahl === 'svit';
+}
+
+/**
+ * Warum eine Regel an einer Karte mit L17 nicht gilt, oder `null`, wenn die
+ * Lesart sie zulässt (Fassung 2026-11-20, Produktentscheid 17.11.2026):
+ *
+ *  - nach dem SVIT-Kommentar nur eine Regel für genau diesen Fall, milder wie
+ *    strenger (`l17NurFallgenau`), sonst `nur_fallgenau`;
+ *  - nach der strengeren Auffassung nur eine, die in keiner Hinsicht milder ist
+ *    als das gerechnete Mehr, über denselben Vergleich wie `nur_verschaerfen`,
+ *    sonst `milder_nach_lesart`. Eine mildere trägt dort nur, wenn sie im
+ *    Begründungsakt steht oder alle zugestimmt haben (Art. 712g Abs. 2; Rz. 27
+ *    und 78a ad Art. 712g), und das kann Votum nicht prüfen.
+ */
+function l17Regelvorbehalt(
+	wahl: Fondsentnahmewahl | undefined,
+	regel: Reglementsregel,
+	gerechnet: Erfordernis
+): Regelvorbehalt | null {
+	if (l17NurFallgenau(wahl)) return regel.knotenId ? null : 'nur_fallgenau';
+	if (wahl === 'streng' && einordnungGegenGesetz(regel, gerechnet) !== 'strenger') return 'milder_nach_lesart';
+	return null;
+}
+
+/**
+ * Nach welcher Regel ein Erfordernis an einer Karte mit L17 rechnet, als ihre
+ * Fundstelle, oder `null` ohne Regel oder an einer anderen Karte (Codeprüfung
+ * L17, A). An diesen Karten entscheidet die Wahl, welche Regel gilt: Nach einer
+ * Umstellung kann dieselbe Regel wegfallen oder eine andere gelten, auch wenn
+ * das Mehr gleich bleibt. Unter einer Regel speichert das Traktandum keine
+ * Lesart, deshalb vergleichen Freigabe (`veralteteLesartenIn`) und Kasten
+ * «Erfordernisse nachziehen» (`veralteteErfordernisseIn`) dies, beide über
+ * diese Funktion. **Nicht dieselbe Bedingung, aber eine enthaltene:** Die
+ * Freigabe prüft nur Traktanden unter einer Regel und vergleicht nur diesen
+ * Wert; der Kasten prüft alle und vergleicht ihn neben dem ganzen Mehr. Jedes
+ * Traktandum, zu dem die Freigabe absagt, zeigt der Kasten also auch; die
+ * Absage nennt nie einen Weg, den es nicht gibt.
+ */
+export function l17Regelstand(
+	knotenMitL17: boolean,
+	e: { quelle?: string | null; fundstelle?: string | null }
+): string | null {
+	return knotenMitL17 && e.quelle === 'reglement' ? (e.fundstelle ?? '') : null;
+}
+
+/**
+ * Was gilt und was die Leitung tut, wenn eine mildere Regel an der Bezahlung aus
+ * dem Fonds nach der strengeren Auffassung trotzdem gilt (Laien- und
+ * Fachprüfung Runde 2 bis 5: R2-F-6, R3-F-1, R4-F-1 bis R4-F-4, R4-L-1,
+ * R5-L-1, R5-F-1, R5-F-5). Ein Wortlaut für `FONDSENTNAHME_MILDER` und
+ * `FONDSENTNAHME_VERDRAENGT`; zuerst die Bedingung und was sonst gilt, dann die
+ * Schritte unter der Bedingung.
+ */
+export const FONDSENTNAHME_WEG_GUELTIG =
+	'Steht Ihre Regel in der ursprünglichen Fassung des Begründungsakts oder haben ihr alle Eigentümer ' +
+	'zugestimmt, gilt sie auch nach der strengeren Auffassung. Sonst wird nach dem Erfordernis dieser Karte ' +
+	'ausgezählt. Gilt Ihre Regel, zählt Votum trotzdem nach dieser Karte. Lässt sich ihr Mehr unter «Anderes ' +
+	'Erfordernis setzen» wählen, etwa das einfache Mehr, setzen Sie es dort vor dem Versand der Einladung. Sonst ' +
+	'sagen Sie vor der Abstimmung an, dass nach Ihrer Regel ausgezählt wird. Halten Sie das Ergebnis dann mit ' +
+	'«Beschluss von Hand festhalten» fest, mit dem Grund «Notweg»; die Warnung zum Notweg betrifft Sie dabei ' +
+	'nicht. In beiden Fällen schreiben Sie auf der Seite «Protokoll» beim Traktandum die Bestimmung, die Köpfe ' +
+	'und die Wertquoten dazu. Legen Sie den Beleg bereit, dass die Regel in der ursprünglichen Fassung des ' +
+	// Runde 6 (R6-L-1): die Umstellung mit Namen und warum sie hier nicht der Weg ist.
+	'Begründungsakts steht oder alle Eigentümer ihr zugestimmt haben. Die Lesart L17 auf den SVIT-Kommentar ' +
+	'umzustellen, braucht es dafür nicht; es senkte auch das Mehr ohne Regel.';
+
+/** Der Satz zur fallgenauen Regel, an deren Stelle eine strengere allgemeine gilt (L17 «streng»). */
+export const FONDSENTNAHME_VERDRAENGT =
+	// Runde 5 (R5-F-1, R5-F-2, R5-L-3) und Codeprüfung, Durchgang 2, N2: auch nicht einzuordnen; die Ausnahme
+	// mit dem Weg; «gerechnet», weil auch die allgemeine Regel nur nach Art. 712g Abs. 2 gesichert ist.
+	'Sie wird nicht angewandt, weil sie in mindestens einer Hinsicht milder ist als das gerechnete Mehr oder sich ' +
+	'nicht eindeutig einordnen lässt. Gerechnet wird deshalb nach der strengeren Regel für alle wichtigeren ' +
+	'Verwaltungshandlungen. ' +
+	FONDSENTNAHME_WEG_GUELTIG;
+
+function fondsentnahmeVerdraengtSatz(r: Reglementsregel): string {
+	return `Für genau diesen Fall ist zudem eine Regel hinterlegt (${r.fundstelle}): ${regelInWorten(r)} ${FONDSENTNAHME_VERDRAENGT}`;
 }
 
 /**
@@ -1569,7 +1778,18 @@ export function regelGiltFuer(rw: Regelwerk, art: Geschaeftsart): string[] {
  * der Vorbehalt `ohne_koepfe`; an `einordnen` und `nur_verschaerfen` ist sie
  * nicht vergleichbar oder milder und greift ebenfalls nicht.
  */
-export function regelOhneKoepfeGiltFuer(rw: Regelwerk, art: Geschaeftsart, knotenId?: string | null): string[] {
+export function regelOhneKoepfeGiltFuer(
+	rw: Regelwerk,
+	art: Geschaeftsart,
+	knotenId?: string | null,
+	/**
+	 * Die Lesarten der Gemeinschaft; ohne sie die Vorgabe. Gefragt ist das Mehr,
+	 * das der Knoten nach ihrer Wahl rechnet: Unter L17 «svit» rechnen die Karten
+	 * zur Bezahlung aus dem Fonds das einfache Mehr, und eine fallgenaue Regel
+	 * ohne Köpfe gilt dort.
+	 */
+	lesarten: Lesartenwahl = LESARTEN_VORGABE
+): string[] {
 	/*
 	 * **Das Rückkommen hat keinen Knoten** (Laienprüfung Runde 2, R2-L4). Eine
 	 * Regel dafür gilt nach `erfordernisFuerRueckkommen`: beim abgelehnten
@@ -1587,11 +1807,11 @@ export function regelOhneKoepfeGiltFuer(rw: Regelwerk, art: Geschaeftsart, knote
 			(k) =>
 				k.geschaeftsart === art &&
 				(!knotenId || k.id === knotenId) &&
-				k.typ === 'einfaches_mehr' &&
+				knotenNachLesart(rw, k, lesarten).typ === 'einfaches_mehr' &&
 				(k.reglementsverhalten === undefined ||
 					k.reglementsverhalten === 'frei' ||
 					k.reglementsverhalten === 'vereinbart') &&
-				(knotenId || !regelNurFallgenau(k))
+				(knotenId || !regelNurFallgenauNachLesart(k, lesarten))
 		)
 		.map((k) => k.titel);
 }
@@ -1646,6 +1866,64 @@ function basisWort(basis: Kopfbasis | Quotenbasis): string {
  * Der Reglementsvorbehalt wird dabei ersetzt, nicht ergänzt: «Prüfen Sie zuerst
  * Ihr Reglement» neben einer angewandten Reglementsregel wäre widersprüchlich.
  */
+/**
+ * Der Vorbehalt an einer Karte mit L17 unter der strengeren Auffassung, hinter
+ * dem Satz zur hinterlegten Regel (`milder_nach_lesart`; Produktentscheid
+ * 17.11.2026; ZGB Art. 712g Abs. 2 mit Rz. 27 und 78a ad Art. 712g).
+ */
+export const FONDSENTNAHME_MILDER =
+	'Sie wird hier nicht angewandt, weil sie in mindestens einer Hinsicht milder ist als das gerechnete Mehr oder ' +
+	'sich nicht eindeutig einordnen lässt. Nach der strengeren Auffassung gilt eine mildere Regel nur, wenn sie ' +
+	'im Begründungsakt steht oder alle Eigentümer zugestimmt haben (ZGB Art. 712g Abs. 2; Rz. 27, 78a ad ' +
+	'Art. 712g). Milder ist etwa eine Regel, die nur die Anwesenden zählt oder die Wertquoten weglässt. ' +
+	// Fachprüfung Runde 2, R2-F-6, und Laienprüfung R2-L-3: der Weg bei einer gültigen milderen Regel;
+	// ein Vermerk an der Regel ist Pendenz (Produktentscheid 17.11.2026).
+	// Runde 3 (R3-F-1, R3-L-2): ein Ergebnis, über den bestehenden Notweg; «alle Eigentümer»
+	// nach Rz. 78, 79 ad Art. 712g.
+	// Runde 4: R4-F-1 bis R4-F-4, R4-L-1.
+	FONDSENTNAHME_WEG_GUELTIG +
+	' ' +
+	EINWAND_IM_SAAL;
+
+/**
+ * Der Vorbehalt an der vereinbarten Verwendung unter der strengeren Auffassung
+ * (`milder_nach_lesart`; Fachprüfung R2-F-3; Rz. 138 ad Art. 712l).
+ */
+export const FONDSENTNAHME_VEREINBART_MILDER =
+	'Sie wird hier nicht angewandt, weil sie milder ist als die Zustimmung aller. Nach der strengeren Auffassung ' +
+	// Der Strichpunkt des vorgegebenen Wortlauts ist ein Punkt: Der Satz hielte sonst die
+	// Grenze von 180 Zeichen nicht (`check:texte`).
+	'ist diese Verwendung nur mit der Zustimmung aller sicher, auch wenn Ihre Regel im Begründungsakt steht. Ein ' +
+	// Runde 5 (R5-F-3): Bloch lässt die Verwendung gar nicht zu; (R5-F-4, R5-L-2) die Reichweite der Umstellung.
+	// Runde 6 (R6-L-2): der Bezug von «auch dann»; (R6-F-1) nur ohne eigene Regel (Rz. 139 ad Art. 712l).
+	'anderer Autor hält sie auch mit einer Regel im Begründungsakt für unzulässig (SVIT-Kommentar Rz. 138 ad ' +
+	'Art. 712l). Folgt Ihre Gemeinschaft dem SVIT-Kommentar, stellen Sie die Lesart L17 auf der Seite «Lesarten» ' +
+	'um. Das senkt auch jede andere Bezahlung aus dem Fonds ohne eigene Regel auf das einfache Mehr nach Köpfen. ' +
+	'Sicher bleibt auch dann nur die Zustimmung aller. Sonst wird nach dem Erfordernis dieser Karte ausgezählt. ' +
+	EINWAND_IM_SAAL;
+
+/**
+ * Der Vorbehalt an einer Karte mit L17 nach dem SVIT-Kommentar, wenn die Regel
+ * für alle wichtigeren Verwaltungshandlungen gilt (`nur_fallgenau`; Rz. 139 ad
+ * Art. 712l). Nicht der Satz der Zweckbestimmung, nicht der der erweiterten
+ * Bewirtschaftung.
+ */
+export const FONDSENTNAHME_NUR_FALLGENAU =
+	'Sie wird hier nicht angewandt, weil sie nicht eigens für die Bezahlung aus dem Erneuerungsfonds hinterlegt ' +
+	'ist. Für Ihre Gemeinschaft ist die Auffassung des SVIT-Kommentars eingestellt. Danach genügt das einfache ' +
+	// Fachprüfung Runde 2, R2-F-5: Rz. 139 sagt das Mehr, nicht die Einordnung.
+	'Mehr nach Köpfen (Rz. 139 ad Art. 712l). Votum behandelt die Bezahlung deshalb nicht als wichtigere ' +
+	'Verwaltungshandlung und wendet eine Regel für diese hier nicht an. ' +
+	// Laienprüfung R2-L-4: was «eigens» heisst.
+	'Eigens ist eine Bestimmung, die die Bezahlung aus dem Fonds nennt, etwa «Entnahmen aus dem Erneuerungsfonds ' +
+	'mit zwei Dritteln». Eine allgemeine Regel für grosse Ausgaben ist es in der Regel nicht; sie betrifft den ' +
+	// Runde 5 (R5-F-6): Auslegung, nicht gesichert.
+	'Beschluss über die Arbeit. Sagen Reglement oder ' +
+	'Errichtungsbeschluss es eigens, hinterlegen Sie diese Bestimmung für genau diesen Fall, vor dem Versand der ' +
+	// Laienprüfung R2-L-5: die Handlung in den Worten der Anwendung.
+	'Einladung. Für ein bestehendes Traktandum leiten Sie danach auf der Reglementseite das Erfordernis neu her ' +
+	'und kündigen das geänderte Mehr nach. Ausgezählt wird nach dem Erfordernis dieser Karte.';
+
 /** Warum die hinterlegte Regel danebensteht statt zu gelten — je Grund ein Satz. */
 function vorbehaltInWorten(
 	vorbehalt: Regelvorbehalt,
@@ -1659,7 +1937,9 @@ function vorbehaltInWorten(
 	/** Der Typ des Erfordernisses, wo `nur_fallgenau` je Typ anders lautet (ab 2026-10-30). */
 	typ?: Ergebnistyp,
 	/** Die Fassung des Erfordernisses, wo der Satz zum Einwand ab 2026-11-11 anders lautet. */
-	fassung?: string
+	fassung?: string,
+	/** Ob die Karte die Lesart L17 trägt (Bezahlung aus dem Erneuerungsfonds, ab 2026-11-20). */
+	fondsentnahme?: boolean
 ): string {
 	const kopf =
 		`Für diese Geschäftsart ist eine Reglementsregel hinterlegt (${regel.fundstelle}): ` +
@@ -1748,6 +2028,11 @@ function vorbehaltInWorten(
 		case 'nur_fallgenau':
 			// An der Einsprache (ab Fassung 2026-10-20) ist es nicht die
 			// Zustimmung aller, sondern ein Mehr, das sich nur verschärfen lässt.
+			// An den Karten mit L17 unter dem SVIT-Kommentar (ab Fassung 2026-11-20):
+			// Der Satz zur Zweckbestimmung und der zur erweiterten Bewirtschaftung
+			// wären dort falsch. Vor den Zweigen nach Verhalten, weil die Karte `frei`
+			// trägt und `vereinbart` an ihr nie stand.
+			if (fondsentnahme) return kopf + FONDSENTNAHME_NUR_FALLGENAU;
 			if (verhalten === 'nur_verschaerfen') {
 				return (
 					kopf +
@@ -1865,6 +2150,18 @@ function vorbehaltInWorten(
 				(recht ? `${recht} ` : 'Das gesetzliche Mehr lässt sich hier nur verschärfen. ') +
 				`Ausgezählt wird nach dem Gesetz. ${EINWAND_IM_SAAL}`
 			);
+
+		case 'milder_nach_lesart':
+			/*
+			 * **An der vereinbarten Verwendung ein eigener Satz** (Fachprüfung
+			 * R2-F-3): Dort trägt auch eine Regel aus dem Begründungsakt nicht
+			 * sicher, weil ein anderer Autor die Verwendung selbst nicht zulässt
+			 * (Rz. 138 ad Art. 712l). Erkannt am Typ: Diesen Vorbehalt gibt es nur
+			 * unter der strengeren Auffassung, und dort rechnet von den Karten mit
+			 * L17 allein die vereinbarte Verwendung die Zustimmung aller; der Kern
+			 * kennt die Kennungen der Fassung nicht.
+			 */
+			return kopf + (typ === 'einstimmigkeit' ? FONDSENTNAHME_VEREINBART_MILDER : FONDSENTNAHME_MILDER);
 
 		case 'gemischt':
 			return (
@@ -2173,7 +2470,9 @@ export function karteMitReglement(
 	 * 2026-10-15 auf den Satz unter der Regel und ohne Regel.
 	 */
 	e?: Pick<Erfordernis, 'kopfbasis' | 'knotenId'> &
-		Partial<Pick<Erfordernis, 'reglementsverhalten' | 'typ' | 'fassung'>>
+		Partial<Pick<Erfordernis, 'reglementsverhalten' | 'typ' | 'fassung' | 'gemeinschaftslesart'>>,
+	/** `verdraengt` aus `wendeReglementAn`: die fallgenaue Regel, an deren Stelle eine allgemeine gilt (L17). */
+	verdraengt?: string
 ): Ergebniskarte {
 	/*
 	 * **Der Vermerk steht nicht mehr hier** (23.08.2026, Prüflauf I, B-23). Er
@@ -2253,7 +2552,10 @@ export function karteMitReglement(
 				karte.sperreNachLehre === true,
 				e?.reglementsverhalten,
 				e?.typ,
-				e?.fassung
+				e?.fassung,
+				// An der Kennung, nicht an der Wahl: Die Aufrufer geben das Erfordernis vor
+				// der Lesart der Gemeinschaft (`hergeleitet`), und dort steht die Wahl des Knotens.
+				e?.gemeinschaftslesart?.kennung === 'L17'
 			)
 		};
 	}
@@ -2305,9 +2607,20 @@ export function karteMitReglement(
 		// Der Weg der Einstimmigkeit gilt nur, wenn auch die Regel die Zustimmung
 		// aller Eigentümer verlangt (Codeprüfung 22.10.2026, Befund 3); unter
 		// «Zustimmung aller Anwesenden» genügen die im Saal (Durchgang 2, M1).
+		/*
+		 * **Unter einer Regel, die die Zustimmung aller verlangt, der Weg des
+		 * Knotens, nicht der der anderen Lesart** (Codeprüfung L17, N1): Trägt die
+		 * Karte nach der Lesart einen eigenen Weg (`andere.einstimmigkeitsweg`, L6,
+		 * L17 «svit»), beschreibt er das Mehr dieser Lesart, etwa «mit dem
+		 * einfachen Mehr». Die Regel rechnet aber die Zustimmung aller, und dafür
+		 * gilt der Weg des Knotens (`einstimmigkeitswegDesKnotens`, gesetzt von
+		 * `knotenNachLesart`).
+		 */
 		einstimmigkeitsweg:
 			zustimmungAller(regel.kopfSchwelle) && regel.kopfbasis !== 'anwesend_vertreten'
-				? karte.einstimmigkeitsweg
+				? karte.einstimmigkeitswegDesKnotens !== undefined
+					? karte.einstimmigkeitswegDesKnotens
+					: karte.einstimmigkeitsweg
 				: null,
 		bezeichnung: 'Reglementsmehr',
 		typ: 'reglementsmehr',
@@ -2359,6 +2672,7 @@ export function karteMitReglement(
 					'Sie Ihre Regel mit dem Gesetz, rechnen Sie nach beiden Zählweisen.'
 				: `nicht das Gesetz. Das gesetzliche Erfordernis wäre gewesen: ${karte.formel}`) +
 			(lesart ? ` ${lesart}` : '') +
+			(verdraengt ? ` ${verdraengt}` : '') +
 			/*
 			 * **Unter der angewandten Regel steht die Bedingung** (ab Fassung
 			 * 2026-10-15). An einer Karte mit `vereinbart` gilt die Regel nur, wenn

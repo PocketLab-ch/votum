@@ -47,7 +47,8 @@ function karte(titel: string, k: Ergebniskarte | ReturnType<typeof karteMitRegle
 	for (const [feld, wert] of Object.entries(k)) {
 		// Der Freigabevermerk ist die Geschichte aller Fassungen, und die Hinweise
 		// unter einer Regel erscheinen auf der Karte mit Regel als «zumGesetz».
-		if (feld === 'freigabevermerk' || feld === 'hinweiseUnterRegel') continue;
+		// `einstimmigkeitswegDesKnotens` zeigt die Seite nie (Codeprüfung 17.11.2026, Durchgang 3, N1).
+		if (feld === 'freigabevermerk' || feld === 'hinweiseUnterRegel' || feld === 'einstimmigkeitswegDesKnotens') continue;
 		if (wert === null || wert === undefined || wert === '' || typeof wert === 'boolean') continue;
 		if (Array.isArray(wert)) {
 			if (wert.length === 0) continue;

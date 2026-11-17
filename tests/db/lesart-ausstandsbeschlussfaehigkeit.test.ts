@@ -137,7 +137,8 @@ describe('Vorgabe und Umstellen (Kriterien 1 und 2)', () => {
 			L7: 'zaehlt_nicht',
 			L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende',
 			L15: 'ausserhalb',
-			L16: 'neue_erste'
+			L16: 'neue_erste',
+			L17: 'streng'
 		});
 		const eintraege = await imKontext(betreiber, (tx) =>
 			tx<{ detail: Record<string, unknown> }[]>`

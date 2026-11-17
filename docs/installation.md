@@ -33,16 +33,31 @@ Es fragt, wofür der Stapel gedacht ist (Notebook im Versammlungsraum, Server
 hinter einem Proxy, Probelauf), schreibt die Env-Datei, würfelt die Kennwörter
 der Datenbank, baut das Abbild, startet den Stapel und legt das erste Konto an.
 Am Schluss stehen Adresse, Benutzername und Kennwort auf dem Bildschirm — und
-in einer Datei `zugang-<datum>.txt` mit Rechten 0600, weil ein Terminalfenster
+in einer Datei `zugang/<datum>.txt` mit Rechten 0600, weil ein Terminalfenster
 sich schliessen lässt, bevor jemand sie notiert hat.
+
+Wahlweise fragt es zwei Dinge mehr. Auf dem Server fragt es, ob ein Proxy die
+Adresse der Besucher weitergibt (`VERSAMMLUNG_ADRESSKOPFZEILE`, siehe «Ein
+Reverse-Proxy davor»). Und es fragt, ob Votum selbst Mails verschicken soll; das
+Mailkennwort tippen Sie im Menü verdeckt ein.
+
+Soll ein KI-Werkzeug die Installation für Sie führen, geben Sie ihm die Datei
+`INSTALLATION-KI.md` im Wurzelverzeichnis des Quellcodes.
 
 Ohne Rückfragen, aus einer Datei:
 
 ```bash
-scripts/einrichten.sh --vorlage meine.conf   # kommentierte Vorlage schreiben
-scripts/einrichten.sh --trocken --datei meine.conf   # sagt, was es täte
-scripts/einrichten.sh --datei meine.conf
+scripts/einrichten.sh --vorlage ~/votum.conf   # kommentierte Vorlage schreiben
+scripts/einrichten.sh --trocken --datei ~/votum.conf   # sagt, was es täte
+scripts/einrichten.sh --datei ~/votum.conf
 ```
+
+In der Antwortdatei steht kein Kennwort, auch nicht das für den Mailausgang.
+Dort steht `SMTP_KENNWORT_DATEI`, der Pfad einer Datei, deren erste Zeile das
+Kennwort ist. Fehlt diese Zeile und verlangt der Mailserver eine Anmeldung,
+tragen Sie `VERSAMMLUNG_SMTP_KENNWORT` nachher von Hand in die Env-Datei ein.
+Legen Sie die Antwortdatei ausserhalb des Quellcodes ab: Im Klon trägt das
+Abbild sonst «-lokal» im Tag.
 
 **Die Env-Datei muss `.env` oder `.env.<name>` heissen.** In ihr stehen beide
 Datenbankkennwörter und `VERSAMMLUNG_GEHEIMNIS`; nur dieses Muster deckt
@@ -179,6 +194,13 @@ nichts geht:
 | `APP_DB_PASSWORD` | Kennwort der Anwendungsrolle; der Migrationslauf setzt es |
 | `VERSAMMLUNG_DATEIEN` | Verzeichnis der Dateiablage |
 
+Wahlweise, und vom Einrichtungsskript abgefragt:
+
+| Variable | Zweck |
+|---|---|
+| `VERSAMMLUNG_ADRESSKOPFZEILE` | Nur hinter genau einem Proxy: die Kopfzeile mit der Adresse der Besucher, in der Regel `x-forwarded-for` |
+| `VERSAMMLUNG_SMTP_HOST`, `_PORT`, `_BENUTZER`, `_KENNWORT`, `_ABSENDER`, `_ABSENDERNAME` | Mailausgang; ohne Mailserver oder ohne Absender erscheint kein Versandknopf ([Dienste einbinden](dienste.md), «Der Mailausgang») |
+
 Die übrigen betreffen angebundene Dienste und stehen in
 [Dienste einbinden](dienste.md).
 
@@ -271,7 +293,7 @@ und findet dort nichts.
 ### Ein Reverse-Proxy davor
 
 Die Anwendung spricht HTTP auf Port 3000 im Container. Setzen Sie einen Proxy
-mit TLS davor. Drei Punkte:
+mit TLS davor. Vier Punkte:
 
 - **Server-Sent-Events dürfen nicht gepuffert werden.** Beamer und Telefone
   bekommen ihren Stand über einen offenen Datenstrom. Puffert der Proxy, sieht
@@ -288,6 +310,11 @@ mit TLS davor. Drei Punkte:
   im Container Speicher; `compose.prod.yml` setzt einen Speicherdeckel, damit es
   im schlimmsten Fall nur diesen Container trifft. Eine Grenze der Verbindungen
   je Herkunft (in nginx `limit_conn`) fängt eine Flut vorher ab.
+- **Die Adresse der Besucher muss ankommen.** Tragen Sie
+  `VERSAMMLUNG_ADRESSKOPFZEILE=x-forwarded-for` ein, wenn genau ein Proxy davor
+  steht und die Zeile setzt. Ohne Eintrag sieht die Anwendung nur den Proxy, und
+  die Sperre gegen das Durchprobieren von Kennwörtern trifft alle zugleich.
+  Begründung unter «Wenn die Anmeldung sperrt».
 
 ## Erstes Konto anlegen
 

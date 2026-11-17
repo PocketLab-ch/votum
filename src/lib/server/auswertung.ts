@@ -726,7 +726,7 @@ export async function holeAuswertung(operatorId: Id, meetingId: Id): Promise<Aus
 					? null
 					: (() => {
 							const e = m?.erfordernis ?? t.knoten.erfordernis;
-							// L2, L4, L6, L9, L11 und L12 am Mehr, daneben L3 an der Zählung (Migration 172): zwei
+							// L2, L4, L6, L9, L11, L12 und L17 am Mehr, daneben L3 an der Zählung (Migration 172): zwei
 							// Zeilen, wenn beide an einem Traktandum wirken.
 							const mehr = lesartProtokollsatz(e);
 							// L13 hinter dem Satz zum Mehr, wie auf der Karte (Endfassung Block C, Abschnitt 3).

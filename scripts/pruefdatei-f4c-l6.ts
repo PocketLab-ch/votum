@@ -95,7 +95,8 @@ const aus = (...z: string[]) => zeilen.push(...z);
 function karte(titel: string, k: Ergebniskarte) {
 	aus(`#### ${titel}`, '');
 	for (const [feld, wert] of Object.entries(k)) {
-		if (feld === 'freigabevermerk' || feld === 'hinweiseUnterRegel' || feld === 'lesart') continue;
+		// `einstimmigkeitswegDesKnotens` zeigt die Seite nie (Codeprüfung 17.11.2026, Durchgang 3, N1).
+		if (feld === 'freigabevermerk' || feld === 'hinweiseUnterRegel' || feld === 'lesart' || feld === 'einstimmigkeitswegDesKnotens') continue;
 		if (wert === null || wert === undefined || wert === '' || typeof wert === 'boolean') continue;
 		if (Array.isArray(wert)) {
 			if (wert.length === 0) continue;

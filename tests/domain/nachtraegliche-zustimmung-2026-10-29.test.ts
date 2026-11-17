@@ -67,7 +67,7 @@ function kartenMitEinstimmigkeit(rw: Regelwerk) {
 
 describe('Fassung 2026-10-29 gegenüber 2026-10-28', () => {
 	it('ist seit A4 nicht mehr die aktuelle Fassung und besteht die Prüfung des Regelwerks', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 	});
 

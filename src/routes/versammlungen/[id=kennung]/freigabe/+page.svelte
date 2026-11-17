@@ -12,6 +12,7 @@
 		if (weg === 'einheiten') return `/gemeinschaften/${data.gemeinschaft.id}/einheiten`;
 		if (weg === 'eigentuemer') return `/gemeinschaften/${data.gemeinschaft.id}/eigentuemer`;
 		if (weg === 'lesarten') return `/gemeinschaften/${data.gemeinschaft.id}/lesarten`;
+		if (weg === 'reglement') return `/gemeinschaften/${data.gemeinschaft.id}/reglement`;
 		return null;
 	}
 </script>

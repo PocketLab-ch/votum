@@ -21,9 +21,9 @@
 # ## Zwei Wege hinein
 #
 #   scripts/einrichten.sh                    # Menü, fragt Schritt für Schritt
-#   scripts/einrichten.sh --datei mein.conf  # ohne Rückfragen, aus einer Datei
-#   scripts/einrichten.sh --vorlage mein.conf # schreibt eine kommentierte Vorlage
-#   scripts/einrichten.sh --trocken --datei m.conf  # sagt, was es täte, und tut nichts
+#   scripts/einrichten.sh --datei ~/votum.conf  # ohne Rückfragen, aus einer Datei
+#   scripts/einrichten.sh --vorlage ~/votum.conf # schreibt eine kommentierte Vorlage
+#   scripts/einrichten.sh --trocken --datei ~/votum.conf  # sagt, was es täte, und tut nichts
 #
 # Die Datei ist derselbe Satz Antworten, den das Menü erfragt. Sie taugt für den
 # zweiten Rechner, für den Wiederaufbau nach einem Ausfall und dafür, eine
@@ -43,7 +43,9 @@
 # ## Was es nicht tut
 #
 # Kein TLS, kein Proxy, keine Sicherung, keine Firewall. Das steht in
-# `docs/installation.md` und gehört zum Wirt, nicht zur Anwendung. Und es räumt
+# `docs/installation.md` und gehört zum Wirt, nicht zur Anwendung. Was die
+# Anwendung über den Proxy wissen muss (`VERSAMMLUNG_ADRESSKOPFZEILE`) und den
+# Mailausgang fragt es ab, beides wahlweise. Und es räumt
 # nichts weg: Eine vorhandene Env-Datei wird nie überschrieben, ein laufender
 # Stapel nie angehalten, ohne dass jemand zugestimmt hat.
 set -euo pipefail
@@ -77,6 +79,22 @@ BENUTZER=''
 ANZEIGENAME=''
 PROJEKT=''
 ENVDATEI=''
+# Wahlweise (17.11.2026, für die Installation aus dem öffentlichen Stand): Bis
+# hierher standen sie nur in `.env.example`, und wer nach dem Skript fertig zu
+# sein glaubte, betrieb einen Server, dessen Anmeldesperre hinter dem Proxy alle
+# zugleich traf, weil sie nur dessen Adresse sah.
+ADRESSKOPFZEILE=''
+SMTP_HOST=''
+SMTP_PORT=''
+SMTP_BENUTZER=''
+SMTP_ABSENDER=''
+SMTP_ABSENDERNAME=''
+# **Das Mailkennwort steht nie in der Antwortdatei**, nur der Pfad einer Datei,
+# die es enthält. Die Antwortdatei ist zum Weitergeben gedacht («Was drinsteht,
+# ist die Installation»), und ein Sprachmodell, das die Installation führt,
+# liest sie. Das Kennwort selbst bleibt beim Menschen.
+SMTP_KENNWORT_DATEI=''
+smtp_kennwort=''
 
 vorlage_schreiben() {
 	local ziel="$1"
@@ -85,8 +103,12 @@ vorlage_schreiben() {
 # Antworten für scripts/einrichten.sh --datei <diese Datei>
 #
 # Jede Zeile ist NAME=wert. Leere Werte bedeuten «Vorgabe nehmen».
-# Kennwörter stehen hier NICHT drin: Das Skript würfelt sie und schreibt sie in
-# die Env-Datei. Was Sie zum Anmelden brauchen, steht am Schluss auf dem
+# Legen Sie diese Datei ausserhalb des Quellcodes ab: Im Klon macht sie den
+# Arbeitsbaum unsauber, und das Abbild trägt dann «-lokal» im Tag.
+#
+# Kennwörter stehen hier NICHT drin: Die der Datenbank würfelt das Skript und
+# schreibt sie in die Env-Datei. Für das Mailkennwort steht unten nur der Pfad
+# einer Datei. Was Sie zum Anmelden brauchen, steht am Schluss auf dem
 # Bildschirm.
 
 # Wofür der Stapel gedacht ist. Er entscheidet über Adresse und Bindung:
@@ -124,6 +146,29 @@ ANZEIGENAME=Vorname Nachname
 # Kennwörter, und nur dieses Muster deckt .gitignore und .dockerignore ab.
 PROJEKT=
 ENVDATEI=
+
+# ── Nur hinter einem Reverse-Proxy (ART=server) ─────────────────────────────
+# Die Kopfzeile, in der der Proxy die Adresse des Besuchers weitergibt. Ohne sie
+# sieht die Anwendung nur den Proxy, und die Sperre gegen das Durchprobieren von
+# Kennwörtern träfe alle Besucher zugleich. Eintragen nur, wenn genau ein Proxy
+# davor steht und die Zeile setzt (nginx, Nginx Proxy Manager:
+# x-forwarded-for). Auf dem Notebook leer lassen: Dort kann jeder sie fälschen.
+ADRESSKOPFZEILE=
+
+# ── Mailausgang, wahlweise ──────────────────────────────────────────────────
+# Leer lassen: Votum erzeugt Einladungen und Zugangskarten als Dateien, und Sie
+# verschicken sie mit Ihrem Mailprogramm. Mit Eintrag schickt Votum jeder
+# Person ihre eigene Karte, verschlüsselt (Port 465 direkt, sonst STARTTLS).
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_BENUTZER=
+SMTP_ABSENDER=
+SMTP_ABSENDERNAME=
+# Das Kennwort gehört NICHT in diese Datei. Hier steht der Pfad einer Datei,
+# deren erste Zeile das Kennwort ist (etwa mit Rechten 0600 im Heimverzeichnis).
+# Leer lassen: Dann tragen Sie VERSAMMLUNG_SMTP_KENNWORT nachher von Hand in die
+# Env-Datei ein und starten den Stapel neu.
+SMTP_KENNWORT_DATEI=
 VORLAGE
 	gut "Vorlage geschrieben: $ziel"
 	sage "Ausfüllen, dann: scripts/einrichten.sh --datei $ziel"
@@ -148,8 +193,13 @@ datei_lesen() {
 		wert="${wert#"${wert%%[![:space:]]*}"}"
 		wert="${wert%"${wert##*[![:space:]]}"}"
 		case "$name" in
-			ART|ORIGIN|VERSAMMLUNG_BIND|VERSAMMLUNG_PORT|BETREIBER|BENUTZER|ANZEIGENAME|PROJEKT|ENVDATEI)
+			ART|ORIGIN|VERSAMMLUNG_BIND|VERSAMMLUNG_PORT|BETREIBER|BENUTZER|ANZEIGENAME|PROJEKT|ENVDATEI|ADRESSKOPFZEILE|SMTP_HOST|SMTP_PORT|SMTP_BENUTZER|SMTP_ABSENDER|SMTP_ABSENDERNAME|SMTP_KENNWORT_DATEI)
 				printf -v "$name" '%s' "$wert" ;;
+			# Abbrechen statt übergehen: Wer ein Kennwort hineinschreibt, hält die
+			# Datei für geheim und gibt sie vielleicht trotzdem weiter. Der Wert
+			# erscheint in der Meldung nicht.
+			*KENNWORT*|*PASSWORD*|*GEHEIMNIS*)
+				abbruch "In $quelle steht $name. Kennwörter gehören nicht in die Antwortdatei; für den Mailausgang SMTP_KENNWORT_DATEI=<pfad> nehmen." ;;
 			*) fehler "Unbekannter Name in $quelle: $name — übergangen" ;;
 		esac
 	done <"$quelle"
@@ -198,6 +248,35 @@ menue() {
 	sage '  die Verwaltung danach in der Anwendung an.'
 	frage BENUTZER 'Benutzername' 'verwaltung' ''
 	frage ANZEIGENAME 'Anzeigename' 'Verwaltung' ''
+
+	local ja
+	if [[ "$ART" == 'server' ]]; then
+		schritt 'Der Proxy davor'
+		sage '  Ohne die Adresse der Besucher trifft die Sperre gegen das Durchprobieren'
+		sage '  von Kennwörtern alle zugleich. nginx und Nginx Proxy Manager geben sie'
+		sage '  in der Kopfzeile X-Forwarded-For weiter.'
+		read -r -p '  Steht genau ein Proxy davor, der X-Forwarded-For setzt? [J/n]: ' ja || abbruch 'Abgebrochen.'
+		case "${ja:-j}" in
+			[jJ]*) ADRESSKOPFZEILE='x-forwarded-for' ;;
+			*) ADRESSKOPFZEILE='' ;;
+		esac
+	fi
+
+	schritt 'Mailausgang'
+	sage '  Ohne Mailausgang erzeugt Votum Einladungen und Zugangskarten als Dateien,'
+	sage '  und Sie verschicken sie mit Ihrem Mailprogramm. Das lässt sich später ändern.'
+	read -r -p '  Soll Votum selbst Mails verschicken? [j/N]: ' ja || abbruch 'Abgebrochen.'
+	if [[ "${ja:-n}" == [jJ]* ]]; then
+		frage SMTP_HOST 'Mailserver (SMTP)' '' 'Etwa mail.example.ch'
+		frage SMTP_PORT 'Port' '587' '465 verschlüsselt von Beginn an, sonst STARTTLS.'
+		frage SMTP_BENUTZER 'Benutzername am Mailserver' '' ''
+		frage SMTP_ABSENDER 'Absenderadresse' "$SMTP_BENUTZER" ''
+		frage SMTP_ABSENDERNAME 'Absendername' "$BETREIBER" ''
+		# Verdeckt: Ein Kennwort gehört nicht in den Bildlauf des Terminals.
+		# `IFS=`: sonst gingen Leerzeichen am Rand verloren, anders als über die Datei.
+		IFS= read -r -s -p '  Kennwort am Mailserver (erscheint nicht, leer ohne Anmeldung): ' smtp_kennwort || abbruch 'Abgebrochen.'
+		printf '\n'
+	fi
 }
 
 # ── Aufruf lesen ───────────────────────────────────────────────────────────
@@ -218,7 +297,9 @@ while [[ $# -gt 0 ]]; do
 			vorlage_schreiben "$2"; exit 0 ;;
 		--datei)   [[ -n "${2:-}" ]] || abbruch 'Aufruf: scripts/einrichten.sh --datei <datei>'
 			quelle="$2"; shift 2 ;;
-		--hilfe|-h) sed -n '2,47p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+		# Bis zur ersten Zeile Code, nicht bis zu einer festen Zeilennummer: Die
+		# Nummer lief beim nächsten Absatz im Kopf still daneben.
+		--hilfe|-h) awk 'NR>1 && /^set -euo/{exit} NR>1' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 		*) abbruch "Unbekannte Angabe: $1 — siehe --hilfe" ;;
 	esac
 done
@@ -274,6 +355,59 @@ esac
 ORIGIN="${ORIGIN%/}"
 [[ "$BENUTZER" =~ ^[A-Za-z0-9._-]+$ ]] || abbruch "Benutzername mit Sonderzeichen: $BENUTZER"
 
+# ── Proxy-Kopfzeile ────────────────────────────────────────────────────────
+ADRESSKOPFZEILE="$(printf '%s' "$ADRESSKOPFZEILE" | tr '[:upper:]' '[:lower:]')"
+if [[ -n "$ADRESSKOPFZEILE" ]]; then
+	[[ "$ADRESSKOPFZEILE" =~ ^[a-z0-9-]+$ ]] \
+		|| abbruch "ADRESSKOPFZEILE ist kein Name einer Kopfzeile: $ADRESSKOPFZEILE"
+	# Auf dem Notebook erreichen die Telefone die Anwendung direkt. Dann setzt
+	# jeder Aufrufer die Zeile selbst, und die Sperre zählt, was er hineinschreibt.
+	[[ "$ART" != 'notebook' ]] \
+		|| abbruch 'ADRESSKOPFZEILE gehört nicht auf das Notebook: Ohne Proxy davor kann jedes Telefon die Zeile fälschen. Leer lassen.'
+fi
+
+# ── Mailausgang ────────────────────────────────────────────────────────────
+# Die Werte gehen in Hochkommas in die Env-Datei: Compose liest dort nichts
+# hinein, auch kein `$` und kein ` #`. Ein Hochkomma im Wert selbst liesse sich
+# so nicht schreiben, und eine neue Zeile begänne eine neue Variable.
+env_wert_pruefen() {
+	local name="$1" wert="$2"
+	[[ "$wert" != *"'"* && "$wert" != *$'\n'* && "$wert" != *$'\r'* ]] \
+		|| abbruch "$name enthält ein Hochkomma oder einen Zeilenumbruch. Das lässt sich nicht sicher in die Env-Datei schreiben. Lassen Sie die Angabe weg (beim Kennwort die Zeile SMTP_KENNWORT_DATEI), richten Sie neu ein und tragen Sie den Wert danach von Hand in die Env-Datei ein."
+}
+if [[ -n "$SMTP_KENNWORT_DATEI" ]]; then
+	# Die Tilde löst nur die Shell auf, nicht `printf -v` beim Lesen der
+	# Antwortdatei. Ohne diese Zeile meldete `~/datei` «nicht lesbar», obwohl es
+	# sie gibt (Codeprüfung 17.11.2026).
+	[[ "$SMTP_KENNWORT_DATEI" == '~/'* ]] && SMTP_KENNWORT_DATEI="$HOME/${SMTP_KENNWORT_DATEI#'~/'}"
+	[[ -r "$SMTP_KENNWORT_DATEI" ]] || abbruch "SMTP_KENNWORT_DATEI ist nicht lesbar: $SMTP_KENNWORT_DATEI"
+	# `|| true`: Ohne abschliessenden Zeilenumbruch meldet `read` einen Fehler,
+	# obwohl es gelesen hat, und `set -e` beendete das Skript ohne ein Wort.
+	IFS= read -r smtp_kennwort <"$SMTP_KENNWORT_DATEI" || true
+	smtp_kennwort="${smtp_kennwort%$'\r'}"
+fi
+if [[ -n "$SMTP_HOST" ]]; then
+	: "${SMTP_PORT:=587}"
+	[[ "$SMTP_HOST" =~ ^[A-Za-z0-9.-]+$ ]] || abbruch "SMTP_HOST ist kein Rechnername: $SMTP_HOST"
+	[[ "$SMTP_PORT" =~ ^[0-9]{1,5}$ ]] && (( 10#$SMTP_PORT >= 1 && 10#$SMTP_PORT <= 65535 )) \
+		|| abbruch "SMTP_PORT ist keine Portnummer: $SMTP_PORT"
+	# Ohne führende Null: Die Anwendung verschlüsselt nur bei genau «465» von
+	# Beginn an, aus «0465» würde STARTTLS auf einem Port, der es nicht spricht.
+	SMTP_PORT="$((10#$SMTP_PORT))"
+	# Ohne Absender bleibt der Versandknopf aus (`istEingerichtet` in
+	# src/lib/server/mail.ts). Die Anwendung nimmt sonst den Benutzernamen.
+	: "${SMTP_ABSENDER:=$SMTP_BENUTZER}"
+	[[ "$SMTP_ABSENDER" =~ ^[^[:space:]@]+@[^[:space:]@]+$ ]] \
+		|| abbruch "Eine Absenderadresse fehlt (SMTP_ABSENDER, oder ein Benutzername in Form einer Adresse): «$SMTP_ABSENDER»"
+	env_wert_pruefen SMTP_BENUTZER "$SMTP_BENUTZER"
+	env_wert_pruefen SMTP_ABSENDER "$SMTP_ABSENDER"
+	env_wert_pruefen SMTP_ABSENDERNAME "$SMTP_ABSENDERNAME"
+	env_wert_pruefen 'Das Mailkennwort' "$smtp_kennwort"
+elif [[ -n "$SMTP_BENUTZER$SMTP_ABSENDER$SMTP_ABSENDERNAME$smtp_kennwort" ]]; then
+	fehler 'Angaben zum Mailausgang ohne SMTP_HOST: Es wird kein Mailausgang eingerichtet.'
+	smtp_kennwort=''
+fi
+
 if [[ "$trocken" == 'ja' ]]; then
 	schritt 'Trockenlauf — es wird nichts geschrieben und nichts gestartet'
 	sage "  Art:          $ART"
@@ -284,6 +418,17 @@ if [[ "$trocken" == 'ja' ]]; then
 	sage "  Erstes Konto: $BENUTZER ($ANZEIGENAME)"
 	sage "  Projekt:      $PROJEKT"
 	sage "  Env-Datei:    $ENVDATEI$([[ -e "$ENVDATEI" ]] && echo ' (gibt es schon — bliebe unangetastet)')"
+	sage "  Kopfzeile:    ${ADRESSKOPFZEILE:-keine (die Anwendung sieht die Adresse der Verbindung)}"
+	if [[ -n "$SMTP_HOST" ]]; then
+		if [[ -n "$SMTP_BENUTZER" ]]; then
+			sage "  Mailausgang:  $SMTP_HOST:$SMTP_PORT, angemeldet als $SMTP_BENUTZER, Absender $SMTP_ABSENDER"
+			sage "                Kennwort $([[ -n "$smtp_kennwort" ]] && echo 'vorhanden' || echo 'fehlt, von Hand nachtragen')"
+		else
+			sage "  Mailausgang:  $SMTP_HOST:$SMTP_PORT ohne Anmeldung, Absender $SMTP_ABSENDER"
+		fi
+	else
+		sage '  Mailausgang:  keiner (Dateien, Versand mit dem eigenen Mailprogramm)'
+	fi
 	sage ''
 	sage '  Es würden folgen:'
 	sage '    scripts/abbild-bauen.sh'
@@ -300,6 +445,8 @@ schritt "Env-Datei $ENVDATEI"
 if [[ -e "$ENVDATEI" ]]; then
 	sage "  «$ENVDATEI» gibt es schon. Sie wird nicht angefasst."
 	sage '  Die vorhandenen Werte gelten; das Skript baut und startet damit weiter.'
+	[[ -z "$ADRESSKOPFZEILE$SMTP_HOST" ]] \
+		|| sage '  Auch Kopfzeile und Mailausgang aus diesem Lauf gelten nicht; nachtragen von Hand.'
 	# **Nicht überschreiben, auch nicht nach Rückfrage.** Darin stehen die
 	# Kennwörter einer laufenden Datenbank. Ein neues APP_DB_PASSWORD sperrte die
 	# Anwendung aus ihrer eigenen Datenbank aus, und das fiele erst beim Start auf.
@@ -316,6 +463,19 @@ else
 		printf 'VERSAMMLUNG_BIND=%s\n' "$VERSAMMLUNG_BIND"
 		printf 'VERSAMMLUNG_PORT=%s\n' "$VERSAMMLUNG_PORT"
 		printf 'VERSAMMLUNG_OFFLINE=%s\n' "$VERSAMMLUNG_OFFLINE"
+		printf 'VERSAMMLUNG_ADRESSKOPFZEILE=%s\n' "$ADRESSKOPFZEILE"
+		if [[ -n "$SMTP_HOST" ]]; then
+			# Ein leerer Wert ohne Hochkommas: `''` sähe für `grep -c '^NAME=.'`
+			# gesetzt aus, und so prüft die Anleitung für KI-Werkzeuge, ob ein
+			# Kennwort fehlt (Codeprüfung 17.11.2026).
+			env_zeile() { if [[ -n "$2" ]]; then printf "%s='%s'\n" "$1" "$2"; else printf '%s=\n' "$1"; fi; }
+			printf 'VERSAMMLUNG_SMTP_HOST=%s\n' "$SMTP_HOST"
+			printf 'VERSAMMLUNG_SMTP_PORT=%s\n' "$SMTP_PORT"
+			env_zeile VERSAMMLUNG_SMTP_BENUTZER "$SMTP_BENUTZER"
+			env_zeile VERSAMMLUNG_SMTP_KENNWORT "$smtp_kennwort"
+			env_zeile VERSAMMLUNG_SMTP_ABSENDER "$SMTP_ABSENDER"
+			env_zeile VERSAMMLUNG_SMTP_ABSENDERNAME "$SMTP_ABSENDERNAME"
+		fi
 		printf 'VERSAMMLUNG_TAG=\n'
 	} >"$ENVDATEI"
 	chmod 600 "$ENVDATEI"
@@ -472,11 +632,24 @@ case "$ART" in
 	server)
 		sage '  Davor gehört ein Proxy mit TLS. Er darf den Ereignisstrom NICHT puffern'
 		sage '  (/versammlungen/<id>/strom, /p/strom, /z/strom) — sonst sieht der Saal'
-		sage '  das Ergebnis erst beim nächsten Klick. In nginx: proxy_buffering off;' ;;
+		sage '  das Ergebnis erst beim nächsten Klick. In nginx: proxy_buffering off;'
+		# Nur für eine neue Env-Datei: Eine vorhandene bleibt, wie sie ist, und
+		# hat die Zeile vielleicht schon.
+		[[ -n "$ADRESSKOPFZEILE" || "$env_neu" == 'nein' ]] || {
+			sage ''
+			sage "  ${rot}Ohne ADRESSKOPFZEILE${aus} sieht die Anwendung nur den Proxy: Die Sperre"
+			sage '  gegen das Durchprobieren von Kennwörtern träfe alle Besucher zugleich.'
+		} ;;
 	probelauf)
 		sage '  Zum Ausprobieren mit Beispieldaten: node e2e/mustergemeinschaft.mjs' ;;
 esac
 sage ''
 sage "  Anhalten:  docker compose -p $PROJEKT --env-file $ENVDATEI -f compose.prod.yml down"
 sage "  Protokoll: docker compose -p $PROJEKT --env-file $ENVDATEI -f compose.prod.yml logs -f app"
+if [[ "$env_neu" == 'ja' && -n "$SMTP_HOST" && -z "$smtp_kennwort" && -n "$SMTP_BENUTZER" ]]; then
+	sage ''
+	sage "  Das Mailkennwort fehlt: In $ENVDATEI VERSAMMLUNG_SMTP_KENNWORT='…' eintragen,"
+	sage '  dann den Stapel neu starten:'
+	sage "  docker compose -p $PROJEKT --env-file $ENVDATEI -f compose.prod.yml up -d"
+fi
 sage ''

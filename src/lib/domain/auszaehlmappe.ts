@@ -212,7 +212,7 @@ export type Mappenrechnung = Omit<
  * anderen Erfordernis, nach dem `zaehleAus` das zweite Ergebnis rechnet.
  */
 export interface Mappenvergleich {
-	/** L1 bis L6, L11, L12, L13, 1a oder A (Mehr aus Gesetz und Reglement); L10 rechnet die Mappe nicht. */
+	/** L1 bis L6, L11, L12, L17, L13, 1a oder A (Mehr aus Gesetz und Reglement); L10 rechnet die Mappe nicht. */
 	kennung: string;
 	/** Die andere Wahl in Worten, etwa «qualifiziert». */
 	wahl: string;

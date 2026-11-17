@@ -218,7 +218,9 @@ describe('laufe', () => {
 		// Fonds bezahlt wird. Seit der Fassung 2026-08-15 an den Anfang des Astes
 		// (f1-0 statt f1-1, Befund B-18): Vorher wechselte eine Kleinreparatur aus
 		// Fondsmitteln still die Geschäftsart — und damit den Reglements-Anker.
-		const lauf = laufe(RW, 'a-geld', ['f4-1-verwendung']);
+		// Seit der Fassung 2026-11-20 über die Frage nach dem Beschluss: Die Arbeit
+		// führt wie bisher nach f1-0, die Bezahlung zu ihrer eigenen Karte.
+		const lauf = laufe(RW, 'a-geld', ['f4-1-verwendung', 'f4-1-verwendung-arbeit']);
 		expect(lauf.stand.art).toBe('frage');
 		if (lauf.stand.art !== 'frage') return;
 		expect(lauf.stand.frage.id).toBe('f1-0');

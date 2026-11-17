@@ -40,7 +40,8 @@ import type { Rolle } from './rollen';
 /**
  * Die Kennungen der Lesarten. Block 1 baut L4, Block 2 L1, Block 3 L2, Block 5
  * L3, Block 7 L5, F4c L6, L7 und L8, E1 L11, L12, L9 und L10, Entscheid 0048
- * (Block C) L13, Entscheid 0054 L15 und L16. L14 ist für den Vorschlag H1
+ * (Block C) L13, Entscheid 0054 L15 und L16, die Bezahlung aus dem
+ * Erneuerungsfonds L17 (Produktentscheid 17.11.2026). L14 ist für den Vorschlag H1
  * vorgesehen, noch nicht vergeben (`.auftraege/2026-11-16-votum-h1-lesart-vorschlag.md`).
  */
 export type LesartKennung =
@@ -58,7 +59,8 @@ export type LesartKennung =
 	| 'L12'
 	| 'L13'
 	| 'L15'
-	| 'L16';
+	| 'L16'
+	| 'L17';
 
 /** Die Wahl je Lesart, wie sie an `stweg` und `snapshot` steht. */
 export interface Lesartenwahl {
@@ -77,6 +79,7 @@ export interface Lesartenwahl {
 	L13: Kopfzaehlweise;
 	L15: Stimmfuehrungswahl;
 	L16: Vertagungswahl;
+	L17: Fondsentnahmewahl;
 }
 
 /**
@@ -149,6 +152,16 @@ export type Stimmfuehrungswahl = 'ausserhalb' | 'mitzaehlen';
  */
 export type Vertagungswahl = 'neue_erste' | 'zweite';
 
+/**
+ * Die Wahl zu L17 (Migration 196, Fassung 2026-11-20; Produktentscheid
+ * 17.11.2026, «Strenger per Default und einstellbar», «Eine: nach
+ * SVIT-Kommentar»): ob die Bezahlung einer Arbeit aus dem Erneuerungsfonds nach
+ * der strengeren Auffassung (Eigenmann, Piccinin, Bloch) gerechnet wird oder
+ * nach dem SVIT-Kommentar (Rz. 138, 139 ad Art. 712l). Sie wählt das Mehr an
+ * zwei Karten und, in `wendeReglementAn`, welche Regel der Gemeinschaft dort gilt.
+ */
+export type Fondsentnahmewahl = 'streng' | 'svit';
+
 export interface Lesartwahlmoeglichkeit {
 	wert: string;
 	/** Kurz, für Knopf und Verlauf. */
@@ -163,7 +176,7 @@ export interface Lesartwahlmoeglichkeit {
 	wirkung?: string;
 	/**
 	 * Das Mehr, das diese Wahl verlangt, bei den Lesarten am Knoten (L2, L4, L6,
-	 * L9, L11, L12). Daran erkennt `wahlDesKnotens`, welche Wahl ein Knoten
+	 * L9, L11, L12, L17). Daran erkennt `wahlDesKnotens`, welche Wahl ein Knoten
 	 * rechnet, und prüft `pruefeLesartenImRegelwerk`, dass `andere` die andere
 	 * Wahl rechnet und an der aktuellen Fassung der Knoten die Vorgabe (Pendenz
 	 * aus Block 1, Review DeepSeek: eine Fassung mit vertauschter Vorgabe blieb
@@ -172,6 +185,14 @@ export interface Lesartwahlmoeglichkeit {
 	 * verschiedene Rechtsgrundlagen; die Rechtsgrundlage bleibt am Knoten.
 	 */
 	mehr?: Wahlmehr;
+	/**
+	 * Weitere Mehr derselben Wahl an anderen Knoten, wo eine Lesart an Knoten mit
+	 * verschiedenem Mehr hängt (L17: Die strengere Auffassung verlangt im Zweck
+	 * das qualifizierte Mehr, an der vereinbarten Verwendung die Zustimmung
+	 * aller). `wahlDesKnotens` erkennt die Wahl an jedem davon; die Mehr der
+	 * Wahlen einer Lesart dürfen sich nicht überschneiden, sonst wirft es.
+	 */
+	weitereMehr?: Wahlmehr[];
 }
 
 /** Was eine Wahl am Knoten rechnet, ohne Rechtsgrundlage und Schwellen. */
@@ -388,6 +409,76 @@ export const L16_FOLGE =
 	'sogar nichtig sein kann, also ungültig auch ohne Anfechtung, beurteilt die Lehre verschieden; im Zweifel ' +
 	'gilt ein solcher Beschluss als anfechtbar (SVIT-Kommentar Rz. 31 bis 33 ad Art. 712p). Erreicht die ' +
 	'Folgeversammlung, was eine erste braucht, stellt sich die Frage nicht.';
+
+// ── L17: Bezahlung aus dem Erneuerungsfonds ─────────────────────────────────
+// Jeder Satz, der eine Leserin erreicht, als eigene Konstante für die Laien- und
+// Fachprüfung (Produktentscheid 17.11.2026; SVIT-Kommentar Rz. 137 bis 139 ad
+// Art. 712l, Rz. 27 und 78a ad Art. 712g).
+
+/** Die Frage zu L17 auf der Seite «Lesarten». */
+export const L17_FRAGE =
+	'Mit welchem Mehr wird über die Bezahlung einer Arbeit aus dem Erneuerungsfonds entschieden, wenn Reglement ' +
+	'und Errichtungsbeschluss es nicht sagen?';
+
+/** Worum es geht, als Nebensatz mit «ob» für das Protokoll. */
+export const L17_GEGENSTAND =
+	// Fachprüfung Runde 2, R2-F-1: auch der Streit an der vereinbarten Verwendung.
+	'ob die Bezahlung einer Arbeit aus dem Erneuerungsfonds das qualifizierte Mehr braucht oder das einfache Mehr ' +
+	'nach Köpfen genügt, und ob eine bei der Schaffung vereinbarte weitere Verwendung die Zustimmung aller braucht';
+
+export const L17_STRENG_BEZEICHNUNG = 'Strengere Auffassung';
+export const L17_SVIT_BEZEICHNUNG = 'Nach dem SVIT-Kommentar';
+
+/** Was die strengere Auffassung bewirkt (Vorgabe). */
+export const L17_STRENG_WIRKUNG =
+	'Die Bezahlung braucht das qualifizierte Mehr. Eine mildere Regel der Gemeinschaft genügt nicht, eine ' +
+	'strengere gilt. Auch eine bei der Schaffung des Fonds vereinbarte weitere Verwendung genügt nicht; dafür ' +
+	'braucht es die Zustimmung aller.';
+
+/** Was die Wahl nach dem SVIT-Kommentar bewirkt. */
+export const L17_SVIT_WIRKUNG =
+	'Es genügt das einfache Mehr nach Köpfen; die Wertquoten zählen nicht. Eine mildere oder strengere Regel für ' +
+	'genau diesen Fall gilt. Dasselbe Mehr gilt für eine weitere Verwendung, die bei der Schaffung des Fonds ' +
+	'ausdrücklich vereinbart wurde (Rz. 138, 139).';
+
+// Fachprüfung Runde 2, R2-F-7: die Begründung bei Eigenmann, das Ergebnis auch bei Piccinin.
+export const L17_STRENG_FUNDSTELLE =
+	'Eigenmann nach SVIT-Kommentar Rz. 139 ad Art. 712l: eine wichtigere Verwaltungshandlung (ZGB ' +
+	'Art. 647b Abs. 1), im Ergebnis ebenso Piccinin. Zur vereinbarten Verwendung Bloch nach Rz. 138. Zur milderen Regel ZGB Art. 712g Abs. 2 ' +
+	'mit Rz. 27 und 78a ad Art. 712g';
+
+export const L17_SVIT_FUNDSTELLE = 'Wermelinger, SVIT-Kommentar 2023, Art. 712l Rz. 137 bis 139';
+
+/** Der Grund der Vorgabe, kurz. */
+export const L17_VORGABEGRUND =
+	// Fachprüfung Runde 2, R2-F-1: An der vereinbarten Verwendung ist das qualifizierte Mehr nicht sicher.
+	'Ein Beschluss mit qualifiziertem Mehr besteht im gewöhnlichen Zweck nach beiden Auffassungen. Für eine bei der ' +
+	'Schaffung vereinbarte weitere Verwendung besteht nur ein Beschluss, dem alle zugestimmt haben.';
+
+/** Der Grund der Vorgabe, ausführlich. */
+export const L17_WARUM_VORGABE =
+	'Das Gesetz sagt nicht, mit welchem Mehr über die Bezahlung aus dem Fonds entschieden wird. Eigenmann hält sie ' +
+	'für eine wichtigere Verwaltungshandlung und verlangt das qualifizierte Mehr; ebenso Piccinin. Der ' +
+	'SVIT-Kommentar lässt im Rahmen des Zwecks das einfache Mehr nach Köpfen genügen (Rz. 139 ad Art. 712l). ' +
+	'Bloch hält eine bei der Schaffung vereinbarte weitere Verwendung für unzulässig (nach Rz. 138). Votum ' +
+	'rechnet im Zweifel streng, weil ein so gefasster Beschluss nach beiden Auffassungen besteht.';
+
+/** Wo die Einstellung gilt, und was sie an den Regeln der Gemeinschaft bewirkt. */
+export const L17_GELTUNG =
+	'Die Einstellung gilt für die Bezahlung einer Arbeit aus dem Fonds im gewöhnlichen Zweck und für eine weitere ' +
+	'Verwendung, die bei der Schaffung des Fonds vereinbart wurde. Für die Arbeit selbst gilt das Mehr des ' +
+	'Vorhabens. Ausserhalb des Zwecks ohne Vereinbarung braucht die Bezahlung nach beiden Auffassungen die ' +
+	'Zustimmung aller. Nach der strengeren Auffassung wendet Votum eine Regel Ihres Reglements nur an, wenn sie in ' +
+	'keiner Hinsicht milder ist, auch eine für alle wichtigeren Verwaltungshandlungen. Nach dem SVIT-Kommentar ' +
+	'wendet es nur eine Regel an, die eigens für diesen Fall hinterlegt ist, milder wie strenger.';
+
+/** Die mögliche Folge der Wahl nach dem SVIT-Kommentar. */
+export const L17_FOLGE =
+	'Nach der strengeren Auffassung braucht die Bezahlung das qualifizierte Mehr. Ein Beschluss, der nur das ' +
+	// Runde 3 (R3-F-4): mit dem Beginn der Frist wie an den übrigen Lesarten.
+	'einfache Mehr erreicht, kann dann innert eines Monats angefochten werden, seit man davon weiss. Sicher ist ein Beschluss, der auch ' +
+	'das qualifizierte Mehr erreicht. Für eine weitere Verwendung, die bei der Schaffung des Fonds vereinbart ' +
+	'wurde, ist nur ein Beschluss sicher, dem alle zugestimmt haben.';
 
 export const LESARTEN: readonly Lesart[] = [
 	{
@@ -1820,8 +1911,62 @@ export const LESARTEN: readonly Lesart[] = [
 			'dem Vertagen, und tragen Sie aus, wer gegangen ist. Massgebend ist die Wahl, die bei der Freigabe der ' +
 			'vertagten Versammlung galt.',
 		folgeMilderWahl: L16_FOLGE
+	},
+	{
+		/*
+		 * **L17 wählt das Mehr der Bezahlung aus dem Erneuerungsfonds** (Migration
+		 * 196, Fassung 2026-11-20; Produktentscheid 17.11.2026). Zwei Knoten tragen
+		 * sie, mit verschiedenem Mehr nach der Vorgabe: im gewöhnlichen Zweck das
+		 * qualifizierte, an der bei der Schaffung vereinbarten Verwendung die
+		 * Zustimmung aller (deshalb `weitereMehr`). Nach dem SVIT-Kommentar an
+		 * beiden das einfache Mehr nach Köpfen. Die Wahl steuert ausserdem, welche
+		 * Regel der Gemeinschaft dort gilt (`wendeReglementAn`).
+		 */
+		kennung: 'L17',
+		frage: L17_FRAGE,
+		gegenstand: L17_GEGENSTAND,
+		wahlen: [
+			{
+				wert: 'streng',
+				bezeichnung: L17_STRENG_BEZEICHNUNG,
+				mehr: QUALIFIZIERTES_MEHR,
+				weitereMehr: [EINSTIMMIGKEIT_ALLER],
+				imSatz: 'die strengere Auffassung',
+				imSatzDativ: 'der strengeren Auffassung',
+				wirkung: L17_STRENG_WIRKUNG,
+				fundstelle: L17_STRENG_FUNDSTELLE
+			},
+			{
+				wert: 'svit',
+				bezeichnung: L17_SVIT_BEZEICHNUNG,
+				mehr: EINFACHES_MEHR,
+				imSatz: 'die Auffassung des SVIT-Kommentars',
+				imSatzDativ: 'der Auffassung des SVIT-Kommentars',
+				wirkung: L17_SVIT_WIRKUNG,
+				fundstelle: L17_SVIT_FUNDSTELLE
+			}
+		],
+		vorgabe: 'streng',
+		vorgabeGrund: L17_VORGABEGRUND,
+		warumVorgabe: L17_WARUM_VORGABE,
+		geltung: L17_GELTUNG,
+		folgeMilderWahl: L17_FOLGE
 	}
 ];
+
+/**
+ * Die Wahl zu L17, nach der ein Erfordernis rechnet, oder `undefined`, wo es L17
+ * nicht trägt. Gelesen an `gemeinschaftslesart`, nachdem `wendeLesartAn` die
+ * Wahl der Gemeinschaft angewandt hat: An der Kennung, nicht an den Kennungen
+ * der Karten, weil der Kern die Fassungsdaten nicht einbinden kann.
+ */
+export function fondsentnahmewahl(e: {
+	gemeinschaftslesart?: { kennung: string; wahl: string } | null;
+}): Fondsentnahmewahl | undefined {
+	const l = e.gemeinschaftslesart;
+	if (l?.kennung !== 'L17') return undefined;
+	return l.wahl === 'svit' || l.wahl === 'streng' ? l.wahl : undefined;
+}
 
 /** Die Vorgaben, wie sie gelten, solange niemand umstellt. */
 export const LESARTEN_VORGABE: Lesartenwahl = {
@@ -1839,7 +1984,8 @@ export const LESARTEN_VORGABE: Lesartenwahl = {
 	L12: 'alle',
 	L13: 'anwesende',
 	L15: 'ausserhalb',
-	L16: 'neue_erste'
+	L16: 'neue_erste',
+	L17: 'streng'
 };
 
 /**
@@ -2454,7 +2600,13 @@ function knotenNachMehrlesart(rw: Regelwerk, k: Ergebnisknoten, wahlen: Lesarten
 		 */
 		...(k.rang === 'reglement' && !l.andere.rechtsgrundlage.startsWith('Reglement') ? { rang: 'gesetz' as const } : {}),
 		// Der eigene Weg der anderen Wahl, wo sie einen trägt (L6, R2-G-3).
-		...(l.andere.einstimmigkeitsweg ? { einstimmigkeitsweg: l.andere.einstimmigkeitsweg } : {}),
+		...(l.andere.einstimmigkeitsweg
+			? {
+					einstimmigkeitsweg: l.andere.einstimmigkeitsweg,
+					// Der Weg des Knotens bleibt daneben, für eine Regel der Zustimmung aller (N1).
+					einstimmigkeitswegDesKnotens: k.einstimmigkeitsweg ?? null
+				}
+			: {}),
 		// Die eigene Formel der anderen Wahl, wo die des Typs ihr widerspräche (E1, L12).
 		...(l.andere.formel ? { formel: l.andere.formel } : {}),
 		// Hinweise, die nach der anderen Wahl anders lauten (E1, L9; Fachprüfung F-3).
@@ -2485,8 +2637,13 @@ function knotenNachMehrlesart(rw: Regelwerk, k: Ergebnisknoten, wahlen: Lesarten
  * `undefined`, wenn keine oder mehr als eine passt.
  */
 export function wahlNachMehr(kennung: string, mehr: Wahlmehr): string | undefined {
-	const passend = (lesartVon(kennung)?.wahlen ?? []).filter((w) => w.mehr && gleichesMehr(mehr, w.mehr));
+	const passend = (lesartVon(kennung)?.wahlen ?? []).filter((w) => mehrDerWahl(w).some((m) => gleichesMehr(mehr, m)));
 	return passend.length === 1 ? passend[0].wert : undefined;
+}
+
+/** Jedes Mehr, das eine Wahl an einem Knoten verlangen kann (`mehr` und `weitereMehr`, L17). */
+function mehrDerWahl(w: Lesartwahlmoeglichkeit): Wahlmehr[] {
+	return w.mehr ? [w.mehr, ...(w.weitereMehr ?? [])] : [];
 }
 
 /**
@@ -2759,9 +2916,12 @@ export function pruefeLesartenImRegelwerk(rw: Regelwerk, aktuelleFassung: string
 		if (!rw.ergebnistypen.some((t) => t.typ === k.lesart!.andere.typ)) {
 			befunde.push(`${k.id}: Typ «${k.lesart.andere.typ}» fehlt in der Fassung.`);
 		}
-		const vorgabe = lesart.wahlen.find((w) => w.wert === lesart.vorgabe)?.mehr;
-		const andere = lesart.wahlen.find((w) => w.wert === k.lesart!.andere.wahl)?.mehr;
-		if (!vorgabe || !andere) {
+		// Je Wahl jedes Mehr, das sie an einem Knoten verlangen kann (L17: `weitereMehr`).
+		const vorgabeWahl = lesart.wahlen.find((w) => w.wert === lesart.vorgabe);
+		const andereWahl = lesart.wahlen.find((w) => w.wert === k.lesart!.andere.wahl);
+		const vorgabe = vorgabeWahl ? mehrDerWahl(vorgabeWahl) : [];
+		const andere = andereWahl ? mehrDerWahl(andereWahl) : [];
+		if (vorgabe.length === 0 || andere.length === 0) {
 			befunde.push(`${k.id}: Der Katalog nennt zu ${lesart.kennung} kein Mehr je Wahl.`);
 			continue;
 		}
@@ -2771,10 +2931,10 @@ export function pruefeLesartenImRegelwerk(rw: Regelwerk, aktuelleFassung: string
 		} else if (gerechnet === k.lesart.andere.wahl) {
 			befunde.push(`${k.id}: «andere» nennt die Wahl «${gerechnet}», die der Knoten selbst rechnet.`);
 		}
-		if (aktuell && !gleichesMehr(k, vorgabe)) {
+		if (aktuell && !vorgabe.some((m) => gleichesMehr(k, m))) {
 			befunde.push(`${k.id}: Der Knoten rechnet nicht die Vorgabe «${lesart.vorgabe}».`);
 		}
-		if (!gleichesMehr(k.lesart.andere, andere)) {
+		if (!andere.some((m) => gleichesMehr(k.lesart!.andere, m))) {
 			befunde.push(`${k.id}: «andere» rechnet nicht die Wahl «${k.lesart.andere.wahl}».`);
 		}
 	}

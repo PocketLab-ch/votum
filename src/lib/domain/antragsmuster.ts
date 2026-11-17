@@ -27,10 +27,16 @@ import type { Geschaeftsart } from './regelwerk';
  * schlimmer als eine sichtbare Lücke.
  */
 const MUSTER: Partial<Record<Geschaeftsart, string>> = {
+	/*
+	 * **Ohne «und dem Erneuerungsfonds entnommen»** (17.11.2026, Fassung 2026-11-20):
+	 * Die Bezahlung aus dem Fonds ist ein zweiter Beschluss mit eigenem Mehr
+	 * (SVIT-Kommentar Rz. 139 ad Art. 712l). Im Muster der Arbeit stand sie im selben
+	 * Antrag, und Votum rechnete dann nur das Mehr der Arbeit. Ein eigenes Traktandum
+	 * führt über «Über die Bezahlung aus dem Fonds» (Produktentscheid 17.11.2026).
+	 */
 	baulich_notwendig:
 		'Die Versammlung beschliesst {titel}. Die Kosten von … Franken werden nach Wertquoten ' +
-		'verlegt und dem Erneuerungsfonds entnommen. Die Bewirtschaftung wird mit der Ausführung ' +
-		'beauftragt.',
+		'verlegt. Die Bewirtschaftung wird mit der Ausführung beauftragt.',
 	baulich_nuetzlich:
 		'Die Versammlung beschliesst {titel}. Die Kosten von … Franken werden nach Wertquoten ' +
 		'verlegt. Die Bewirtschaftung wird mit der Ausführung beauftragt.',

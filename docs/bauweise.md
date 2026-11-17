@@ -636,6 +636,7 @@ node e2e/lesarten-l10.mjs                  # Lesart L10: Angehörige im Ausstand
 node e2e/lesarten-l11.mjs                  # Lesart L11: Ermächtigung zur Prozessführung, qualifiziertes Mehr eingefroren, Satz vor der Abstimmung, zweites Ergebnis nach dem einfachen Mehr, Protokoll
 node e2e/lesarten-l12.mjs                  # Lesart L12: luxuriöse bauliche Massnahme, unter «anwesende» angenommen, obwohl ein Eigentümer fehlt, Rat und zweites Ergebnis nach «alle», Protokoll
 node e2e/lesarten-l13.mjs                  # Lesart L13: Zählweise der Köpfe, Art. 647b mit Ausstand unter «anwesende» angenommen, unter «alle» abgelehnt, zweites Ergebnis im Protokoll, keine Wirkung an 647d, Reglement und Klausel, Rückkommen, Auszählmappe mit 9 und 7; Sätze aus dem Wächter, braucht soffice und python3
+node e2e/lesarten-l17.mjs                  # Lesart L17: Bezahlung aus dem Erneuerungsfonds, unter «svit» mit dem einfachen Mehr angenommen, nach der strengeren Auffassung abgelehnt, Seite «Lesarten», Karte und Protokoll
 node e2e/lesarten-l15-l16.mjs              # Lesarten L15 und L16 in fünf Fällen: Vertagen nach verlorener Beschlussfähigkeit ergibt unter der Vorgabe eine neue erste, unter «zweite» eine zweite mit Vorgängerin, elftem Tag, Ausklappersatz und Einladungszusatz, noch beschlussfähig eine neue erste; Einlass einer Mitberechtigten über der Höchstzahl angenommen, unter «Zählt mit» abgewiesen; ROTPROBE=L15 oder L16 lässt die Wahl weg; braucht pdftotext
 node e2e/lesarten-1a-a.mjs                 # 1a und Anhang A: Ausschlussklage nach den Anwesenden, Mehr aus Gesetz und Reglement nach einer Abweichung, nur in der Leitung
 node e2e/statt-versammlung.mjs             # C1 und C2: drei Traktanden über den Baum (Einstimmigkeit, Einstimmigkeit, einfaches Mehr), Gegenproben Nein und Ausgabenrahmen, im Saal 2 von 3 Ja scheitert nur an der Einstimmigkeit
@@ -1633,11 +1634,12 @@ der Bezugsgrösse des Knotens plus der Wirkung des Typs.
 Wo das Gesetz zwei vertretene Auslegungen zulässt und das Ergebnis im Saal davon
 abhängt, wählt die Gemeinschaft, nach welcher Votum rechnet (Entscheid 0018).
 Eine Lesart ist keine Angabe aus dem Reglement: Legt dort eine Regel das Mehr
-fest, geht sie vor, und eine Lesart zum Mehr (L2, L4, L9, L11) fällt weg. An L6 greift
+fest, geht sie vor, und eine Lesart zum Mehr (L2, L4, L9, L11) fällt weg. An L17 ist es
+umgekehrt: Die Lesart entscheidet, welche Regel überhaupt gilt (unten). An L6 greift
 keine Regel: Die Karte der eigenen Schranke sperrt sie (`gesperrt_reglement`).
 L6 wirkt auch nur dort; eine strengere Regel an «Reglement ändern, gewöhnliche
 Bestimmung» rechnet unabhängig von L6 weiter (Entscheid 0042). Zwei Arten:
-**L2, L4, L6, L9, L11 und L12 tauschen das Erfordernis**, beim Herleiten (L12 und
+**L2, L4, L6, L9, L11, L12 und L17 tauschen das Erfordernis**, beim Herleiten (L12 und
 L9 nicht das Mehr, sondern die Kopfbasis: an der luxuriösen baulichen Massnahme
 zählt Votum nach der Vorgabe über alle eingetragenen Eigentümer, unter «Alle
 Anwesenden und Vertretenen» über die Anwesenden und Vertretenen, und nach der
@@ -1698,7 +1700,7 @@ Traktandum mit Häkchen abgestimmt wird.
   Vorgabe und warum. Welcher Knoten welche Lesart trägt, steht im Regelwerk
   (`lesart` am Knoten); der Knoten rechnet eine Wahl des Katalogs, welche,
   sagt sein Mehr (`wahlDesKnotens`), an der aktuellen Fassung die Vorgabe.
-- **L2, L4, L6, L9, L11 und L12: Wirkung am Erfordernis, beim Herleiten**, wie eine hinterlegte Regel:
+- **L2, L4, L6, L9, L11, L12 und L17: Wirkung am Erfordernis, beim Herleiten**, wie eine hinterlegte Regel:
   `wendeReglementAn` nimmt die Lesarten als Pflichtargument. So nennt die
   Einladung dasselbe Mehr, nach dem der Saal rechnet. Das Erfordernis trägt die
   angewandte Wahl und das Mehr der anderen (`gemeinschaftslesart`), damit sich
@@ -1762,6 +1764,24 @@ Traktandum mit Häkchen abgestimmt wird.
   Protokoll (Kopf und `l16Beschlusssatz` je angenommenem Beschluss), Siegel
   und Verlauf lesen das Merkmal, statt es neu herzuleiten; `aendereVersammlung`
   behält es nur an derselben zweiten auf dieselbe Vorgängerin.
+- **L17: Wirkung an der Bezahlung aus dem Erneuerungsfonds, ab Fassung 2026-11-20**
+  (Migration 196, Entscheid 0056). Am Knoten wie L6: `streng` rechnet im Zweck
+  das qualifizierte Mehr und an der vereinbarten Verwendung die Zustimmung aller,
+  `svit` an beiden das einfache Mehr nach Köpfen (`weitereMehr` an der Wahl, weil
+  `streng` an zwei Karten verschiedenes Mehr verlangt). Dazu entscheidet die Wahl
+  in `wendeReglementAn`, welche Regel gilt: unter `streng` jede, die nicht milder
+  ist, auch eine für alle wichtigeren Verwaltungshandlungen; unter `svit` nur eine
+  für genau diesen Fall, in beide Richtungen. Ist unter `streng` die fallgenaue
+  Regel milder, rechnet Votum nach einer nicht milderen allgemeinen und nennt die
+  fallgenaue (`Regelanwendung.verdraengt`). Die Freigabe sagt an diesen Karten auch
+  unter einer Regel ab, wenn die Regel, nach der gerechnet wird, nicht mehr dieselbe
+  ist (`l17Regelstand`): nach einer Umstellung von L17 ebenso wie nach einer
+  geänderten, gelöschten oder neu dazugesetzten Regel, mit eigenem Satz
+  (`FONDSENTNAHME_VERALTET`) und dem Weg auf die Reglementseite. Ihre Bedingung ist
+  im Kasten «nachziehen» enthalten, nicht dieselbe: Der Kasten prüft alle
+  Traktanden und das ganze Mehr. Unter einer Regel der Zustimmung aller zeigt
+  `karteMitReglement` den Weg des Knotens, nicht den der anderen Lesart
+  (`einstimmigkeitswegDesKnotens`; gilt auch für L6).
 - **Von Hand gesetzte Kopfbasis «aller Eigentümer», ab Fassung 2026-11-16**
   (Entscheid 0050, Antwort 1, «Angleichen»): Unter einem Mehr, das die Leitung
   in «Anderes Erfordernis setzen» oder ohne Herleitung gesetzt hat (`quelle
@@ -1805,7 +1825,7 @@ Traktandum mit Häkchen abgestimmt wird.
   einer Spalte 1a oder A.
 - **Zweites Ergebnis:** `zaehleAus` und `zaehleSummenAus` zählen dieselben
   Stimmen ein zweites Mal nach dem Erfordernis der anderen Lesart
-  (`Auszaehlung.andereLesart` für L2, L4, L6, L11 und L12, `andereAusstandslesart` für L1, nur wo ein
+  (`Auszaehlung.andereLesart` für L2, L4, L6, L11, L12 und L17, `andereAusstandslesart` für L1, nur wo ein
   Ausstand den Nenner berührt, `andereAngehoerigenlesart` für L10, nur wo eine
   Angehörige nach der Vorgabe in der Zahl bliebe; Anzeigen lesen alle über
   `andereLesartenVon`).
@@ -1986,7 +2006,13 @@ Verhalten ohne Fallgenauigkeit trägt): Eine Regel der ganzen Geschäftsart
 `organe` greift dort nicht mehr (A1 Frage 2, Ergebnisänderung); eine
 fallgenaue wird angewandt, auch wenn sie die Zustimmung aller verlangt, weil
 Rz. 196 ad Art. 712m nur die systematische Einführung trifft (Fachprüfung A4,
-R4-F-1). Welche Verhalten eine Regel überhaupt durchlassen, sagt
+R4-F-1). **Seit der Fassung 2026-11-20 an der Bezahlung aus dem
+Erneuerungsfonds nach der Lesart L17** (`k-erneuerungsfonds-entnahme` und
+`-vereinbart`, Verhalten `frei`): nach der Vorgabe jede Regel, die nicht milder
+ist, auch eine für alle wichtigeren Verwaltungshandlungen (Eigenmann hält die
+Entnahme für eine, Fachprüfung F-5); nach dem SVIT-Kommentar nur eine für genau
+diesen Fall, strenger wie milder (Fachprüfung F-1; Produktentscheid
+17.11.2026). Welche Verhalten eine Regel überhaupt durchlassen, sagt
 `regelKannGreifen` an einer Stelle; Fallwahl, Absage beim Erfassen, `regelGiltFuer`
 und der Satz «nirgends angewandt» der Reichweite lesen sie. Ob eine mit
 weniger als allen Stimmen eingeführte Bestimmung trotzdem gilt, beantworten

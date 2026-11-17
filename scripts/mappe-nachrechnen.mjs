@@ -22,7 +22,8 @@
  *
  * **Jede Spalte, auch die «zum Vergleich»** (A3, 30.10.2026). Die Posten
  * entstehen wie im Downloadweg über `mappenpostenAus`, aus Erfordernissen des
- * echten Regelwerks: L1 bis L6, L9, L11, L12 (seit 13.11.2026), L13 (Block C), 1a, Mehr aus
+ * echten Regelwerks: L1 bis L6, L9, L11, L12 (seit 13.11.2026), L13 (Block C), L17 (Fassung
+ * 2026-11-20), 1a, Mehr aus
  * Gesetz und Reglement, der
  * Stichentscheid nach jeder Art und ein Gleichstand beim qualifizierten Mehr.
  * Eine Spalte «zum Vergleich» wird gegen `zaehleAus` mit ihrem anderen
@@ -209,6 +210,10 @@ const l13Neu = (id, wahl) =>
   wendeReglementAn(waehleErfordernis(RW16, id).ergebnis, [], null, { ...LESARTEN_VORGABE, ...wahl }).erfordernis;
 const L11 = waehleNeu(mitLesartNeu('L11'));
 const L12 = waehleNeu(mitLesartNeu('L12'));
+// L17 (Fassung 2026-11-20): an beiden Karten, die sie tragen.
+const RW20 = holeRegelwerk('2026-11-20');
+const L17_ZWECK = waehleErfordernis(RW20, 'k-erneuerungsfonds-entnahme').ergebnis;
+const L17_VEREINBART = waehleErfordernis(RW20, 'k-erneuerungsfonds-entnahme-vereinbart').ergebnis;
 
 /** Eine strengere Regel für die erste Versammlung, ohne Wertquoten (erfunden). */
 const REGEL_ERSTE = { kopf: { zaehler: 3, nenner: 4, art: 'mindestens' }, quoten: null, mindestens: 2, fundstelle: 'Art. 9 Reglement' };
@@ -257,6 +262,19 @@ const MAPPEN = [
       { nummer: '4', titel: 'L11 einfach', e: nachWahl(L11, { L11: 'einfach' }), vergleiche: ['L11'] },
       { nummer: '5', titel: 'L12 nach der Vorgabe', e: nachWahl(L12, {}), vergleiche: ['L12'] },
       { nummer: '6', titel: 'L12 an den Anwesenden', e: nachWahl(L12, { L12: 'anwesende' }), vergleiche: ['L12'] }
+    ],
+    lagen: LAGEN_VIER
+  },
+  {
+    // L17 (Fassung 2026-11-20): die Bezahlung aus dem Erneuerungsfonds im Zweck
+    // und an der vereinbarten Verwendung, je nach beiden Wahlen.
+    name: 'Lesart L17',
+    m: gemeinschaft(VIER),
+    posten: [
+      { nummer: '1', titel: 'L17 im Zweck nach der Vorgabe', e: nachWahl(L17_ZWECK, {}), vergleiche: ['L17', 'L13', 'L1'] },
+      { nummer: '2', titel: 'L17 im Zweck nach dem SVIT-Kommentar', e: nachWahl(L17_ZWECK, { L17: 'svit' }), vergleiche: ['L17'] },
+      { nummer: '3', titel: 'L17 vereinbart nach der Vorgabe', e: nachWahl(L17_VEREINBART, {}), vergleiche: ['L17'] },
+      { nummer: '4', titel: 'L17 vereinbart nach dem SVIT-Kommentar', e: nachWahl(L17_VEREINBART, { L17: 'svit' }), vergleiche: ['L17'] }
     ],
     lagen: LAGEN_VIER
   },

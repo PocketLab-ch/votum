@@ -134,7 +134,7 @@ describe('Das Ergebnis nach der anderen Lesart (Kriterien 5 und 10)', () => {
 	});
 
 	it('rechnet umgekehrt, wenn die Gemeinschaft das qualifizierte Mehr gewählt hat', () => {
-		const a = zaehleAus(lage(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })));
+		const a = zaehleAus(lage(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' })));
 		expect(a.angenommen).toBe(false);
 		expect(a.andereLesart).toMatchObject({ wahl: 'Einfaches Mehr', angenommen: true, abweichend: true });
 		// Angefochten wird dann die Ablehnung; angenommen ist der Antrag damit nicht (N5).
@@ -200,7 +200,7 @@ describe('Das Ergebnis nach der anderen Lesart (Kriterien 5 und 10)', () => {
 		let gezaehlt = 0;
 		let gleichstaende = 0;
 		let alleinOffen = 0;
-		for (const e of [wahl(), wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' })])
+		for (const e of [wahl(), wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' })])
 			for (const tieBreak of arten)
 				for (let da = 1; da < 16; da++)
 					for (let muster = 0; muster < 81; muster++) {
@@ -276,7 +276,7 @@ describe('Die Karte vor der Abstimmung (Kriterium 4)', () => {
 		);
 		// L4 «qualifiziert» rechnet über alle Wertquoten: L1 steht dabei, mit einem
 		// gemeinsamen Schlusssatz (Codeprüfung der Review-Behebung, N1).
-		const beide = lesartKartensatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }))!;
+		const beide = lesartKartensatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' }))!;
 		expect(beide).toMatch(/^Zum Mehr: Dieses Traktandum/);
 		expect(beide).toContain('Zur Wertquote im Ausstand: Tritt jemand');
 		expect(beide).toMatch(/zusätzlich das Ergebnis nach «Einfaches Mehr» und, wenn jemand im Ausstand ist, nach «Wertquote fällt heraus»\.$/);
@@ -287,7 +287,7 @@ describe('Die Karte vor der Abstimmung (Kriterium 4)', () => {
 	it('nennt die Standardeinstellung und ihren Grund, auch an einem Knoten, der die Nicht-Vorgabe rechnet', () => {
 		// A5, Punkt 1b: der Grund der Vorgabe statt der Software (hier L4). Seit
 		// Block B ist «qualifiziert» die Vorgabe, ohne die Folge der milden Wahl.
-		const satz = lesartKartensatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }))!;
+		const satz = lesartKartensatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' }))!;
 		expect(satz).toContain(
 			`rechnet nach der Lesart «Qualifiziertes Mehr» (Standardeinstellung: ${L4.vorgabeGrund.replace(/\.$/, '')})`
 		);
@@ -307,7 +307,7 @@ describe('Die Zeile im Protokoll (Kriterium 6)', () => {
 			'Gezählt nach dem einfachen Mehr. Ob die Wahl einer Bewirtschaftung mit erweiterten Kompetenzen das qualifizierte Mehr braucht, ist umstritten. So hat Votum für diese Versammlung nach der Einstellung Ihrer Gemeinschaft gerechnet. ' +
 				`Die Standardeinstellung wäre das qualifizierte Mehr: ${L4.vorgabeGrund}`
 		);
-		expect(lesartProtokollsatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' }))).toBe(
+		expect(lesartProtokollsatz(wahl({ L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' }))).toBe(
 			'Gezählt nach dem qualifizierten Mehr. Ob die Wahl einer Bewirtschaftung mit erweiterten Kompetenzen das qualifizierte Mehr braucht, ist umstritten. ' +
 				`Das qualifizierte Mehr ist die Standardeinstellung: ${L4.vorgabeGrund}`
 		);

@@ -38,7 +38,7 @@ function herleiten(rw: typeof NEU, ...antworten: string[]) {
 describe('Fassung 2026-10-24 gegenüber 2026-10-23', () => {
 	it('ist in sich stimmig, auch die Lesart am Knoten, und nicht mehr die aktuelle', () => {
 		// Seit Lesarten Block 4 leitet die Anwendung unter 2026-10-27 her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toEqual([]);
 		expect(NEU.knoten.filter((k) => k.lesart).map((k) => k.id)).toEqual([WAEHLEN_ERWEITERT_ID]);
@@ -153,7 +153,7 @@ describe('Fassung 2026-10-24 gegenüber 2026-10-23', () => {
 			const getauscht = { ...NEU, knoten: NEU.knoten.map((k) => knotenNachLesart(NEU, k, wahlen)) };
 			expect(pruefeRegelwerk(getauscht), w.wert).toEqual([]);
 		}
-		const qualifiziert = knotenNachLesart(NEU, NEU.knoten.find((k) => k.id === WAEHLEN_ERWEITERT_ID)!, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste' });
+		const qualifiziert = knotenNachLesart(NEU, NEU.knoten.find((k) => k.id === WAEHLEN_ERWEITERT_ID)!, { L1: 'bleibt', L2: 'einfach', L3: 'je_eigentuemer', L4: 'qualifiziert', L5: 'erste', L6: 'klausel', L7: 'zaehlt', L8: 'ruhen', L9: 'alle', L10: 'bleiben', L11: 'qualifiziert', L12: 'alle', L13: 'anwesende', L15: 'ausserhalb', L16: 'neue_erste', L17: 'streng' });
 		expect(ergebniskarte(NEU, qualifiziert).wortlautHinweis).toBe(NEU.wortlautErklaerung);
 	});
 

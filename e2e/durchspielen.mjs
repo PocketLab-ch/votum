@@ -962,6 +962,34 @@ async function main() {
 			return fuss.slice(0, 60);
 		});
 
+		await schritt('Die Bezahlung aus dem Erneuerungsfonds hat ein eigenes Mehr', async () => {
+			/*
+			 * **Fassung 2026-11-20** (Auftrag «Bezahlung aus dem Erneuerungsfonds»):
+			 * Nach «Mittel … verwenden» fragt der Baum nach dem Beschluss; die Bezahlung
+			 * im Zweck führt zur eigenen Karte mit qualifiziertem Mehr, die Arbeit weiter
+			 * zu ihrem Mehr. Vorher führte die Antwort nur zur Arbeit.
+			 */
+			await gehe(leitung, '/quorum');
+			const geldast = leitung.locator('a[href*="ast=a-geld"]').first();
+			behaupte(await geldast.count(), 'Kein Weg in den Ast «Geld und Jahresgeschäfte»');
+			await geldast.click();
+			await leitung.waitForURL(/ast=a-geld/, { timeout: 30000 });
+			for (const antwort of [
+				'Mittel des Erneuerungsfonds für ein konkretes Bauvorhaben verwenden',
+				'Über die Bezahlung aus dem Fonds',
+				'Ja, eine notwendige oder nützliche Arbeit'
+			]) {
+				const a = leitung.locator('a', { hasText: antwort }).first();
+				await a.waitFor({ state: 'visible', timeout: 30000 });
+				await a.click();
+			}
+			await leitung.getByText('Arbeit aus dem Erneuerungsfonds bezahlen').first().waitFor({ state: 'visible', timeout: 30000 });
+			const text = (await leitung.locator('main').innerText()).replace(/\s+/g, ' ');
+			behaupte(/qualifizierte/i.test(text), `Die Karte nennt das qualifizierte Mehr nicht: ${text.slice(0, 200)}`);
+			behaupte(/einfache Mehr nach Köpfen/.test(text), 'Die Karte nennt den Streit um das Mehr nicht');
+			return 'Frage nach dem Beschluss, Karte mit qualifiziertem Mehr und dem Streit dazu';
+		});
+
 		await schritt('Die Startseite führt in die Arbeit zurück', async () => {
 			/*
 			 * **Auftraggeber, 25.08.2026**: «Dashboard besser strukturieren. Bspw.

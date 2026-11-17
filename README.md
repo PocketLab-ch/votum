@@ -9,7 +9,10 @@ Versammlung selbst leiten.
 **Installation:** Votum ist eine Webanwendung für einen Server oder für das
 Notebook im Versammlungsraum. Sie aufzusetzen verlangt Erfahrung mit Docker, für
 das Notebook im Saal auch ein eigenes WLAN. Die Anleitung steht unter
-[Installation](docs/installation.md).
+[Installation](docs/installation.md); `scripts/einrichten.sh` fragt die
+Einstellungen ab und richtet die Anwendung ein. Proxy, TLS und Sicherung richten
+Sie selbst ein; das Skript übernimmt sie nicht. Soll ein KI-Werkzeug die Installation
+führen, geben Sie ihm [`INSTALLATION-KI.md`](INSTALLATION-KI.md).
 
 Votum leitet je Traktandum das nötige Mehr her und zählt danach Kopfstimmen und
 Wertquoten aus; das Ergebnis lässt sich später belegen. Massgeblich bleiben

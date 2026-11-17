@@ -336,7 +336,7 @@ export async function erzeugeStimmnachweis(a: Stimmnachweisangaben): Promise<Uin
 	if (a.zeile.lesart) absatz(a.zeile.lesart, leise, mm(1));
 	/*
 	 * A5, Punkt 5: die Lesart L1 nennt keine Zeile im Erfordernis, `zeile.lesart`
-	 * trägt die Zeilen zu L2, L4, L6, L9, L11, L12 und L13 sowie zu L3
+	 * trägt die Zeilen zu L2, L4, L6, L9, L11, L12, L17 und L13 sowie zu L3
 	 * (`holeAuswertung` in `server/auswertung.ts`). Das zweite Ergebnis nach der anderen Wahl zu L1
 	 * steht unten (`andereLesartInWorten`), aber weder die Lesart noch der
 	 * Ausstand, an dem sie hängt, standen über ihm. Nachgeholt mit den Worten

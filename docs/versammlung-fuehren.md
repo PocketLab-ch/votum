@@ -205,6 +205,7 @@ Die Gemeinschaft kann jede Vorgabe umstellen.
 | L13 | Zählen bei Beschlüssen, für die das Gesetz die «Mehrheit aller Miteigentümer» verlangt, nur die Köpfe der Anwesenden und Vertretenen oder die aller Eigentümer? | Anwesende und Vertretene | Alle Eigentümer |
 | L15 | Zählt die Stimme, die eine Mitberechtigte für ihre eigene gemeinsame Einheit führt, zur Höchstzahl der Vollmachten, die Ihr Reglement erlaubt? | Zählt nicht mit | Zählt mit |
 | L16 | Verliert eine erste Versammlung ihre Beschlussfähigkeit, nachdem sie schon beschlussfähig war, und wird vertagt: Ist die nächste Versammlung eine neue erste oder eine zweite? | Neue erste Versammlung | Zweite Versammlung |
+| L17 | Mit welchem Mehr wird über die Bezahlung einer Arbeit aus dem Erneuerungsfonds entschieden, wenn Reglement und Errichtungsbeschluss es nicht sagen? | Strengere Auffassung | Nach dem SVIT-Kommentar |
 
 Bei L4 ist die Vorgabe seit der Fassung 2026-11-13 das qualifizierte Mehr nach
 dem Wortlaut von Art. 647b Abs. 1 ZGB, vorher war es das einfache (Entscheid
@@ -254,6 +255,9 @@ an derselben Karte, wenn die Mehrheit dort an allen Eigentümern ohne den
 Beklagten gemessen wird. L15 wirkt an der Höchstzahl der Vollmachten (Schritt
 11a, «Vollmachten»). L16 wirkt nur beim Vertagen einer ersten Versammlung, die
 schon beschlussfähig war und es beim Vertagen nicht mehr ist (Schritt 12).
+L17 wirkt an den Karten «Arbeit aus dem Erneuerungsfonds bezahlen» und «Aus dem
+Erneuerungsfonds bezahlen, was bei seiner Schaffung vereinbart wurde» (Schritt 6,
+unter den Jahresgeschäften), dort auch daran, welche Regel Ihres Reglements gilt.
 L14 ist für eine weitere Frage vorgesehen und noch nicht vergeben.
 Eine strengere Regel, die auf der Seite
 «Reglement und Quoren» für «Reglement ändern, gewöhnliche Bestimmung»
@@ -1010,7 +1014,9 @@ zuerst auf.
 >
 > **Wo eine Regel wirklich durchgreift**, gilt sie, und das gesetzliche
 > Erfordernis steht zum Vergleich daneben: «Das gesetzliche Erfordernis wäre
-> gewesen: …» Das ist bei zwölf Fällen so: Bewirtschaftung und Organe wählen,
+> gewesen: …» Das ist bei dreizehn Fällen so: die Bezahlung aus dem
+> Erneuerungsfonds (seit der Fassung 2026-11-20, je nach Lesart L17, siehe «Eine
+> Arbeit aus dem Erneuerungsfonds bezahlen»), Bewirtschaftung und Organe wählen,
 > erweiterte Kompetenzen der Bewirtschaftung (seit der Fassung 2026-10-30 nur
 > mit einer Regel für genau diesen Fall, siehe unten), andere Aufgaben eines Ausschusses
 > oder Delegierten (seit der Fassung 2026-10-27), Hausordnung, Zuteilung
@@ -1627,6 +1633,45 @@ Erneuerungsfonds festsetzen oder ändern». Die Traktandenvorlage «Erneuerungsf
 gewöhnliche Einlage; liegt der Antrag über der Grenze, wählen Sie das
 Erfordernis im Entscheidbaum neu.
 
+### Eine Arbeit aus dem Erneuerungsfonds bezahlen
+
+Eine Arbeit aus dem Fonds zu bezahlen, braucht zwei Beschlüsse: einen über die
+Arbeit und einen über die Bezahlung. Ab der Regelwerksfassung 2026-11-20 fragt
+der Entscheidbaum nach «Mittel des Erneuerungsfonds für ein konkretes
+Bauvorhaben verwenden», über welchen der beiden abgestimmt wird. Die Arbeit
+führt wie bisher zu ihrem Mehr (notwendig, nützlich oder luxuriös). Die
+Bezahlung führt zur Frage nach dem Zweck des Fonds:
+
+- **Im gewöhnlichen Zweck** (notwendige oder nützliche Arbeiten an gemeinsamen
+  Teilen, die allen dienen) zur Karte «Arbeit aus dem Erneuerungsfonds
+  bezahlen».
+- **Ausserhalb, aber bei der Schaffung des Fonds ausdrücklich vereinbart** zur
+  Karte «Aus dem Erneuerungsfonds bezahlen, was bei seiner Schaffung vereinbart
+  wurde».
+- **Ausserhalb ohne Vereinbarung** zur Karte «Aus dem Erneuerungsfonds bezahlen,
+  was nicht zu seinem Zweck gehört», mit der Zustimmung aller.
+
+Welches Mehr die beiden ersten Karten rechnen, stellt Ihre Gemeinschaft auf der
+Seite «Lesarten» ein (L17). Die Vorgabe folgt der strengeren Auffassung
+(Eigenmann, Piccinin, für die vereinbarte Verwendung Bloch): das qualifizierte
+Mehr im Zweck, die Zustimmung aller bei der vereinbarten Verwendung. Nach dem
+SVIT-Kommentar genügt an beiden das einfache Mehr nach Köpfen (Rz. 138 und 139
+ad Art. 712l).
+
+Sagen Reglement oder Errichtungsbeschluss, mit welchem Mehr entnommen wird,
+hinterlegen Sie das unter «Reglement und Quoren», «Hinterlegte Abweichungen».
+Nach der Vorgabe wendet Votum eine Regel nur an, wenn sie strenger ist, auch
+eine für alle wichtigeren Verwaltungshandlungen; eine mildere trägt nach der
+strengeren Auffassung nur aus dem Begründungsakt oder mit Zustimmung aller.
+Nach dem SVIT-Kommentar wendet Votum nur eine Regel für genau diesen Fall an,
+strenger wie milder. Die Karte sagt jeweils, warum eine Regel nicht greift.
+
+Legen Sie Arbeit und Bezahlung in zwei Traktanden, zuerst die Arbeit, und sagen
+Sie in deren Antrag, wie sie bezahlt wird, wenn die Bezahlung aus dem Fonds
+nicht zustande kommt. Stehen beide in einem einzigen Antrag, muss er beide Mehr
+erreichen; Votum rechnet je Traktandum nur eines. Das Antragsmuster für
+notwendige Massnahmen nennt den Fonds deshalb seit dem 17.11.2026 nicht mehr.
+
 ### Pendenzen — wer erledigt was bis wann
 
 Beim aufgerufenen Traktandum steht der Abschnitt **Pendenzen**. Dorthin
@@ -2028,7 +2073,7 @@ Nach der Wahl «je Eigentümer» rechnet die Einsprache mit ihr und die Spalte
 «zum Vergleich» je Einheit; nach der Wahl «je Einheit» umgekehrt.
 
 **Die Spalten «zum Vergleich»** (seit A3, 30.10.2026). Kündigt die Karte ein
-zweites Ergebnis an, nach der anderen Lesart (L1 bis L6, L11, L12), nach der anderen
+zweites Ergebnis an, nach der anderen Lesart (L1 bis L6, L11, L12, L17), nach der anderen
 Zählweise der Köpfe (L13), nach der anderen
 Zählbasis an der Ausschlussklage oder nach dem Mehr aus Gesetz und Reglement,
 steht neben dem Traktandum eine Spalte, die dieselben Stimmen nach der anderen

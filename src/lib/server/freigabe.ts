@@ -11,7 +11,7 @@ import { alsBetreiber } from './db';
 import { schreibeUebergang, type Handelnder } from './audit';
 import {
 	gibFrei,
-	lesartVeraltetInWorten,
+	veraltetInWorten,
 	nimmFreigabeZurueck,
 	pruefeFreigabe,
 	type Freigabebefund,
@@ -24,6 +24,9 @@ import type { Versammlung } from '$lib/domain/versammlung';
 import { AUSNAHMEN_VORGABE, type Universalvariante } from '$lib/domain/ausnahmen';
 import { LESARTEN_VORGABE, wahlOhneGespeicherte, zaehlweiseVeraltet, type Lesartenwahl } from '$lib/domain/lesarten';
 import { holeRegelwerk, knotenDerFassung } from '$lib/rules';
+import { l17Regelstand, wendeReglementAn } from '$lib/domain/reglement';
+import { waehleErfordernis } from '$lib/domain/entscheidbaum';
+import { holeEnthaltungseinstellungIn, holeReglementsregelnIn } from './erfordernisse';
 import { holeVersammlung } from './versammlungen';
 import { holeLesartenIn } from './lesarten';
 import { momentaufnahmeKopf, type Momentaufnahmezeile } from './momentaufnahmekopf';
@@ -152,13 +155,14 @@ async function baueMomentaufnahme(
 			reading_l13: Lesartenwahl['L13'];
 			reading_l15: Lesartenwahl['L15'];
 			reading_l16: Lesartenwahl['L16'];
+			reading_l17: Lesartenwahl['L17'];
 		}[]
 	>`
 		SELECT head_count_mode, parking_counts_as_head, head_count_rule_source, tie_break,
 		       quota_denominator, unannounced_bylaw_allowed, unannounced_bylaw_source,
 		       universal_meeting_mode, universal_meeting_source, universal_chair_proxies_count,
 		       reading_l4, reading_l1, reading_l2, reading_l3, reading_l5, reading_l6, reading_l7, reading_l8,
-		       reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16
+		       reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16, reading_l17
 		FROM stweg WHERE id = ${versammlung.stwegId}
 	`;
 	if (!gemeinschaft) {
@@ -298,7 +302,8 @@ async function baueMomentaufnahme(
 			L12: gemeinschaft.reading_l12,
 			L13: gemeinschaft.reading_l13,
 			L15: gemeinschaft.reading_l15,
-			L16: gemeinschaft.reading_l16
+			L16: gemeinschaft.reading_l16,
+			L17: gemeinschaft.reading_l17
 		},
 		parties: parteien
 	};
@@ -319,7 +324,7 @@ async function pruefeLesartenDerTraktanden(
 ): Promise<void> {
 	const [erstes] = await veralteteLesartenIn(tx, meetingId, lesarten);
 	if (!erstes) return;
-	throw new FachlicherFehler('lesart_veraltet', lesartVeraltetInWorten(erstes.titel), 'lesart');
+	throw new FachlicherFehler('lesart_veraltet', veraltetInWorten(erstes), 'lesart');
 }
 
 /**
@@ -331,7 +336,7 @@ async function veralteteLesartenIn(
 	tx: postgres.TransactionSql,
 	meetingId: Id,
 	lesarten: Lesartenwahl
-): Promise<{ nummer: string; titel: string }[]> {
+): Promise<{ nummer: string; titel: string; grund?: 'fondsentnahme' }[]> {
 	const zeilen = await tx<
 		{
 			title: string;
@@ -349,9 +354,11 @@ async function veralteteLesartenIn(
 			andere_typ: string | null;
 			andere_rechtsgrundlage: string | null;
 			andere_kopfbasis: string | null;
+			fundstelle: string | null;
 		}[]
 	>`
 		SELECT title, coalesce(manual_number, released_number, position::text) AS nummer,
+		       requirement_reference AS fundstelle,
 		       requirement_node AS knoten, requirement_source AS quelle,
 		       requirement_reading->>'kennung' AS kennung, requirement_reading->>'wahl' AS wahl,
 		       requirement_head_base AS kopfbasis, requirement_version AS fassung,
@@ -432,10 +439,41 @@ async function veralteteLesartenIn(
 			},
 			lesarten.L13
 		);
+	/*
+	 * **An den Karten mit L17 auch unter einer Regel** (Codeprüfung L17, A): Dort
+	 * entscheidet die Wahl, ob und welche Regel gilt. Neu hergeleitet wie im
+	 * Kasten «Erfordernisse nachziehen» und über `l17Regelstand` verglichen,
+	 * aber nur an Traktanden unter einer Regel und nur nach diesem Wert; der
+	 * Kasten prüft alle Traktanden und dazu das ganze Mehr, zeigt also jedes,
+	 * zu dem hier abgesagt wird. Die übrigen Traktanden unter einer Regel
+	 * bleiben, wie oben begründet, aussen vor.
+	 *
+	 * **Mit eigener Ursache** (Codeprüfung L17, M1): Das Mehr kann hier auch
+	 * nach einer bloss geänderten Regel nicht mehr stimmen, bei gleicher Lesart.
+	 * Die Absage sagt deshalb `FONDSENTNAHME_VERALTET`, nicht «Lesarten
+	 * umgestellt», und führt auf die Reglementseite.
+	 */
+	const rw = holeRegelwerk();
+	const l17Karten = new Set(rw.knoten.filter((k) => k.lesart?.kennung === 'L17').map((k) => k.id));
+	const unterRegelMitL17 = zeilen.filter((z) => z.quelle === 'reglement' && l17Karten.has(z.knoten));
+	let l17Veraltet = (_z: (typeof zeilen)[number]): boolean => false;
+	if (unterRegelMitL17.length > 0) {
+		const [m] = await tx<{ stweg_id: string }[]>`SELECT stweg_id FROM meeting WHERE id = ${meetingId}`;
+		const regeln = await holeReglementsregelnIn(tx, m.stweg_id);
+		const enthaltung = await holeEnthaltungseinstellungIn(tx, m.stweg_id);
+		l17Veraltet = (z) => {
+			if (!unterRegelMitL17.includes(z)) return false;
+			const gewaehlt = waehleErfordernis(rw, z.knoten).ergebnis;
+			if (!gewaehlt) return false;
+			const neu = wendeReglementAn(gewaehlt, regeln, enthaltung, lesarten).erfordernis;
+			return l17Regelstand(true, z) !== l17Regelstand(true, neu);
+		};
+	}
 	return zeilen
 		.filter((z) => {
 			if (l10Veraltet(z)) return true;
 			if (l13Veraltet(z)) return true;
+			if (l17Veraltet(z)) return true;
 			const kennung = z.kennung ?? (z.quelle === 'reglement' ? undefined : amKnoten.get(z.knoten));
 			if (!kennung) return false;
 			const gewaehlt = lesarten[kennung as keyof Lesartenwahl];
@@ -448,7 +486,7 @@ async function veralteteLesartenIn(
 				});
 			return gewaehlt !== undefined && gewaehlt !== wahl;
 		})
-		.map((z) => ({ nummer: z.nummer, titel: z.title }));
+		.map((z) => ({ nummer: z.nummer, titel: z.title, ...(l17Veraltet(z) ? { grund: 'fondsentnahme' as const } : {}) }));
 }
 
 /**
@@ -554,7 +592,7 @@ export async function gibVersammlungFrei(
 			                      total_quota, unannounced_bylaw_allowed, unannounced_bylaw_source,
 			                      universal_meeting_mode, universal_meeting_source,
 			                      universal_chair_proxies_count, reading_l4, reading_l1, reading_l2, reading_l3, reading_l5, reading_l6, reading_l7, reading_l8,
-			                      reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16)
+			                      reading_l9, reading_l10, reading_l11, reading_l12, reading_l13, reading_l15, reading_l16, reading_l17)
 			VALUES (${meetingId}, ${handelnder.operatorId}, ${versammlung.datum},
 			        ${momentaufnahme.headCountMode}, ${momentaufnahme.parkingCountsAsHead},
 			        ${momentaufnahme.headCountRuleSource}, ${momentaufnahme.tieBreak},
@@ -562,7 +600,7 @@ export async function gibVersammlungFrei(
 			        ${ausnahmen.reglementFundstelle}, ${ausnahmen.universalvariante},
 			        ${ausnahmen.universalFundstelle}, ${ausnahmen.leitungsvollmachtenZaehlen},
 			        ${lesarten.L4}, ${lesarten.L1}, ${lesarten.L2}, ${lesarten.L3}, ${lesarten.L5}, ${lesarten.L6}, ${lesarten.L7}, ${lesarten.L8},
-			        ${lesarten.L9}, ${lesarten.L10}, ${lesarten.L11}, ${lesarten.L12}, ${lesarten.L13}, ${lesarten.L15}, ${lesarten.L16})
+			        ${lesarten.L9}, ${lesarten.L10}, ${lesarten.L11}, ${lesarten.L12}, ${lesarten.L13}, ${lesarten.L15}, ${lesarten.L16}, ${lesarten.L17})
 		`;
 
 		/*

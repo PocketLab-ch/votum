@@ -320,7 +320,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 							? zahlenbeispielNachZaehlweise(angewandt.regel, kennzahlen, hergeleitet, lesarten.L3)
 							: null,
 						angewandt.lesart,
-						hergeleitet
+						hergeleitet,
+						angewandt.verdraengt
 					),
 					angewandt.enthaltung
 				),

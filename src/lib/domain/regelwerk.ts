@@ -329,6 +329,12 @@ export function regelKannGreifen(verhalten: Reglementsverhalten | undefined): bo
  * hier, wie bei `bezugsgroessenHinweis` mit `k-ausschlussklage`: Der Kern
  * kann die Fassungsdaten nicht einbinden. Alte Fassungen tragen an diesem
  * Knoten `frei` und fallen hier nicht hinein.
+ *
+ * **Nicht an der Bezahlung aus dem Erneuerungsfonds** (Fassung 2026-11-20):
+ * Dort entscheidet die Lesart L17, ob eine allgemeine Regel gilt (nach der
+ * strengeren Auffassung, wenn sie nicht milder ist; nach dem SVIT-Kommentar
+ * nicht). Das steht in `wendeReglementAn` und `regelReichweite`, nicht hier,
+ * weil diese Funktion die Wahl der Gemeinschaft nicht kennt.
  */
 export function regelNurFallgenau(k: {
 	reglementsverhalten?: Reglementsverhalten;
@@ -464,6 +470,14 @@ export interface Ergebnisknoten {
 	 */
 	einstimmigkeitsweg?: string;
 	/**
+	 * Nur am getauschten Knoten aus `knotenNachLesart`, wo die andere Wahl einen
+	 * eigenen Weg trägt (`lesart.andere.einstimmigkeitsweg`): der Weg des
+	 * Knotens selbst, `null` ohne. Unter einer Regel, die die Zustimmung aller
+	 * verlangt, gilt er statt des Wegs der Lesart (`karteMitReglement`;
+	 * Codeprüfung L17, N1). In keiner Fassung gesetzt.
+	 */
+	einstimmigkeitswegDesKnotens?: string | null;
+	/**
 	 * Was das gerechnete Erfordernis trägt (ab Fassung 2026-10-18; Ä-01,
 	 * Entscheid 17.09.2026). Pflicht an jedem Knoten mit Erfordernis, sobald
 	 * eine Fassung das Merkmal führt.
@@ -509,7 +523,7 @@ export interface Ergebnisknoten {
 
 /** Die Lesart an einem Knoten: Kennung aus dem Katalog und die andere Wahl. */
 export interface KnotenLesart {
-	kennung: 'L2' | 'L4' | 'L6' | 'L9' | 'L11' | 'L12';
+	kennung: 'L2' | 'L4' | 'L6' | 'L9' | 'L11' | 'L12' | 'L17';
 	andere: {
 		wahl: string;
 		typ: Ergebnistyp;

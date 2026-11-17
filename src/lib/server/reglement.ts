@@ -19,6 +19,7 @@ import {
 	type Reglementsregel,
 	type ReglementsregelEingabe,
 	type Reglementspruefstand,
+	l17Regelstand,
 	wendeReglementAn
 } from '$lib/domain/reglement';
 import {
@@ -1084,6 +1085,8 @@ async function veralteteErfordernisseIn(
 	// eingefrorene (Migration 169). Nach einer Umstellung erscheinen so genau die
 	// Traktanden, die noch nicht freigegeben sind.
 	const lesartenJe = new Map<string, Lesartenwahl>();
+	const mitL17 = (knotenId: string | null): boolean =>
+		!!knotenId && knotenVon(rw, knotenId)?.lesart?.kennung === 'L17';
 	const nachzuziehen = (z: (typeof zeilen)[number]): boolean =>
 		angehoerigeNachzuziehen(
 			{
@@ -1270,7 +1273,12 @@ async function veralteteErfordernisseIn(
 			// wie die Absage der Freigabe). Sonst steht hier nichts, und der Zusatz
 			// erscheint an keiner Zeile (Codeprüfung E1 Block D, H2 und M3).
 			l10Bisher(z),
-			l13Veraltet(z)
+			l13Veraltet(z),
+			// Seit Migration 196: an den Karten mit L17 die Regel, nach der gerechnet
+			// wird; nach einer Umstellung von L17 kann eine andere gelten, bei gleichem
+			// Mehr (`l17Regelstand`). Die Freigabe sagt an einer Teilmenge davon ab:
+			// nur unter einer Regel, nur nach diesem Wert (siehe dort).
+			l17Regelstand(mitL17(z.requirement_node), { quelle: z.requirement_source, fundstelle: z.requirement_reference })
 		].join('|');
 		const jetzt = [
 			neu.typ,
@@ -1286,7 +1294,8 @@ async function veralteteErfordernisseIn(
 			neu.enthaltungZaehltMit ?? null,
 			neu.gemeinschaftslesart?.wahl ?? null,
 			l10Jetzt(z, neu),
-			null
+			null,
+			l17Regelstand(mitL17(z.requirement_node), neu)
 		].join('|');
 		if (bisher === jetzt) continue;
 

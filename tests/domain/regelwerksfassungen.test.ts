@@ -27,6 +27,14 @@ import {
 import { HINWEIS_GEWOEHNLICH as HINWEIS_GEWOEHNLICH_2026_10_24 } from '$lib/rules/quorum-2026-10-24';
 import { nachDieserFassung as nachDerFassung_2026_11_19 } from '$lib/rules/quorum-2026-11-19';
 import {
+	ENTNAHME as ENTNAHME_2026_11_20,
+	ENTNAHME_ID as ENTNAHME_ID_2026_11_20,
+	KARTEN_MIT_ENTNAHME as KARTEN_MIT_ENTNAHME_2026_11_20,
+	VEREINBART_ID as VEREINBART_ID_2026_11_20,
+	ZWECK as ZWECK_2026_11_20,
+	ZWEI_BESCHLUESSE as ZWEI_BESCHLUESSE_2026_11_20
+} from '$lib/rules/quorum-2026-11-20';
+import {
 	DELEGATION_GESPERRT as DELEGATION_GESPERRT_2026_10_27,
 	HINWEIS_ALLTAG as HINWEIS_ALLTAG_2026_10_27,
 	HINWEIS_ORGAN as HINWEIS_ORGAN_2026_10_27,
@@ -138,6 +146,7 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-20',
 			'2026-11-19',
 			'2026-11-18',
 			'2026-11-17',
@@ -1482,7 +1491,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-19');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb
@@ -3344,7 +3353,8 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		// mit erweiterten Kompetenzen (Lesart L4), seit 2026-10-27 die Übertragung
 		// anderer Aufgaben an einen Ausschuss oder Delegierten (C2b), seit
 		// 2026-11-18 das Errichten des Erneuerungsfonds und die beiden Karten zur
-		// Einlage über Grenze oder Höhe im Reglement.
+		// Einlage über Grenze oder Höhe im Reglement, seit 2026-11-20 die
+		// Bezahlung aus dem Fonds und die bei der Schaffung vereinbarte Verwendung (Lesart L17).
 		expect(MIT_REGEL.map((k) => k.id)).toEqual([
 			'k-baulich-notwendig',
 			'k-baulich-nuetzlich',
@@ -3370,7 +3380,9 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 			'k-verwaltung-wichtig',
 			'k-ausschlussklage',
 			'k-zustaendigkeit-gewoehnlich',
-			'k-einsprache'
+			'k-einsprache',
+			'k-erneuerungsfonds-entnahme',
+			'k-erneuerungsfonds-entnahme-vereinbart'
 		]);
 		// Die aktuelle Fassung ist in sich stimmig, auch die Wortlaute unter
 		// `hinweiseUnterRegel` (Codeprüfung 29.09.2026, Runde 2, M-A).
@@ -3510,6 +3522,16 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 			FONDS_IN_DER_REGEL_2026_11_18,
 			new Set([IN_DER_REGEL_EHER_2026_11_18, IN_DER_REGEL_GRUND_2026_11_18, UEBER_DAUER_2026_11_18, ENTNAHME_2026_11_18])
 		);
+		/*
+		 * **Ab der Fassung 2026-11-20** tritt an die Stelle des Satzes zur Entnahme an
+		 * den vier Karten zum Fonds der Satz mit dem Verweis auf die neue Karte; er gilt
+		 * unter jeder Regel wie der alte. An der neuen Karte gelten die zwei Beschlüsse
+		 * und der Zweck unter jeder Regel; Streit und knapper Ausgang setzen das
+		 * gerechnete Mehr voraus und stehen unter `hinweiseUnterRegel`.
+		 */
+		for (const id of KARTEN_MIT_ENTNAHME_2026_11_20) bekannt.get(id)!.add(ENTNAHME_2026_11_20);
+		bekannt.set(ENTNAHME_ID_2026_11_20, new Set([ZWEI_BESCHLUESSE_2026_11_20, ZWECK_2026_11_20]));
+		bekannt.set(VEREINBART_ID_2026_11_20, new Set([ZWEI_BESCHLUESSE_2026_11_20, ZWECK_2026_11_20]));
 		const erweitert = AKTUELL.knoten.find((k) => k.id === 'k-bewirtschaftung-erweitert')!;
 		expect(erweitert.hinweiseUnterRegel ?? []).toContainEqual({ hinweis: DELEGATION_RZ_115_2026_11_04, zumGesetz: true });
 		expect(bekannt.get('k-bewirtschaftung-erweitert')?.has(DELEGATION_RZ_115_2026_11_04)).toBe(false);

@@ -143,13 +143,21 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-19): Die Wortlaute der Website hängen an den Ersetzungen
+// Die aktuelle Fassung (2026-11-20): Die Wortlaute der Website hängen an den Ersetzungen
 // der Fassungen 2026-11-14, 2026-11-15, 2026-11-17 und 2026-11-19 (`nachDieserFassung`;
-// 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung). Die Fassung
+// 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung). Die Fassung 2026-11-20 führt
+// die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
+// Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_19, WIDERRUF, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-19.ts';
+import { REGELWERK_2026_11_20 } from '../src/lib/rules/quorum-2026-11-20.ts';
+import {
+	ENTNAHME_ID as FONDS_ENTNAHME_ID,
+	VEREINBART_ID as FONDS_VEREINBART_ID,
+	AUSSERHALB_ID as FONDS_AUSSERHALB_ID
+} from '../src/lib/rules/quorum-2026-11-20.ts';
+import { WIDERRUF, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-19.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -211,7 +219,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_19;
+const rw = REGELWERK_2026_11_20;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -378,7 +386,12 @@ const STREITFRAGEN_LESART_STRENG = new Set([
 	'k-ausschlussklage',
 	// Seit der Fassung 2026-11-13 (L4 nach dem Gesetz, Entscheid 0048, Block B);
 	// bis dahin in `STREITFRAGEN_MILD`.
-	'k-bewirtschaftung-waehlen-erweitert'
+	'k-bewirtschaftung-waehlen-erweitert',
+	// Seit der Fassung 2026-11-20 (L17): Die Website geht vom qualifizierten Mehr und an der
+	// vereinbarten Verwendung von der Zustimmung aller aus; der SVIT-Kommentar ist milder
+	// (Rz. 138, 139 ad Art. 712l).
+	FONDS_ENTNAHME_ID,
+	FONDS_VEREINBART_ID
 ]);
 
 for (const id of STREITFRAGEN_LESART_STRENG) {
@@ -402,7 +415,7 @@ for (const k of rw.knoten.filter((x) => x.lesart)) {
 }
 
 /**
- * **Die Karten des Lesarten-Katalogs** (Lesarten Block 8). L2, L4, L6, L9, L11 und L12 hängen als
+ * **Die Karten des Lesarten-Katalogs** (Lesarten Block 8). L2, L4, L6, L9, L11, L12 und L17 hängen als
  * `lesart` am Knoten; L3 rechnet an der Zählung der Einsprache und steht nicht
  * am Knoten (Fassung 2026-10-28). L1 und L5 haben keine eigene Karte. Der
  * Abzug trägt die Kennung, damit `check-abzug.mjs` an diesen Karten jeden
@@ -735,7 +748,10 @@ const FORMEL_KOEPFE_ERWARTET = [
 	'k-prozessfuehrung',
 	'k-benutzungsweise',
 	'k-verwaltung-wichtig',
-	'k-baulich-luxurioes-ausweg'
+	'k-baulich-luxurioes-ausweg',
+	// Fassung 2026-11-20: Die Bezahlung aus dem Fonds stützt das qualifizierte Mehr auf
+	// Art. 647b Abs. 1 wie die wichtigere Verwaltungshandlung, mit derselben Formel.
+	'k-erneuerungsfonds-entnahme'
 ];
 if ([...FORMEL_KOEPFE_KARTEN].sort().join('|') !== [...FORMEL_KOEPFE_ERWARTET].sort().join('|')) {
 	throw new Error(`Die Karten mit qualifiziertem Mehr und 4b sind andere als erwartet: ${[...FORMEL_KOEPFE_KARTEN].join(', ')}.`);
@@ -1584,6 +1600,14 @@ const EINSTIMMIG_GILT_GESETZ = (wer) =>
 	`Verlangt Ihr Reglement hier die Zustimmung aller, gilt ${wer} das Gesetz; halten Sie im ` +
 	'Protokoll fest, ob auch alle zugestimmt hätten.';
 
+/** Der Kasten an der Bezahlung aus dem Fonds (Fassung 2026-11-20); die vereinbarte Verwendung hat einen eigenen. */
+const KURZ_ENTNAHME =
+	'Sagen Ihr Reglement oder der Errichtungsbeschluss, mit welchem Mehr über die Bezahlung aus dem Fonds ' +
+	'entschieden wird, gilt dieses, wenn es strenger ist. Ist es milder, genügt das nach dem SVIT-Kommentar. Sicher ' +
+	'ist es nur, wenn die Regel im Begründungsakt steht oder alle Eigentümer ihr zugestimmt haben. Den ' +
+	'Errichtungsbeschluss finden Sie meist im Reglement oder im Protokoll der Versammlung, die den Fonds ' +
+	'geschaffen hat. (Wermelinger, SVIT-Kommentar 2023, Art. 712l Rz. 139; Art. 712g Rz. 27, 78a)';
+
 /**
  * **Eigene Kurztexte für die Website** (Produktentscheid 08.10.2026 «Eigene
  * Kurztexte», nach der Laien- und Fachprüfung des Abzugs vom 07.10.2026 und
@@ -1859,6 +1883,42 @@ const REGLEMENT_WEBSITE = new Map([
 				'nützlichen baulichen Massnahmen; Art. 712m Rz. 190, 191, 194, 223b, 230, 234, 235; Art. 712n Rz. 99, ' +
 				'100; Art. 712q Rz. 46; BGE 143 III 537 E. 4.2.4, dort zur Berechnungsweise; BGer 5A_865/2011 E. 3.2; ' +
 				'Handschin/Wyttenbach, S. 73)'
+		}
+	],
+	[
+		// Fassung 2026-11-20: Die Bezahlung aus dem Fonds, nach der Fachprüfung Runde 1 (F-1):
+		// strenger gilt, milder nach dem SVIT-Kommentar, nach der strengeren Auffassung nur aus
+		// Begründungsakt oder mit Zustimmung aller. Wo der Errichtungsbeschluss liegt (Laien L-6).
+		FONDS_ENTNAHME_ID,
+		{
+			zu: '4a71c8047430',
+			text: KURZ_ENTNAHME
+		}
+	],
+	[
+		// Fassung 2026-11-20: die vereinbarte Verwendung, mit dem Beleg und der späteren Erweiterung.
+		FONDS_VEREINBART_ID,
+		{
+			zu: '935a8a476fcc',
+			text:
+				// Fachprüfung Runde 2, R2-F-3: an dieser Karte nicht der Satz der ersten.
+				'Die Vereinbarung bei der Schaffung des Fonds muss sich belegen lassen. Eine später beschlossene ' +
+				'Erweiterung trägt ohne die Zustimmung aller nicht. Sagen Ihr Reglement oder der Errichtungsbeschluss, ' +
+				'mit welchem Mehr über die Bezahlung entschieden wird, genügt das nach dem SVIT-Kommentar. Sicher ist ' +
+				'es nicht, weil ein anderer Autor diese Verwendung auch dann nicht zulässt. Sicher ist nur ein ' +
+				'Beschluss, dem alle zustimmen. (Wermelinger, SVIT-Kommentar 2023, Art. 712l Rz. 138, 139)'
+		}
+	],
+	[
+		// Fassung 2026-11-20: ausserhalb des Zwecks ohne Vereinbarung.
+		FONDS_AUSSERHALB_ID,
+		{
+			zu: '57b65e40b64e',
+			text:
+				'Ihr Reglement kann die Zustimmung aller hier nicht senken. Haben die Eigentümer bei der Schaffung ' +
+				'des Fonds ausdrücklich vereinbart, dass er auch dafür dient, gilt die Karte «Aus dem ' +
+				'Erneuerungsfonds bezahlen, was bei seiner Schaffung vereinbart wurde». (Wermelinger, ' +
+				'SVIT-Kommentar 2023, Art. 712l Rz. 138)'
 		}
 	]
 ]);

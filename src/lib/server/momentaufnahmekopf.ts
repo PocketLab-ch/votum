@@ -45,6 +45,7 @@ export interface Momentaufnahmezeile {
 	reading_l13: Lesartenwahl['L13'];
 	reading_l15: Lesartenwahl['L15'];
 	reading_l16: Lesartenwahl['L16'];
+	reading_l17: Lesartenwahl['L17'];
 }
 
 export function momentaufnahmeKopf(k: Momentaufnahmezeile, meetingId: Id): Omit<Snapshot, 'parties'> {
@@ -78,7 +79,8 @@ export function momentaufnahmeKopf(k: Momentaufnahmezeile, meetingId: Id): Omit<
 			L12: k.reading_l12,
 			L13: k.reading_l13,
 			L15: k.reading_l15,
-			L16: k.reading_l16
+			L16: k.reading_l16,
+			L17: k.reading_l17
 		}
 	};
 }

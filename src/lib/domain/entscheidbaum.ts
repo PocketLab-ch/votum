@@ -1989,6 +1989,8 @@ export interface Ergebniskarte {
 	 * 22.10.2026, Befund 3).
 	 */
 	einstimmigkeitsweg: string | null;
+	/** Der Weg des Knotens ohne die Lesart, wo sie einen eigenen trägt (`Ergebnisknoten.einstimmigkeitswegDesKnotens`). */
+	einstimmigkeitswegDesKnotens?: string | null;
 	/**
 	 * Die Wertquotenbasis in einem Satz — aus demselben Grund ein eigenes Feld.
 	 *
@@ -2691,6 +2693,9 @@ export function ergebniskarte(
 			: stimmwirkungsteile(rw, knoten),
 		...(alleNachL13 ? { nachZaehlweiseAlle: true as const } : {}),
 		einstimmigkeitsweg: knoten.einstimmigkeitsweg ?? null,
+		...(knoten.einstimmigkeitswegDesKnotens !== undefined
+			? { einstimmigkeitswegDesKnotens: knoten.einstimmigkeitswegDesKnotens }
+			: {}),
 		/*
 		 * **Dieselbe Bedingung wie in `stimmwirkungsteile`** (Code-Review
 		 * 06.09.2026). Ein erster Anlauf löste den Ergebnistyp hier ein zweites

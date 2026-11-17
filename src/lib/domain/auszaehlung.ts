@@ -1182,7 +1182,7 @@ function ohneVorgabe(kennung: string, wert: string): string {
 }
 
 /**
- * Das Erfordernis nach der anderen Lesart am Mehr (L2, L4, L6, L11, L12), oder `null`.
+ * Das Erfordernis nach der anderen Lesart am Mehr (L2, L4, L6, L11, L12, L17), oder `null`.
  *
  * **L9 schweigt hier** (E1, Block C): Ihre andere Wahl ist die Zählbasis der
  * Ermächtigung zur Ausschlussklage, und die rechnet seit dem Entscheid 0018
@@ -2521,7 +2521,7 @@ function andererMehrZaehltNachL13(e: Erfordernis): boolean {
 
 /**
  * Die Sätze zu den Lesarten der Gemeinschaft auf der Karte: L1, die Lesart am
- * Mehr (L2, L4, L6, L9, L11, L12) und die Zählweise der Köpfe (L13).
+ * Mehr (L2, L4, L6, L9, L11, L12, L17) und die Zählweise der Köpfe (L13).
  *
  * **L13 steht hinter dem Satz zum Mehr** (Endfassung Block C, Abschnitt 2):
  * Mit L2, L4 oder L11 am selben Traktandum steht der Schluss «Nach der
@@ -2729,7 +2729,7 @@ function folgeDerMildenWahl(l: AngewandteLesart): string | undefined {
 	return lesart.folgeMilderWahl;
 }
 
-/** Der Satz zu einer Lesart am Mehr (L2, L4, L6, L9, L11, L12), oder `null` ohne Knotenlesart. */
+/** Der Satz zu einer Lesart am Mehr (L2, L4, L6, L9, L11, L12, L17), oder `null` ohne Knotenlesart. */
 function lesartKartensatzAmMehr(e: Erfordernis): string | null {
 	const t = lesartKartensatzAmMehrTeile(e);
 	if (!t) return null;

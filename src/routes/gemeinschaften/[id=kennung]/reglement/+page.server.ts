@@ -1,7 +1,7 @@
 import { LESARTEN, LESARTENRECHT_IN_WORTEN, LESARTENRECHT_VORGABE } from '$lib/domain/lesarten';
 import { holeLesarteneinstellung, speichereLesarten, speichereLesartenrecht } from '$lib/server/lesarten';
 import { error, fail } from '@sveltejs/kit';
-import { regelKannGreifen, regelNurFallgenau, GESCHAEFTSARTEN } from '$lib/domain/regelwerk';
+import { regelKannGreifen, GESCHAEFTSARTEN } from '$lib/domain/regelwerk';
 import { holeRegelwerk } from '$lib/rules';
 import { typdefinition } from '$lib/domain/regelwerk';
 import {
@@ -10,6 +10,7 @@ import {
 	regelGiltFuer,
 	regelOhneKoepfeGiltFuer,
 	regelInWorten,
+	regelNurFallgenauNachLesart,
 	regelReichweite
 } from '$lib/domain/reglement';
 import { FachlicherFehler } from '$lib/domain/gemeinschaft';
@@ -174,10 +175,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 						 * `vereinbart` trägt, wendet `wendeReglementAn` nur eine Regel für
 						 * genau diesen Fall an. «Für alle Geschäfte dieser Art» darf ihn
 						 * deshalb nicht mitzählen. Ebenso an der Einsprache
-						 * (`nur_verschaerfen`, ab Fassung 2026-10-20); die Bedingung steht
-						 * an einer Stelle mit der Anwendung (`regelNurFallgenau`).
+						 * (`nur_verschaerfen`, ab Fassung 2026-10-20). Ab Fassung 2026-11-20
+						 * auch an den Karten mit L17 nach dem SVIT-Kommentar: Das hängt an der
+						 * Wahl der Gemeinschaft, die `regelNurFallgenau` nicht kennt. Die
+						 * Bedingung steht deshalb in `regelNurFallgenauNachLesart`, das mit
+						 * der Anwendung (`l17Regelvorbehalt` in `wendeReglementAn`) dieselbe
+						 * Stelle `l17NurFallgenau` fragt.
 						 */
-						nurEigens: regelNurFallgenau(k),
+						nurEigens: regelNurFallgenauNachLesart(k, lesarteneinstellung.wahl),
 						gesetzlich: k.formel ?? typdefinition(holeRegelwerk(), k.typ).formel,
 						/*
 						 * **Die Zuordnungshilfe** — der zweite Teil von A-14: «Dazu fehlt
@@ -255,10 +260,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		),
 		// Wo eine Regel ohne Köpfe greift, je Art (Codeprüfung Block A, N2).
 		ohneKoepfeGiltFuer: Object.fromEntries(
-			GESCHAEFTSARTEN.map((g) => [g.art, regelOhneKoepfeGiltFuer(holeRegelwerk(), g.art)])
+			GESCHAEFTSARTEN.map((g) => [g.art, regelOhneKoepfeGiltFuer(holeRegelwerk(), g.art, null, lesarteneinstellung.wahl)])
 		),
 		reichweiten: Object.fromEntries(
-			GESCHAEFTSARTEN.map((g) => [g.art, regelReichweite(holeRegelwerk(), g.art)])
+			GESCHAEFTSARTEN.map((g) => [g.art, regelReichweite(holeRegelwerk(), g.art, lesarteneinstellung.wahl)])
 		),
 		regeln: regeln.map((r) => ({ ...r, satz: regelInWorten(r) })),
 		/*

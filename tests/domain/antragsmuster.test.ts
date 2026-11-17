@@ -78,4 +78,12 @@ describe('antragsmuster', () => {
 			expect(satz.trimEnd().endsWith('.'), art).toBe(true);
 		}
 	});
+
+	it('legt die Bezahlung aus dem Erneuerungsfonds in keinen Antrag über eine Arbeit (Fassung 2026-11-20)', () => {
+		// Die Bezahlung ist ein zweiter Beschluss mit eigenem Mehr (Rz. 139 ad Art. 712l);
+		// im Antrag der Arbeit rechnete Votum nur deren Mehr.
+		for (const art of ['baulich_notwendig', 'baulich_nuetzlich', 'baulich_luxurioes'] as const) {
+			expect(antragsmuster(art, 'die Dachsanierung'), art).not.toMatch(/Erneuerungsfonds|Fonds/);
+		}
+	});
 });

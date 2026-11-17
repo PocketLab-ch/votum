@@ -108,7 +108,25 @@ export interface Freigabelage {
 	 * die Freigabe einfriert (Migration 169; Rest aus Lesarten Block 1, Review
 	 * DeepSeek). Fehlt das Feld: keine.
 	 */
-	lesartVeraltet?: { nummer: string; titel: string }[];
+	lesartVeraltet?: { nummer: string; titel: string; grund?: 'fondsentnahme' }[];
+}
+
+/**
+ * Die Absage an einem Traktandum zur Bezahlung aus dem Erneuerungsfonds, dessen
+ * Mehr nicht mehr zu den Regeln und der Lesart L17 passt (Codeprüfung L17, M1).
+ * Dort kann auch eine bloss geänderte Regel das Mehr ändern: Fundstelle
+ * berichtigt, Regel gelöscht, eine fallgenaue neben die allgemeine gesetzt.
+ * «Lesarten umgestellt» nennte dann die falsche Ursache.
+ */
+export const FONDSENTNAHME_VERALTET =
+	'Das Mehr eines Traktandums zur Bezahlung aus dem Erneuerungsfonds stimmt nicht mehr mit den Regeln und der ' +
+	// Laienprüfung Runde 6 (R6-L-3): Vor der Freigabe ist noch nicht eingeladen.
+	'Lesart L17 Ihrer Gemeinschaft überein. Leiten Sie es auf der Reglementseite neu her und geben Sie dann frei; ' +
+	'die Einladung nennt das neue Mehr.';
+
+/** Der Satz zu einem veralteten Traktandum, nach seinem Grund. */
+export function veraltetInWorten(t: { titel: string; grund?: 'fondsentnahme' }): string {
+	return t.grund === 'fondsentnahme' ? `${FONDSENTNAHME_VERALTET} Betroffen ist «${t.titel}».` : lesartVeraltetInWorten(t.titel);
 }
 
 /**
@@ -201,7 +219,11 @@ export function pruefeFreigabe(lage: Freigabelage): Freigabebefund {
 	 * dem Versuch.
 	 */
 	for (const t of lage.lesartVeraltet ?? []) {
-		hindernisse.push({ kennung: 'lesart_veraltet', text: lesartVeraltetInWorten(t.titel), weg: 'lesarten' });
+		hindernisse.push({
+			kennung: 'lesart_veraltet',
+			text: veraltetInWorten(t),
+			weg: t.grund === 'fondsentnahme' ? 'reglement' : 'lesarten'
+		});
 	}
 
 	if (lage.anzahlParteien === 0) {
