@@ -27,7 +27,7 @@ const saetze = (t: string) => t.split(/(?<=\.)\s+(?=[A-ZÄÖÜ«])/);
 
 describe('Fassung 2026-11-24', () => {
 	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 	});

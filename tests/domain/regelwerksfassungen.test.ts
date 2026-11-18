@@ -36,6 +36,12 @@ import {
 	nachDieserFassung as nachDerFassung_2026_11_22
 } from '$lib/rules/quorum-2026-11-22';
 import {
+	ERSATZWEG_JE_KARTE as ERSATZWEG_JE_KARTE_2026_11_25,
+	ERSATZWEG_VORHER as ERSATZWEG_VORHER_2026_11_25,
+	QUALIFIZIERT_ERKLAERT as QUALIFIZIERT_2026_11_25,
+	nachDieserFassung as nachDerFassung_2026_11_25
+} from '$lib/rules/quorum-2026-11-25';
+import {
 	ENTNAHME as ENTNAHME_2026_11_20,
 	ENTNAHME_ID as ENTNAHME_ID_2026_11_20,
 	KARTEN_MIT_ENTNAHME as KARTEN_MIT_ENTNAHME_2026_11_20,
@@ -155,6 +161,7 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-25',
 			'2026-11-24',
 			'2026-11-23',
 			'2026-11-22',
@@ -1504,7 +1511,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb
@@ -3451,6 +3458,9 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_21(HINWEIS_GEWOEHNLICH_2026_10_24));
 		// Ab der Fassung 2026-11-22 mit dem umgestellten Widerruf (Website-Prüfung am Abzug 2026-11-21).
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_22(HINWEIS_GEWOEHNLICH_2026_10_24));
+		// Ab der Fassung 2026-11-25 die Erklärung des qualifizierten Mehrs (Laien L2-5): Sie sagt, was das
+		// Gesetz unter dem Wort versteht, und gilt unter jeder Regel.
+		bekannt.get('k-bewirtschaftung-waehlen')!.add(QUALIFIZIERT_2026_11_25);
 		/*
 		 * **Die Verweise ab 2026-10-27** (Entscheiden statt der Versammlung) zeigen
 		 * auf eine andere Karte und erklären nicht das Mehr dieser Karte; sie
@@ -3565,6 +3575,14 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		bekannt.get('k-bewirtschaftung-waehlen-erweitert')!.add(RUECKNAHME_2026_11_22);
 		for (const id of [ENTNAHME_ID_2026_11_20, VEREINBART_ID_2026_11_20]) {
 			bekannt.get(id)!.add(nachDerFassung_2026_11_22(ZWEI_BESCHLUESSE_2026_11_20));
+		}
+		// Ab der Fassung 2026-11-25 mit «widerrufen» und dem Beispiel für den Ersatzweg (Laien L2-4),
+		// unter jeder Regel wie vorher.
+		// Der Ersatzweg je Karte (Runde 2, Fach F5-2), nicht über `nachDieserFassung`.
+		for (const id of [ENTNAHME_ID_2026_11_20, VEREINBART_ID_2026_11_20]) {
+			bekannt.get(id)!.add(
+				nachDerFassung_2026_11_25(ZWEI_BESCHLUESSE_2026_11_20).replace(ERSATZWEG_VORHER_2026_11_25, ERSATZWEG_JE_KARTE_2026_11_25[id])
+			);
 		}
 		const erweitert = AKTUELL.knoten.find((k) => k.id === 'k-bewirtschaftung-erweitert')!;
 		expect(erweitert.hinweiseUnterRegel ?? []).toContainEqual({ hinweis: DELEGATION_RZ_115_2026_11_04, zumGesetz: true });

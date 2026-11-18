@@ -143,7 +143,7 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-24): Die Wortlaute der Website hängen an den Ersetzungen
+// Die aktuelle Fassung (2026-11-25): Die Wortlaute der Website hängen an den Ersetzungen
 // der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19, 2026-11-21 und 2026-11-22 (`nachDieserFassung`;
 // 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung, 2026-11-21 fasst ihn neu und
 // trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`; 2026-11-22 stellt
@@ -151,13 +151,15 @@ import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
 // `RUECKNAHME_WEBSITE`, gibt die Sätze nach dem Kernsatz K, `NACH_K`, und den Eilweg der
 // Prozessführung mit Dringlichkeit und Nein wie in der Anwendung, `EILWEG`; 2026-11-23 stellt den Fallteil
 // als eigenen Absatz vor K, `VOR_K`, und lässt nach K nur, was bei einem Gesuch zählt, `NACH_K`;
-// 2026-11-24 fasst an der Prozessführung die Ermächtigung im Voraus enger, `IM_VORAUS`). Die Fassung 2026-11-20 führt
+// 2026-11-24 fasst an der Prozessführung die Ermächtigung im Voraus enger, `IM_VORAUS`; 2026-11-25 ergänzt
+// Hilfe und Hinweise nach den niedrigen Befunden, den Fallteil an der Wahl um die Wiederwahl, den Teil nach K
+// am Fonds und den Hinweis zur Offerte auf der Website, `OFFERTE_WEBSITE`). Die Fassung 2026-11-20 führt
 // die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
 // Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_24 } from '../src/lib/rules/quorum-2026-11-24.ts';
+import { REGELWERK_2026_11_25 } from '../src/lib/rules/quorum-2026-11-25.ts';
 import {
 	ENTNAHME_ID as FONDS_ENTNAHME_ID,
 	VEREINBART_ID as FONDS_VEREINBART_ID,
@@ -170,8 +172,8 @@ import {
 	RUECKNAHME_WEBSITE,
 	WIDERRUF_WEBSITE as WIDERRUF
 } from '../src/lib/rules/quorum-2026-11-22.ts';
-import { NACH_K, VOR_K } from '../src/lib/rules/quorum-2026-11-23.ts';
-import { IM_VORAUS, IM_VORAUS_NUR_ANWENDUNG, IM_VORAUS_VORHER, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-24.ts';
+import { IM_VORAUS, IM_VORAUS_NUR_ANWENDUNG, IM_VORAUS_VORHER } from '../src/lib/rules/quorum-2026-11-24.ts';
+import { NACH_K, OFFERTE_WEBSITE, VOR_K, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-25.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -234,7 +236,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_24;
+const rw = REGELWERK_2026_11_25;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -1482,9 +1484,9 @@ const AUFTEILUNGEN = new Map([
 				].join(' '),
 				// Runde 2, R2 (Laien 3): Befugnisse nur in der Offerte. Der geprüfte Website-Wortlaut; die
 				// Anwendung sagt seit der Fassung 2026-11-17 dazu, was «Offerte» heisst und was gilt, wenn
-				// die Befugnisse später dazukommen (`WAHL_STUECKE.streichen`, Laienprüfung M3).
-				'Stehen die weitergehenden Befugnisse nur in der Offerte und nicht im Reglement, können Sie sie vor der ' +
-					'Wahl streichen lassen; dann genügt für die Wahl das einfache Mehr (SVIT-Kommentar Rz. 44 ad Art. 712m).',
+				// die Befugnisse später dazukommen (`WAHL_STUECKE.streichen`, Laienprüfung M3). Ab der Fassung
+				// 2026-11-25 ohne den laufenden Vertrag (`OFFERTE_WEBSITE`, Laien L4-3).
+				OFFERTE_WEBSITE,
 				// Wenn die Gemeinschaft ohne Bewirtschaftung ist.
 				WAHL_OHNE_BEWIRTSCHAFTUNG,
 				// Warum, und die Gegenmeinung (F5: Rz. 112 ad Art. 712a).
@@ -2415,6 +2417,15 @@ for (const id of Object.keys(VOR_K)) {
 	const begruendung = abzug.knoten.find((k) => k.id === 'k-prozessfuehrung')?.begruendung ?? '';
 	if (!begruendung.includes(IM_VORAUS) || begruendung.includes(IM_VORAUS_NUR_ANWENDUNG.trim())) {
 		throw new Error('Ermächtigung im Voraus: Die Begründung von «k-prozessfuehrung» trägt auf der Website nicht genau den Satz für die Website.');
+	}
+}
+// **Der Hinweis zur Offerte auf der Website** (Fassung 2026-11-25, Codeprüfung): genau einmal, an der Wahl
+// mit erweiterten Kompetenzen; der Wortlaut der Anwendung (`OFFERTE`) gehört nicht auf die Website.
+{
+	const n = JSON.stringify(abzug).split(JSON.stringify(OFFERTE_WEBSITE).slice(1, -1)).length - 1;
+	const an = abzug.knoten.find((k) => k.id === 'k-bewirtschaftung-waehlen-erweitert')?.hinweise ?? [];
+	if (n !== 1 || !an.includes(OFFERTE_WEBSITE) || JSON.stringify(abzug).includes('also im Entwurf des Verwaltungsvertrags, können Sie')) {
+		throw new Error(`Hinweis zur Offerte: ${n}-mal im Abzug, statt einmal als Hinweis an «k-bewirtschaftung-waehlen-erweitert».`);
 	}
 }
 const nochEinigeTage = JSON.stringify(abzug).match(/.{0,80}einige Tage nach Ablauf.{0,40}/);

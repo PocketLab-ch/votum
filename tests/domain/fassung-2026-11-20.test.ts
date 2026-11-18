@@ -82,7 +82,7 @@ const STRENGER = {
 
 describe('Fassung 2026-11-20', () => {
 	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);

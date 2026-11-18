@@ -1654,7 +1654,10 @@ in der Anwendung gleich 2026-11-22 und gibt nur dem geänderten Abzug eine eigen
 weil der Abzug 2026-11-22 auf der Website mit seiner Prüfsumme geprüft steht. 2026-11-24
 fasst an der Prozessführung die Ermächtigung im Voraus enger (`IM_VORAUS`, BGer 5A_590/2011
 E. 8.3); die Anwendung trägt dazu zwei Sätze zu Streit und Erneuerung, die auf der Website
-der Kasten darunter sagt (`IM_VORAUS_NUR_ANWENDUNG`, im Abzug weggelassen). Der
+der Kasten darunter sagt (`IM_VORAUS_NUR_ANWENDUNG`, im Abzug weggelassen). 2026-11-25
+ergänzt die Hilfe zu `f2-1-kompetenzen` (laufender Vertrag, Vergabebetrag, Rücknahme, Reihenfolge),
+erklärt an der Wahl das qualifizierte Mehr und gibt den Fondskarten je Karte einen Ersatzweg
+(`ERSATZWEG_JE_KARTE`, nicht über `nachDieserFassung`, weil derselbe Satz verschieden weitergeht). Der
 Abzug bricht bei einer Wortdopplung ab, mit der Regel des Inhaltswächters der Website. 2026-11-16
 ändert dazu Wortlaut: die allgemeine Erklärung zum Wortlaut (`ZAEHLUNG_ANWESENDE`,
 T4) und den Freigabevermerk (`FREIGABEVERMERK_ZUSATZ`, T7d; Textrunde zu den

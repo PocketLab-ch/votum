@@ -1725,7 +1725,8 @@ dem Häkchen von heute.
 
 Legen Sie Arbeit und Bezahlung in zwei Traktanden, zuerst die Arbeit, und sagen
 Sie in deren Antrag, wie sie bezahlt wird, wenn die Bezahlung aus dem Fonds
-nicht zustande kommt oder angefochten ist. Stehen beide in einem einzigen Antrag, muss er beide Mehr
+nicht zustande kommt oder angefochten ist, etwa über einen Sonderbeitrag nach dem
+Verteiler der Arbeit; den Wortlaut je Fall zeigt die Karte. Stehen beide in einem einzigen Antrag, muss er beide Mehr
 erreichen; Votum rechnet je Traktandum nur eines. Das Antragsmuster für
 notwendige Massnahmen nennt den Fonds deshalb seit dem 17.11.2026 nicht mehr.
 

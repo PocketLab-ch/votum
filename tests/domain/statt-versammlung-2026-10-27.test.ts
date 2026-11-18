@@ -72,7 +72,7 @@ function rechnung(e: ReturnType<typeof herleiten>) {
 
 describe('Fassung 2026-10-27 gegenüber 2026-10-26', () => {
 	it('ist die aktuelle Fassung und in sich stimmig, ohne neue Lesart', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toEqual([]);
 		expect(NEU.knoten.filter((k) => k.lesart).map((k) => k.id)).toEqual(
