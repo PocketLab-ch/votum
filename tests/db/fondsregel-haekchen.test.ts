@@ -210,7 +210,7 @@ describe('Am Traktandum, bei der Freigabe und im Kasten «nachziehen»', () => {
 			erstelleReglementsregel(handelnder(betreiber), regelEingabe(id, { gesichert: true }))
 		);
 		const e = await erfordernisVon(a);
-		expect(e?.fassung).toBe('2026-11-21');
+		expect(e?.fassung).toBe('2026-11-23');
 		expect(e?.quelle).toBe('reglement');
 		expect(e?.kopfSchwelle).toEqual({ zaehler: 1, nenner: 2, art: 'mehr_als' });
 		await gibVersammlungFrei(handelnder(betreiber), a.versammlung);

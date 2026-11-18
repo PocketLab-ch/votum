@@ -32,6 +32,10 @@ import {
 	nachDieserFassung as nachDerFassung_2026_11_21
 } from '$lib/rules/quorum-2026-11-21';
 import {
+	RUECKNAHME_VOR_DER_WAHL as RUECKNAHME_2026_11_22,
+	nachDieserFassung as nachDerFassung_2026_11_22
+} from '$lib/rules/quorum-2026-11-22';
+import {
 	ENTNAHME as ENTNAHME_2026_11_20,
 	ENTNAHME_ID as ENTNAHME_ID_2026_11_20,
 	KARTEN_MIT_ENTNAHME as KARTEN_MIT_ENTNAHME_2026_11_20,
@@ -151,6 +155,8 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-23',
+			'2026-11-22',
 			'2026-11-21',
 			'2026-11-20',
 			'2026-11-19',
@@ -1497,7 +1503,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb
@@ -3442,6 +3448,8 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_19(HINWEIS_GEWOEHNLICH_2026_10_24));
 		// Ab der Fassung 2026-11-21 mit dem neu gefassten Widerruf (Auftrag 2026-11-17, Teil 1).
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_21(HINWEIS_GEWOEHNLICH_2026_10_24));
+		// Ab der Fassung 2026-11-22 mit dem umgestellten Widerruf (Website-Prüfung am Abzug 2026-11-21).
+		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_22(HINWEIS_GEWOEHNLICH_2026_10_24));
 		/*
 		 * **Die Verweise ab 2026-10-27** (Entscheiden statt der Versammlung) zeigen
 		 * auf eine andere Karte und erklären nicht das Mehr dieser Karte; sie
@@ -3548,6 +3556,15 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		bekannt.get(VEREINBART_ID_2026_11_20)!.add(LUXURIOES_2026_11_21);
 		if (!bekannt.has('k-bewirtschaftung-waehlen-erweitert')) bekannt.set('k-bewirtschaftung-waehlen-erweitert', new Set());
 		bekannt.get('k-bewirtschaftung-waehlen-erweitert')!.add(RUECKNAHME_2026_11_21);
+		/*
+		 * **Ab der Fassung 2026-11-22** dieselben Hinweise neu gefasst: die Rücknahme vor der Wahl
+		 * und die zwei Beschlüsse mit der Anfechtung im Satz zum Antrag über die Arbeit. Sie
+		 * gelten unter jeder Regel wie vorher.
+		 */
+		bekannt.get('k-bewirtschaftung-waehlen-erweitert')!.add(RUECKNAHME_2026_11_22);
+		for (const id of [ENTNAHME_ID_2026_11_20, VEREINBART_ID_2026_11_20]) {
+			bekannt.get(id)!.add(nachDerFassung_2026_11_22(ZWEI_BESCHLUESSE_2026_11_20));
+		}
 		const erweitert = AKTUELL.knoten.find((k) => k.id === 'k-bewirtschaftung-erweitert')!;
 		expect(erweitert.hinweiseUnterRegel ?? []).toContainEqual({ hinweis: DELEGATION_RZ_115_2026_11_04, zumGesetz: true });
 		expect(bekannt.get('k-bewirtschaftung-erweitert')?.has(DELEGATION_RZ_115_2026_11_04)).toBe(false);

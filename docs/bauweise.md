@@ -1629,10 +1629,30 @@ Wortlaut der Website mit dem offenen Fall aus dem Begründungsakt und der Antwor
 Baum, die Rücknahme vor der Wahl an der zweiten Wahlkarte, die luxuriöse Arbeit an
 der vereinbarten Verwendung und an `k-reglement-quoren` die Wartezeit nach der Frist
 im Wortlaut der Website (Teil 1 des Auftrags `2026-11-17-votum-pendenzen-folge`).
+2026-11-22 ist eine Fassung nur für Wortlaut, nach der Website-Prüfung am Abzug
+2026-11-21: der Widerruf in der Reihenfolge des FAQ-Kastens «Befugnisse zurücknehmen»
+(das einfache Mehr zuerst, mit seiner Bedingung; der Begründungsakt erklärt), die
+Rücknahme vor der Wahl ohne «sie sie», mit «der Hinweis davor» statt «oben auf dieser
+Karte», mit dem Begründungsakt neben dem Reglement und dem Schritt beim laufenden
+Vertrag, auf der Website ohne die Bedienung von Votum (`RUECKNAHME_WEBSITE`), den Satz
+zum Antrag über die Arbeit mit der Anfechtung an den drei Karten zum Fonds, und an der
+Begründung der Prozessführung nach dem Eilweg, was dringlich ist (`DRINGLICH_PROZESS`,
+Rz. 78 ad Art. 712t), mit dem Satz zum Nein neu gefasst («darf die Verwaltung so in der
+Regel nicht handeln»); die Website trägt diesen Schluss seither wie die Anwendung.
 Den Wortlaut der Website zur Wartezeit setzt der Abzug selbst nach dem Text ein,
 nicht an den Konstanten (`mitWartezeit` in `scripts/quorumsbaum-export.mjs`): an der
 Stelle, die auf der Karte zuoberst steht, den Kernsatz, an weiteren die Kurzform, mit
-einer Probe der Zahl je Karte. 2026-11-16
+einer Probe der Zahl je Karte. An drei Karten, deren Geschäft das Warten nicht verträgt
+(Prozessführung, Wahl mit erweiterten Kompetenzen, Bezahlung aus dem Fonds), hat der
+Kasten eigene Absätze mit fettem Anfang, in der Folge Zählung und Anfechtung, Fallteil
+(`VOR_K` der Fassung 2026-11-23, an der Prozessführung mit einem Absatz zu ausstehenden
+Beiträgen), Kernsatz, was bei einem Gesuch gilt (`NACH_K`), Enthaltungen (`mitFallteil`,
+mit Probe der ganzen Folge; in der Fassung 2026-11-22 stand nur ein Satz nach dem
+Kernsatz). Der Kernsatz bleibt zeichengleich, weil er auch in der FAQ der Website geprüft
+steht. 2026-11-23 ist
+in der Anwendung gleich 2026-11-22 und gibt nur dem geänderten Abzug eine eigene Kennung,
+weil der Abzug 2026-11-22 auf der Website mit seiner Prüfsumme geprüft steht. Der
+Abzug bricht bei einer Wortdopplung ab, mit der Regel des Inhaltswächters der Website. 2026-11-16
 ändert dazu Wortlaut: die allgemeine Erklärung zum Wortlaut (`ZAEHLUNG_ANWESENDE`,
 T4) und den Freigabevermerk (`FREIGABEVERMERK_ZUSATZ`, T7d; Textrunde zu den
 Pendenzen nach Regel 43). Sätze im Kern

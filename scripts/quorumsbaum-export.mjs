@@ -143,27 +143,33 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-21): Die Wortlaute der Website hängen an den Ersetzungen
-// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19 und 2026-11-21 (`nachDieserFassung`;
+// Die aktuelle Fassung (2026-11-23, in der Anwendung gleich 2026-11-22): Die Wortlaute der Website hängen an den Ersetzungen
+// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19, 2026-11-21 und 2026-11-22 (`nachDieserFassung`;
 // 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung, 2026-11-21 fasst ihn neu und
-// trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`). Die Fassung 2026-11-20 führt
+// trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`; 2026-11-22 stellt
+// ihn um, trägt die Rücknahme vor der Wahl auf der Website ohne die Bedienung von Votum,
+// `RUECKNAHME_WEBSITE`, gibt die Sätze nach dem Kernsatz K, `NACH_K`, und den Eilweg der
+// Prozessführung mit Dringlichkeit und Nein wie in der Anwendung, `EILWEG`; 2026-11-23 stellt den Fallteil
+// als eigenen Absatz vor K, `VOR_K`, und lässt nach K nur, was bei einem Gesuch zählt, `NACH_K`). Die Fassung 2026-11-20 führt
 // die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
 // Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_21 } from '../src/lib/rules/quorum-2026-11-21.ts';
+import { REGELWERK_2026_11_23 } from '../src/lib/rules/quorum-2026-11-23.ts';
 import {
 	ENTNAHME_ID as FONDS_ENTNAHME_ID,
 	VEREINBART_ID as FONDS_VEREINBART_ID,
 	AUSSERHALB_ID as FONDS_AUSSERHALB_ID
 } from '../src/lib/rules/quorum-2026-11-20.ts';
+import { WARTEZEIT_K, WARTEZEIT_KK } from '../src/lib/rules/quorum-2026-11-21.ts';
 import {
-	WARTEZEIT_K,
-	WARTEZEIT_KK,
-	WIDERRUF_WEBSITE as WIDERRUF,
-	nachDieserFassung
-} from '../src/lib/rules/quorum-2026-11-21.ts';
+	EILWEG as EILWEG_NEU,
+	RUECKNAHME_VOR_DER_WAHL,
+	RUECKNAHME_WEBSITE,
+	WIDERRUF_WEBSITE as WIDERRUF
+} from '../src/lib/rules/quorum-2026-11-22.ts';
+import { NACH_K, VOR_K, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-23.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -200,6 +206,7 @@ import {
 	AUSSCHLUSS_BEGRUENDUNG_VORHER,
 	HINWEIS_ZAEHLBASIS_VORHER,
 	HINWEIS_ZAHLEN,
+	EILWEG_VORHER as EILWEG_GESETZ,
 	W10,
 	ANGEHOERIGE,
 	GEGEN_EIGENTUEMER
@@ -225,7 +232,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_21;
+const rw = REGELWERK_2026_11_23;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -817,7 +824,8 @@ const WAHL_ERSTER_SATZ_WEBSITE =
 	'statt nur vorschlagen, Einstimmigkeit (ZGB Art. 647b Abs. 1, 712g Abs. 3; ' +
 	'SVIT-Kommentar Rz. 46 ad Art. 712q, Rz. 91 ad Art. 712g, Rz. 45 ad Art. 712m). ' +
 	// Ab der Fassung 2026-11-19 der Widerruf, ab 2026-11-21 nach dem Wortlaut der Website-Karte
-	// `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026), ohne die Sätze zu Votum.
+	// `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026), ohne die Sätze zu Votum; ab
+	// 2026-11-22 in der Reihenfolge des FAQ-Kastens «Befugnisse zurücknehmen» (Meldung vom 18.11.2026).
 	WIDERRUF;
 
 /**
@@ -954,6 +962,10 @@ const UMFORMULIERUNGEN = new Map([
 		nachDieserFassung(WAHL_HINWEIS_NACH_GESETZ),
 		`${WAHL_ERSTER_SATZ_WEBSITE} ${WAHL_REST}`
 	],
+	// **Die Rücknahme vor der Wahl ohne die Bedienung von Votum** (Fassung 2026-11-22; Website-
+	// Prüfung am Abzug 2026-11-21, Fach F-5, Laien L-5): Auf der Website legt niemand ein
+	// Traktandum auf eine Karte, und den Verweis der gewöhnlichen Wahlkarte trägt sie nicht.
+	[RUECKNAHME_VOR_DER_WAHL, RUECKNAHME_WEBSITE],
 	// **Kleine Gemeinschaften an der Ausschlussklage: ohne «Votum»** (Fassung
 	// 2026-11-13, Entscheid 0048, Block B). Die Website nennt Votum nirgends
 	// (`check-abzug.mjs`); sie sagt wie an den übrigen Karten «diese Karte».
@@ -1034,7 +1046,9 @@ const UMFORMULIERUNGEN = new Map([
 	// Website wählt niemand, und sie geht weiter vom qualifizierten Mehr aus.
 	// Sie behält ihren geprüften Wortlaut bis Block 8, nur ohne den
 	// Werkzeugsatz (Konzept Lesarten, Kriterium 15).
-	[PROZESS_BEGRUENDUNG, PROZESS_BEGRUENDUNG_VORHER],
+	// Ab der Fassung 2026-11-22 mit dem Satz, was dringlich ist (Laien VK-L-1), und dem Satz zum
+	// Nein, den bis dahin nur die Anwendung trug (Fach F3-1, Laien VK2-L-2): der Eilweg wie dort.
+	[nachDieserFassung(PROZESS_BEGRUENDUNG), ersetzeGenau(PROZESS_BEGRUENDUNG_VORHER, EILWEG_GESETZ, EILWEG_NEU)],
 	// **Die luxuriöse Massnahme: der Wortlaut vor der Lesart** (Fassung
 	// 2026-11-10, L12; Codeprüfung E1 Block B, Befund 1), wie bei L11: ohne die
 	// Seite «Lesarten» und ohne den Werkzeugsatz. Die Sätze dieses Abschnitts bis
@@ -2320,6 +2334,16 @@ const WARTEN_ERWARTET = {
 	'k-erneuerungsfonds-entnahme': 1
 };
 
+/** Ein Absatz mit fettem Anfang, wie «Wenn Sie nicht zugestimmt haben» (ab der Fassung 2026-11-23). */
+const ABSATZ = '<br><br>';
+const fett = ({ vorspann, text }) => `<strong>${vorspann}</strong>${text.slice(vorspann.length)}`;
+/**
+ * Was an einer Karte mit Fallteil an die Stelle von « K» tritt: die Absätze vor K, K als eigener
+ * Absatz, der Absatz nach K und eine Leerzeile vor dem Rest des Kastens (Laien L2-1, L3-3).
+ */
+const mitFallteil = (id) =>
+	`${ABSATZ}${VOR_K[id].map(fett).join(ABSATZ)}${ABSATZ}${WARTEZEIT_K}${ABSATZ}${fett(NACH_K[id])}${ABSATZ}`;
+
 function mitWartezeit(knoten) {
 	let gesetzt = (knoten.hinweise ?? []).some((h) => h.includes(WARTEZEIT_K)) ? 1 : 0;
 	let neu = 0;
@@ -2341,11 +2365,19 @@ function mitWartezeit(knoten) {
 				if (ende === -1) throw new Error(`Wartezeit an «${knoten.id}»: Der Satz «Das gilt auch, wenn …» endet nicht.`);
 				stelle = ende + 1;
 			}
-			const zusatz = gesetzt === 0 ? WARTEZEIT_K : WARTEZEIT_KK;
+			// An drei Karten der Fallteil als eigene Absätze vor K, die sagen, was dort nicht warten muss
+			// (`VOR_K`, ab der Fassung 2026-11-23; Website-Prüfung am Abzug 2026-11-22, Laien L2-1, Fach
+			// F2-2), und als Absatz direkt nach K, was bei einem Gesuch gilt (`NACH_K`, Laien L3-3).
+			// K bleibt zeichengleich. Der Rest des Kastens beginnt dann ohne Leerzeichen.
+			const fall = gesetzt === 0 && VOR_K[knoten.id];
+			if (fall && !aus.startsWith(' ', stelle)) {
+				throw new Error(`Wartezeit an «${knoten.id}»: Nach dem Fallteil folgt kein weiterer Satz.`);
+			}
+			const zusatz = fall ? mitFallteil(knoten.id) : ` ${gesetzt === 0 ? WARTEZEIT_K : WARTEZEIT_KK}`;
 			gesetzt += 1;
 			neu += 1;
-			aus = `${aus.slice(0, stelle)} ${zusatz}${aus.slice(stelle)}`;
-			ab = stelle + zusatz.length + 1;
+			aus = `${aus.slice(0, stelle)}${zusatz}${aus.slice(fall ? stelle + 1 : stelle)}`;
+			ab = stelle + zusatz.length;
 		}
 	};
 	const ergebnis = { ...knoten };
@@ -2358,6 +2390,16 @@ function mitWartezeit(knoten) {
 	return ergebnis;
 }
 abzug.knoten = abzug.knoten.map(mitWartezeit);
+for (const id of Object.keys(VOR_K)) {
+	const kasten = abzug.knoten.find((k) => k.id === id)?.wortlautErklaerung ?? '';
+	const folge = `nicht vor Ablauf dieser Frist aus.${mitFallteil(id)}Enthaltungen zählen`;
+	const n = JSON.stringify(abzug).split(JSON.stringify(mitFallteil(id)).slice(1, -1)).length - 1;
+	if (n !== 1 || !kasten.includes(folge)) {
+		throw new Error(
+			`Fallteil an «${id}»: ${n}-mal im Abzug, statt einmal im Kasten zwischen «… nicht vor Ablauf dieser Frist aus.» und «Enthaltungen zählen …».`
+		);
+	}
+}
 const nochEinigeTage = JSON.stringify(abzug).match(/.{0,80}einige Tage nach Ablauf.{0,40}/);
 if (nochEinigeTage) throw new Error(`«einige Tage nach Ablauf» steht noch im Abzug: «${nochEinigeTage[0]}»`);
 
@@ -2373,5 +2415,26 @@ if (nochEinigeTage) throw new Error(`«einige Tage nach Ablauf» steht noch im A
 const KEIN_GEDANKENSTRICH = /—| – /;
 const mitStrich = JSON.stringify(abzug).match(new RegExp(`.{0,60}${KEIN_GEDANKENSTRICH.source}.{0,30}`));
 if (mitStrich) throw new Error(`Gedankenstrich im Website-Abzug: «${mitStrich[0]}»`);
+
+/*
+ * **Keine Wortdopplung im Abzug** (Fassung 2026-11-22, Meldung der Website vom 18.11.2026,
+ * Punkt 3): «kann sie sie vor der Wahl zurücknehmen» brach den Prüflauf der Website, weil
+ * ihr Inhaltswächter jede Dopplung als halb angewandte Ersetzung meldet. Dieselbe Regel wie
+ * `pruefe_dopplungen` in `_tools/content-check.py` der Website: zwei gleiche Wörter
+ * hintereinander, ohne Komma dazwischen, «Sie sie» (Anrede und Fürwort) ausgenommen.
+ */
+// Die Wortgrenzen ausgeschrieben: In JavaScript gehört «ü» nicht zu `\w` und `\b`, in Python
+// schon; sonst wäre «zur Zurückhaltung» eine Dopplung.
+const DOPPLUNG = /(?<![\p{L}\d_])([A-Za-zÄÖÜäöüß]{2,})\s+\1(?![\p{L}\d_/-])/giu;
+const abzugText = JSON.stringify(abzug);
+const dopplungen = [...abzugText.matchAll(DOPPLUNG)].filter((t) => {
+	const [a, b] = t[0].split(/\s+/);
+	return !(t[1].toLowerCase() === 'sie' && a !== b);
+});
+if (dopplungen.length > 0) {
+	throw new Error(
+		`Wortdopplung im Website-Abzug: ${dopplungen.map((t) => `«${abzugText.slice(Math.max(0, t.index - 60), t.index + t[0].length + 20)}»`).join(', ')}`
+	);
+}
 
 process.stdout.write(JSON.stringify(abzug, null, '\t') + '\n');

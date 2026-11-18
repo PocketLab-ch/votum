@@ -50,7 +50,7 @@ const VEREINBART = NEU.knoten.filter((k) => k.reglementsverhalten === 'vereinbar
 
 describe('Fassung 2026-11-11', () => {
 	it('ist seit Block B (Entscheid 0048) nicht mehr die aktuelle und in sich stimmig', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
 		expect(EINWAND_STRENGER_AB).toBe('2026-11-11');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 	});

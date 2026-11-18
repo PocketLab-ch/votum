@@ -46,7 +46,7 @@ function herleiten(rw: typeof NEU, wahlen: Lesartenwahl = LESARTEN_VORGABE) {
 
 describe('Fassung 2026-10-26 gegenüber 2026-10-25', () => {
 	it('ist in sich stimmig, mit L2 am Knoten, und seit Lesarten Block 4 nicht mehr die aktuelle', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
 		expect(pruefeRegelwerk(NEU)).toEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toEqual([]);
 		expect(NEU.knoten.filter((k) => k.lesart?.kennung === 'L2').map((k) => k.id)).toEqual([ZUSTAENDIGKEIT_ID]);

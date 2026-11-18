@@ -19,7 +19,7 @@ Traktandum nicht veraltet») und den Abschnitt «Was eingefroren ist und was liv
 
 **Entscheid vom 17.11.2026:**
 
-Auf die Frage zu R2-F-6 und R5-F-2 (Auftrag `.auftraege/2026-11-17-votum-pendenzen-folge.md`,
+Auf die Frage zu R2-F-6 und R5-F-2 (Auftrag `.auftraege/erledigt/2026-11-17-votum-pendenzen-folge.md`,
 Teile 2 und 3), gewählte Antwort «Häkchen, sonst Hinweis»:
 
 > «Neu ein Häkchen an der Regel: ‹steht im Begründungsakt oder alle haben zugestimmt›. Mit
