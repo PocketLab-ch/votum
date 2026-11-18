@@ -111,7 +111,7 @@ gewählten Option, wie sie in der Frage stand:
 ## Anlass
 
 Meldung der Rechtskarten-Sitzung vom 13.11.2026
-(`.auftraege/2026-11-13-votum-meldungen-regel43-runde2.md`): An vier Stellen
+(`.auftraege/erledigt/2026-11-13-votum-meldungen-regel43-runde2.md`): An vier Stellen
 folgte Votum dem SVIT-Kommentar gegen einen Wortlaut, der die Frage
 beantwortet, ohne Entscheid des Bundesgerichts.
 

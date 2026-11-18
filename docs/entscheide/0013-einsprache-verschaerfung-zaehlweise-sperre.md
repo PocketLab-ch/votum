@@ -7,7 +7,7 @@
 ## Wortlaut
 
 Drei Fragen zum Einsprachebeschluss nach Art. 712c Abs. 2 (Auftrag
-`.auftraege/2026-10-19-votum-einsprachebeschluss-712c.md`). Nur (b) hat der
+`.auftraege/erledigt/2026-10-19-votum-einsprachebeschluss-712c.md`). Nur (b) hat der
 Produktverantwortliche entschieden, auf eine Rückfrage mit zwei Möglichkeiten.
 (a) und (c) hat die auftraggebende Sitzung entschieden, weil sie aus dem Auftrag
 und dem bestehenden Muster folgen; sie sind hier sinngemäss festgehalten und

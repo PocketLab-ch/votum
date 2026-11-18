@@ -721,6 +721,7 @@
 						<Antragsvorschlag
 							art={neuArt}
 							titel={neuTitel}
+							fall={neuFall || null}
 							vorhanden={neuWortlaut}
 							uebernehmen={(satz) => (neuWortlaut = satz)}
 						/>

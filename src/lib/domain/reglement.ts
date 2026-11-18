@@ -143,6 +143,19 @@ export interface ReglementsregelEingabe {
 	 * (AD-15).
 	 */
 	enthaltungZaehltMit: boolean;
+	/**
+	 * Das Häkchen «steht in der ursprünglichen Fassung des Begründungsakts oder
+	 * hat die Zustimmung aller Eigentümer» (Migration 197; Produktentscheid
+	 * 17.11.2026, «Häkchen, sonst Hinweis»; R2-F-6, R5-F-2).
+	 *
+	 * **Nur an der Bezahlung aus dem Fonds im gewöhnlichen Zweck wirksam**
+	 * (`fondsregelHaekchenWirkt`): Dort rechnet Votum unter L17 «streng» eine
+	 * Regel mit Häkchen, ob milder oder strenger. Gespeichert wird es nur bei der
+	 * Geschäftsart `verwaltung_wichtig`, für alle Fälle oder genau diesen
+	 * (`pruefeReglementsregel`); sonst `false`. Fehlt das Feld, heisst das
+	 * `false`, wie die Vorgabe der Spalte.
+	 */
+	gesichert?: boolean;
 	hinweis?: string;
 }
 
@@ -270,7 +283,87 @@ export function pruefeReglementsregel(
 		);
 	}
 
-	return { ...eingabe, fundstelle, hinweis: eingabe.hinweis?.trim() || undefined };
+	return {
+		...eingabe,
+		fundstelle,
+		gesichert: haekchenMoeglich(eingabe) && eingabe.gesichert === true,
+		hinweis: eingabe.hinweis?.trim() || undefined
+	};
+}
+
+/**
+ * Ob das Häkchen «Begründungsakt oder Zustimmung aller» an einer Regel dieser
+ * Art und dieses Falls etwas bewirken kann: an der Bezahlung aus dem Fonds im
+ * gewöhnlichen Zweck (`FONDSENTNAHME_KNOTEN`), also bei einer Regel für genau
+ * diesen Fall oder für alle wichtigeren Verwaltungshandlungen. Sonst stünde es
+ * an einer Regel, ohne dass es etwas tut. Dieselbe Bedingung zeigt das Feld
+ * auf der Seite «Reglement».
+ */
+export function haekchenMoeglich(r: { geschaeftsart: string; knotenId?: string | null }): boolean {
+	return r.geschaeftsart === FONDSENTNAHME_ART && (!r.knotenId || r.knotenId === FONDSENTNAHME_KNOTEN);
+}
+
+/** Die Karte, an der das Häkchen wirkt (Fassung 2026-11-20, `ENTNAHME_ID`), und ihre Geschäftsart. */
+export const FONDSENTNAHME_KNOTEN = 'k-erneuerungsfonds-entnahme';
+const FONDSENTNAHME_ART: Geschaeftsart = 'verwaltung_wichtig';
+
+/**
+ * Ab welcher Fassung das Häkchen wirkt (Produktentscheid 17.11.2026: in
+ * derselben neuen Fassung wie der Widerruf). Ein Traktandum der Fassung
+ * 2026-11-20 rechnet weiter wie bisher, auch mit Häkchen (AD-4); nachgezogen
+ * kommt es auf die geltende Fassung.
+ */
+export const FONDSREGEL_HAEKCHEN_AB = '2026-11-21';
+
+/** Ob das Häkchen an diesem Erfordernis wirken kann: an der Karte und ab der Fassung. */
+export function fondsregelHaekchenWirkt(e: { knotenId?: string; fassung?: string }): boolean {
+	return e.knotenId === FONDSENTNAHME_KNOTEN && haekchenFassung(e.fassung);
+}
+
+/** Ob eine Fassung das Häkchen kennt (`FONDSREGEL_HAEKCHEN_AB`). */
+function haekchenFassung(fassung: string | undefined): boolean {
+	return fassung !== undefined && istKalendertag(fassung) && fassung >= FONDSREGEL_HAEKCHEN_AB;
+}
+
+/**
+ * Das Häkchen einer Regel für `Erfordernis.regelGesichert` (Migration 198), nur
+ * wo es allein den Satz an der Karte ändert (`nurSatz`) und die Regel es tragen
+ * kann (`haekchenMoeglich`); sonst `undefined`.
+ */
+function haekchenNurAmSatz(regel: Reglementsregel, nurSatz: boolean): boolean | undefined {
+	return nurSatz && haekchenMoeglich(regel) ? regel.gesichert === true : undefined;
+}
+
+/**
+ * An der vereinbarten Verwendung wählt das Häkchen den Satz
+ * (`FONDSENTNAHME_VEREINBART_MIT_HAEKCHEN` oder `FONDSENTNAHME_VEREINBART_MILDER`,
+ * `vorbehaltInWorten`), ab der Fassung 2026-11-21; gerechnet wird dort immer
+ * nach der Karte. Dieselbe Bedingung wie dort: Vorbehalt `milder_nach_lesart`
+ * an einem Mehr der Zustimmung aller.
+ */
+function mitHaekchenZumSatz(erfordernis: Erfordernis, regel: Reglementsregel, anVereinbarter: boolean): Erfordernis {
+	const g = haekchenNurAmSatz(regel, anVereinbarter && haekchenFassung(erfordernis.fassung));
+	return g === undefined ? erfordernis : { ...erfordernis, regelGesichert: g };
+}
+
+/**
+ * Der Zusatz im Kasten «Ein Traktandum trägt noch ein älteres Erfordernis»,
+ * wenn nur das Häkchen wechselt (Migration 198): Ohne ihn stünde dort «von X
+ * auf X». `null` heisst: Das gespeicherte Erfordernis trägt keines, etwa weil
+ * es unter L17 «svit» oder vor Migration 198 hergeleitet wurde; dann «nicht
+ * vermerkt» statt «nicht gesetzt», sonst läse sich die Zeile, als hätte jemand
+ * es entfernt (Laienprüfung 18.11.2026, L-3).
+ */
+export function haekchenZusatz(gesichert: boolean | null): string {
+	if (gesichert === null) return 'Häkchen «Begründungsakt oder Zustimmung aller» nicht vermerkt';
+	return gesichert
+		? 'Häkchen «Begründungsakt oder Zustimmung aller» gesetzt'
+		: 'Häkchen «Begründungsakt oder Zustimmung aller» nicht gesetzt';
+}
+
+/** Das Häkchen in Worten, für Verlauf und Vergleich. */
+function gesichertInWorten(gesichert: boolean | undefined): string {
+	return gesichert ? 'im Begründungsakt oder mit Zustimmung aller' : 'nicht vermerkt';
 }
 
 function pruefeSchwelle(s: Schwelle, feld: string): void {
@@ -341,7 +434,9 @@ export function legeReglementsregelAn(
 				quoten: geprueft.quotenSchwelle
 					? `${geprueft.quotenSchwelle.zaehler}/${geprueft.quotenSchwelle.nenner}`
 					: null,
-				fundstelle: geprueft.fundstelle
+				fundstelle: geprueft.fundstelle,
+				// Nur wo das Häkchen etwas bewirken kann (Migration 197).
+				...(haekchenMoeglich(geprueft) ? { gesichert: gesichertInWorten(geprueft.gesichert) } : {})
 			}
 		)
 	);
@@ -379,6 +474,8 @@ function merkmale(r: ReglementsregelEingabe): Record<string, string | null> {
 		quotenbasis: r.quotenbasis,
 		fundstelle: r.fundstelle,
 		enthaltung: r.enthaltungZaehltMit ? 'zaehlt_mit' : 'faellt_aus_basis',
+		// Migration 197: in Worten, damit der Verlauf Vorzustand und neuen Wert lesbar zeigt.
+		gesichert: gesichertInWorten(r.gesichert),
 		hinweis: r.hinweis ?? null
 	};
 }
@@ -845,6 +942,13 @@ export interface Regelanwendung {
 	 */
 	verdraengt?: string;
 	/**
+	 * An der Bezahlung aus dem Fonds unter L17 «streng», ab der Fassung
+	 * 2026-11-21, wenn eine Regel angewandt wird: der Satz zum Häkchen
+	 * (`FONDSENTNAHME_MIT_HAEKCHEN`, sonst `FONDSENTNAHME_STRENGER_OHNE_HAEKCHEN`;
+	 * Migration 197).
+	 */
+	fondsregel?: string;
+	/**
 	 * Was aus der Einstellung der Gemeinschaft zu den Enthaltungen wurde, wo sie
 	 * für dieses Erfordernis in Frage kam. Fehlt das Feld, hat die Gemeinschaft
 	 * keine, oder das Erfordernis ist kein einfaches Mehr der Anwesenden.
@@ -1203,6 +1307,10 @@ export function wendeReglementAn(
 	 * Dort rechnet die Vorgabe schon die Zustimmung aller, strenger geht keine
 	 * allgemeine Regel, und der Satz zur gültigen milderen Regel widerspräche dem
 	 * Satz der Karte (`FONDSENTNAHME_VEREINBART_MILDER`, Fachprüfung R2-F-3).
+	 *
+	 * **Eine fallgenaue Regel mit Häkchen bleibt** (Migration 197): Sie besteht
+	 * `l17Regelvorbehalt` auch milder, getauscht wird dann nicht. Eine allgemeine
+	 * mit Häkchen kommt ebenso als Ersatz in Frage, auch milder.
 	 */
 	const l17 = fondsentnahmewahl(erfordernis);
 	let verdraengt: Reglementsregel | null = null;
@@ -1274,7 +1382,17 @@ export function wendeReglementAn(
 		 * durch.
 		 */
 		const l17Vorbehalt = l17Regelvorbehalt(l17, regel, erfordernis);
-		if (l17Vorbehalt) return mitEinstellung({ erfordernis, regel, vorbehalt: l17Vorbehalt }, einstellung, lesarten.L13);
+		if (l17Vorbehalt) {
+			return mitEinstellung(
+				{
+					erfordernis: mitHaekchenZumSatz(erfordernis, regel, l17Vorbehalt === 'milder_nach_lesart' && erfordernis.typ === 'einstimmigkeit'),
+					regel,
+					vorbehalt: l17Vorbehalt
+				},
+				einstellung,
+				lesarten.L13
+			);
+		}
 		// Nicht an der erweiterten Bewirtschaftung (`regelNurFallgenau`, Fassung
 		// 2026-10-30): Rz. 196 ad Art. 712m trifft die systematische Einführung,
 		// nicht eine Klausel für genau diesen Fall (Fachprüfung A4, R4-F-1).
@@ -1372,11 +1490,29 @@ export function wendeReglementAn(
 			vorschlagTyp: erfordernis.typ,
 			gemeinschaftslesart: undefined,
 			// Die Regel des Reglements ersetzt das Mehr samt der Lesart des Beschlusses (Migration 181).
-			lesartDesBeschlusses: undefined
+			lesartDesBeschlusses: undefined,
+			/*
+			 * Das Häkchen zum Satz `fondsregel` unten (Migration 198), nur an einer
+			 * strengeren Regel: Sie gilt mit und ohne Häkchen, und es ändert allein
+			 * den Satz (H4 statt H3). Eine mildere gilt nur mit ihm; dort ändert es
+			 * das Mehr, und das gespeicherte Mehr hält es schon fest.
+			 */
+			regelGesichert: haekchenNurAmSatz(
+				regel,
+				l17 === 'streng' && fondsregelHaekchenWirkt(erfordernis) && einordnungGegenGesetz(regel, erfordernis) === 'strenger'
+			)
 		},
 		regel: gelesen,
 		vorbehalt: null,
-		...(verdraengt ? { verdraengt: fondsentnahmeVerdraengtSatz(verdraengt) } : {}),
+		...(verdraengt ? { verdraengt: fondsentnahmeVerdraengtSatz(verdraengt, erfordernis.fassung) } : {}),
+		/*
+		 * **Der Satz zum Häkchen an der angewandten Regel** (Migration 197,
+		 * Produktentscheid 17.11.2026, «Häkchen, sonst Hinweis»). Nur unter L17
+		 * «streng»: Unter dem SVIT-Kommentar bleibt alles, wie es ist.
+		 */
+		...(l17 === 'streng' && fondsregelHaekchenWirkt(erfordernis)
+			? { fondsregel: regel.gesichert ? FONDSENTNAHME_MIT_HAEKCHEN : FONDSENTNAHME_STRENGER_OHNE_HAEKCHEN }
+			: {}),
 		...(gelesen === regel
 			? {}
 			: {
@@ -1674,7 +1810,13 @@ function l17NurFallgenau(wahl: Fondsentnahmewahl | undefined): boolean {
  *    als das gerechnete Mehr, über denselben Vergleich wie `nur_verschaerfen`,
  *    sonst `milder_nach_lesart`. Eine mildere trägt dort nur, wenn sie im
  *    Begründungsakt steht oder alle zugestimmt haben (Art. 712g Abs. 2; Rz. 27
- *    und 78a ad Art. 712g), und das kann Votum nicht prüfen.
+ *    und 78a ad Art. 712g), und das kann Votum nicht prüfen;
+ *  - ab der Fassung 2026-11-21 an der Bezahlung im gewöhnlichen Zweck eine Regel
+ *    mit Häkchen, ob milder oder strenger (Migration 197; Produktentscheid
+ *    17.11.2026, «Häkchen, sonst Hinweis»). Die Leitung hält damit fest, was
+ *    Votum nicht prüfen kann. Nicht an der vereinbarten Verwendung: Dort trägt
+ *    auch eine Regel im Begründungsakt nicht sicher (Rz. 138 ad Art. 712l, a.M.
+ *    Bloch; `FONDSENTNAHME_VEREINBART_MILDER`).
  */
 function l17Regelvorbehalt(
 	wahl: Fondsentnahmewahl | undefined,
@@ -1682,6 +1824,7 @@ function l17Regelvorbehalt(
 	gerechnet: Erfordernis
 ): Regelvorbehalt | null {
 	if (l17NurFallgenau(wahl)) return regel.knotenId ? null : 'nur_fallgenau';
+	if (wahl === 'streng' && regel.gesichert && fondsregelHaekchenWirkt(gerechnet)) return null;
 	if (wahl === 'streng' && einordnungGegenGesetz(regel, gerechnet) !== 'strenger') return 'milder_nach_lesart';
 	return null;
 }
@@ -1695,16 +1838,130 @@ function l17Regelvorbehalt(
  * Lesart, deshalb vergleichen Freigabe (`veralteteLesartenIn`) und Kasten
  * «Erfordernisse nachziehen» (`veralteteErfordernisseIn`) dies, beide über
  * diese Funktion. **Nicht dieselbe Bedingung, aber eine enthaltene:** Die
- * Freigabe prüft nur Traktanden unter einer Regel und vergleicht nur diesen
- * Wert; der Kasten prüft alle und vergleicht ihn neben dem ganzen Mehr. Jedes
- * Traktandum, zu dem die Freigabe absagt, zeigt der Kasten also auch; die
- * Absage nennt nie einen Weg, den es nicht gibt.
+ * Freigabe vergleicht nur diesen Wert; der Kasten vergleicht ihn neben dem
+ * ganzen Mehr. Jedes Traktandum, zu dem die Freigabe absagt, zeigt der Kasten
+ * also auch; die Absage nennt nie einen Weg, den es nicht gibt. Seit
+ * Migration 197 prüft die Freigabe auch Traktanden dieser Karten, die nach dem
+ * Gesetz rechnen: Mit dem Häkchen kann dort eine Regel neu gelten.
+ *
+ * **Seit Migration 198 auch das Häkchen, wo es nur den Satz ändert**
+ * (`regelGesichert`; Entscheid des Auftraggebers vom 18.11.2026, «Auch Häkchen
+ * einfrieren»): Die Freigabe friert das gespeicherte Erfordernis ein und mit ihm
+ * den Satz an der Karte. Wechselt das Häkchen vorher, stimmte der eingefrorene
+ * Satz nicht mehr; das Traktandum gilt deshalb als veraltet, auch bei gleichem
+ * Mehr. Verglichen wird es nur, wo das gespeicherte Erfordernis einer Fassung
+ * mit Häkchen angehört (`haekchenSeit`, die Fassung des gespeicherten): Ein
+ * Traktandum der Fassung 2026-11-20 trägt keinen solchen Satz, und das neu
+ * hergeleitete der geltenden Fassung erschiene sonst an jeder Regel veraltet.
+ * Beide Seiten bekommen deshalb dieselbe Fassung. Ohne sie bleibt es beim Wert
+ * bis Migration 197; so vergleicht `wendeReglementAnNachFreigabe`, ob eine
+ * Herleitung auf derselben Regel steht.
  */
 export function l17Regelstand(
 	knotenMitL17: boolean,
-	e: { quelle?: string | null; fundstelle?: string | null }
+	e: { quelle?: string | null; fundstelle?: string | null; regelGesichert?: boolean | null },
+	haekchenSeit?: string | null
 ): string | null {
-	return knotenMitL17 && e.quelle === 'reglement' ? (e.fundstelle ?? '') : null;
+	const regel = knotenMitL17 && e.quelle === 'reglement' ? (e.fundstelle ?? '') : null;
+	const haekchen =
+		knotenMitL17 && haekchenFassung(haekchenSeit ?? undefined) && typeof e.regelGesichert === 'boolean'
+			? e.regelGesichert
+			: null;
+	return haekchen === null ? regel : `${regel ?? ''}|Häkchen ${haekchen ? 'gesetzt' : 'nicht gesetzt'}`;
+}
+
+/**
+ * Beide Seiten des Vergleichs in Freigabe und Kasten «nachziehen»
+ * (`l17Regelstand`), mit der Fassung des gespeicherten Erfordernisses.
+ *
+ * **Das Häkchen zählt nur, wo am neu hergeleiteten ein Satz daran hängt**
+ * (`regelGesichert` gesetzt). Nach einer Umstellung von L17 auf «svit» hängt
+ * keiner mehr daran; das gespeicherte Häkchen ist dann ohne Wirkung, und das
+ * Traktandum wäre sonst veraltet, obwohl dieselbe Regel nach beiden Wahlen gilt
+ * (`tests/db/lesart-fondsentnahme.test.ts`). In die andere Richtung zählt es:
+ * Trägt das gespeicherte noch keines (hergeleitet unter «svit» oder vor
+ * Migration 198), das neue aber eines, ist das Traktandum veraltet, damit die
+ * Freigabe den Satz einfriert, den die Karte zeigt.
+ */
+export function l17Regelstaende(
+	knotenMitL17: boolean,
+	gespeichert: { quelle?: string | null; fundstelle?: string | null; regelGesichert?: boolean | null },
+	neu: { quelle?: string | null; fundstelle?: string | null; regelGesichert?: boolean | null },
+	haekchenSeit: string | null | undefined
+): { bisher: string | null; jetzt: string | null } {
+	const zaehlt = typeof neu.regelGesichert === 'boolean';
+	return {
+		bisher: l17Regelstand(knotenMitL17, zaehlt ? gespeichert : { ...gespeichert, regelGesichert: null }, haekchenSeit),
+		jetzt: l17Regelstand(knotenMitL17, neu, haekchenSeit)
+	};
+}
+
+/**
+ * **Nach der Freigabe der Satz von damals** (Migration 198; Entscheid des
+ * Auftraggebers vom 18.11.2026, gewählte Antwort «Auch Häkchen einfrieren»:
+ * «Das Häkchen kommt beim Freigeben in die Momentaufnahme, und die Karte zeigt
+ * danach den damaligen Satz.»).
+ *
+ * Eingefroren ist das Häkchen am gespeicherten Erfordernis des Traktandums
+ * (`regelGesichert`), nicht in `snapshot`: Dort steht keine Regel, und was eine
+ * Regel am Traktandum bewirkt, hält das Traktandum (Migration 198, Begründung
+ * dort). Wer nach der Freigabe am Traktandum herleitet, auf der
+ * Erfordernisseite oder im Kasten «nachziehen», bekommt deshalb die Regel mit
+ * diesem Häkchen, wenn alles zutrifft:
+ *
+ *  - das gespeicherte Erfordernis trägt ein solches Häkchen, das neu hergeleitete
+ *    auch, und sie unterscheiden sich;
+ *  - beide stehen auf derselben Karte und derselben Regel (`l17Regelstand` ohne
+ *    Häkchen), und die Regel kann das Häkchen tragen (`haekchenMoeglich`).
+ *
+ * **Was «dieselbe Regel» hier heisst** (Codeprüfung des Einfrierens, N2): Im
+ * Zweck rechnet das Traktandum nach der Regel und trägt ihre Fundstelle; der
+ * Vergleich über `l17Regelstand` trifft sie. An der vereinbarten Verwendung
+ * rechnet es nach dem Gesetz, und `l17Regelstand` ist auf beiden Seiten `null`.
+ * Tragen kann das Häkchen dort nur die Regel für alle wichtigeren
+ * Verwaltungshandlungen (`haekchenMoeglich`), und davon gibt es je Gemeinschaft
+ * eine (eindeutig nach Geschäftsart und Fall, Migration 076, `ON CONFLICT` in
+ * `erstelleReglementsregel`). Nicht unterschieden wird eine solche Regel, die nach
+ * der Freigabe gelöscht und neu hinterlegt wurde: Sie bekommt das Häkchen von
+ * damals (Pendenz «Häkchen eingefroren, Restpunkte»).
+ *
+ * **Wo es nicht greift** (N4): Ein Traktandum, das nach der Freigabe entsteht
+ * (Folgeantrag, Aufnahme im Saal, Geschäft des Abends) oder auf eine andere
+ * Karte wechselt, hat kein gespeichertes Häkchen dieser Karte und bekommt das
+ * von heute.
+ *
+ * Das Mehr bleibt dabei dasselbe: `regelGesichert` gibt es nur, wo das Häkchen
+ * allein den Satz ändert, an einer strengeren Regel im Zweck (sie gilt mit und
+ * ohne) und an der vereinbarten Verwendung (dort gilt keine). Wo das Häkchen das
+ * Mehr ändert, eine mildere Regel im Zweck, kommt es weiter aus der Regel: Der
+ * Weg, den die Karte dafür nennt (`FONDSENTNAHME_WEG_HAEKCHEN`, bis zur Eröffnung
+ * neu herleiten), bleibt offen, und das gespeicherte Mehr ist ohnehin fest.
+ *
+ * Vor der Freigabe übergibt der Aufrufer kein gespeichertes Erfordernis, und es
+ * gilt das Häkchen der Gemeinschaft.
+ */
+export function wendeReglementAnNachFreigabe(
+	erfordernis: Erfordernis,
+	regeln: Reglementsregel[],
+	einstellung: Enthaltungseinstellung | null,
+	lesarten: Lesartenwahl,
+	gespeichert: Pick<Erfordernis, 'knotenId' | 'quelle' | 'fundstelle' | 'regelGesichert'> | null
+): Regelanwendung {
+	const live = wendeReglementAn(erfordernis, regeln, einstellung, lesarten);
+	const damals = gespeichert?.regelGesichert;
+	const jetzt = live.erfordernis.regelGesichert;
+	if (damals === undefined || jetzt === undefined || damals === jetzt || !gespeichert || !live.regel) return live;
+	if (gespeichert.knotenId !== live.erfordernis.knotenId) return live;
+	if (l17Regelstand(true, gespeichert) !== l17Regelstand(true, live.erfordernis)) return live;
+	const id = live.regel.id;
+	const ziel = regeln.find((r) => r.id === id);
+	if (!ziel || !haekchenMoeglich(ziel)) return live;
+	return wendeReglementAn(
+		erfordernis,
+		regeln.map((r) => (r === ziel ? { ...r, gesichert: damals } : r)),
+		einstellung,
+		lesarten
+	);
 }
 
 /**
@@ -1713,20 +1970,145 @@ export function l17Regelstand(
  * Fachprüfung Runde 2 bis 5: R2-F-6, R3-F-1, R4-F-1 bis R4-F-4, R4-L-1,
  * R5-L-1, R5-F-1, R5-F-5). Ein Wortlaut für `FONDSENTNAHME_MILDER` und
  * `FONDSENTNAHME_VERDRAENGT`; zuerst die Bedingung und was sonst gilt, dann die
- * Schritte unter der Bedingung.
+ * Schritte unter der Bedingung. Bis zur Fassung 2026-11-20; ab 2026-11-21 steht
+ * an seiner Stelle `FONDSENTNAHME_WEG_HAEKCHEN` (`fondsentnahmeWeg`).
  */
 export const FONDSENTNAHME_WEG_GUELTIG =
 	'Steht Ihre Regel in der ursprünglichen Fassung des Begründungsakts oder haben ihr alle Eigentümer ' +
 	'zugestimmt, gilt sie auch nach der strengeren Auffassung. Sonst wird nach dem Erfordernis dieser Karte ' +
-	'ausgezählt. Gilt Ihre Regel, zählt Votum trotzdem nach dieser Karte. Lässt sich ihr Mehr unter «Anderes ' +
-	'Erfordernis setzen» wählen, etwa das einfache Mehr, setzen Sie es dort vor dem Versand der Einladung. Sonst ' +
-	'sagen Sie vor der Abstimmung an, dass nach Ihrer Regel ausgezählt wird. Halten Sie das Ergebnis dann mit ' +
-	'«Beschluss von Hand festhalten» fest, mit dem Grund «Notweg»; die Warnung zum Notweg betrifft Sie dabei ' +
-	'nicht. In beiden Fällen schreiben Sie auf der Seite «Protokoll» beim Traktandum die Bestimmung, die Köpfe ' +
-	'und die Wertquoten dazu. Legen Sie den Beleg bereit, dass die Regel in der ursprünglichen Fassung des ' +
+	'ausgezählt. Gilt Ihre Regel, zählt Votum trotzdem nach dieser Karte. ' +
+	// Ab der Fassung 2026-11-21 dieselben Schritte für den Fall nach der Freigabe (`FONDSENTNAHME_WEG_HAEKCHEN`).
+	wegSchritte() +
 	// Runde 6 (R6-L-1): die Umstellung mit Namen und warum sie hier nicht der Weg ist.
-	'Begründungsakts steht oder alle Eigentümer ihr zugestimmt haben. Die Lesart L17 auf den SVIT-Kommentar ' +
-	'umzustellen, braucht es dafür nicht; es senkte auch das Mehr ohne Regel.';
+	'Die Lesart L17 auf den SVIT-Kommentar umzustellen, braucht es dafür nicht; es senkte auch das Mehr ohne Regel.';
+
+/**
+ * Die Schritte bei einer gültigen milderen Regel, wenn Votum nach der Karte
+ * zählt: «Anderes Erfordernis setzen» oder der Notweg, Angaben im Protokoll.
+ * Ein Wortlaut für `FONDSENTNAHME_WEG_GUELTIG` (Fassung 2026-11-20) und den Weg
+ * nach der Freigabe ab 2026-11-21 (Auftraggeber 17.11.2026: der bisherige Weg
+ * bleibt für den Fall nach der Freigabe erhalten). Eine Funktion statt einer
+ * Konstanten, weil `FONDSENTNAHME_WEG_GUELTIG` davor steht.
+ */
+function wegSchritte(): string {
+	return (
+		'Lässt sich ihr Mehr unter «Anderes ' +
+		'Erfordernis setzen» wählen, etwa das einfache Mehr, setzen Sie es dort vor dem Versand der Einladung. Sonst ' +
+		'sagen Sie vor der Abstimmung an, dass nach Ihrer Regel ausgezählt wird. Halten Sie das Ergebnis dann mit ' +
+		'«Beschluss von Hand festhalten» fest, mit dem Grund «Notweg»; die Warnung zum Notweg betrifft Sie dabei ' +
+		'nicht. In beiden Fällen schreiben Sie auf der Seite «Protokoll» beim Traktandum die Bestimmung, die Köpfe ' +
+		'und die Wertquoten dazu. Legen Sie den Beleg bereit, dass die Regel in der ursprünglichen Fassung des ' +
+		'Begründungsakts steht oder alle Eigentümer ihr zugestimmt haben. '
+	);
+}
+
+/**
+ * H5, der Weg bei einer milderen Regel ohne Häkchen ab der Fassung 2026-11-21,
+ * nach Runde 3 des Entwurfs (`quellen/pruefung/zu-pruefen-2026-11-17-votum-widerruf-und-fondsregel-runde3.md`,
+ * Stelle E): zuerst Bedingung und was sonst gilt (Laien L-15), dann das Häkchen
+ * vor der Freigabe (L-13), das Nachziehen im Kasten und nach dem Versand die
+ * berichtigte Einladung (L2-6; Fachprüfung Runde 2, Frage 6: so in der Anwendung
+ * gebaut), dann der bisherige Weg (Fach F-6; Auftraggeber 17.11.2026: der Notweg
+ * bleibt).
+ */
+export const FONDSENTNAHME_WEG_HAEKCHEN =
+	'Steht Ihre Regel in der ursprünglichen Fassung des Begründungsakts oder haben ihr alle Eigentümer ' +
+	'zugestimmt, gilt sie auch nach der strengeren Auffassung. Sonst wird nach dem Erfordernis dieser Karte ' +
+	'ausgezählt. Trifft die Bedingung zu, setzen Sie auf der Seite «Reglement» an der Regel das Häkchen dafür, vor ' +
+	// Runde 3 (F3-2): der Knopf, wie er auf der Seite steht (`ErfordernisseNachziehen.svelte`).
+	'der Freigabe der Einladung. Ein bestehendes Traktandum leiten Sie danach auf derselben Seite mit «Erfordernis ' +
+	'neu herleiten» neu her; Votum zählt dann nach Ihrer Regel. Ist die Einladung schon freigegeben, zählt Votum ' +
+	'für diese Versammlung nach dieser Karte, bis Sie das Traktandum so neu herleiten. Ist sie auch schon ' +
+	'verschickt, kündigen Sie das geänderte Mehr mit einer berichtigten Einladung an alle nach. Nach dem letzten ' +
+	'Tag dafür sagt Votum das Neuherleiten nach der Vorgabe ab. Ist sie noch nicht verschickt, können Sie das Mehr ' +
+	'Ihrer Regel auch unter «Anderes Erfordernis setzen» wählen, wenn es sich dort wählen lässt, etwa das einfache ' +
+	'Mehr. Bleibt es bei dieser Karte, sagen Sie vor der Abstimmung an, dass nach Ihrer Regel ausgezählt wird. ' +
+	'Halten Sie das Ergebnis dann mit «Beschluss von Hand festhalten» fest, mit dem Grund «Notweg»; die Warnung ' +
+	'zum Notweg betrifft Sie dabei nicht. In jedem dieser Fälle schreiben Sie auf der Seite «Protokoll» beim ' +
+	'Traktandum die Bestimmung, die Köpfe und die Wertquoten dazu. Legen Sie den Beleg bereit, dass die Regel in ' +
+	'der ursprünglichen Fassung des Begründungsakts steht oder alle Eigentümer ihr zugestimmt haben. Die Lesart ' +
+	'L17 auf den SVIT-Kommentar umzustellen, braucht es dafür nicht; es senkte auch das Mehr ohne Regel.';
+
+/** Der Weg bei einer milderen Regel ohne Häkchen, nach der Fassung des Erfordernisses. */
+function fondsentnahmeWeg(fassung: string | undefined): string {
+	return fondsregelHaekchenWirkt({ knotenId: FONDSENTNAHME_KNOTEN, fassung })
+		? FONDSENTNAHME_WEG_HAEKCHEN
+		: FONDSENTNAHME_WEG_GUELTIG;
+}
+
+/**
+ * H3, an der Karte im gewöhnlichen Zweck, wenn eine strengere Regel ohne
+ * Häkchen angewandt wird (R5-F-2; ZGB Art. 712g Abs. 2, Rz. 35 und 78a ad
+ * Art. 712g). Runde 3, Stelle C1: Bedingung und Häkchen zuerst (Laien L-12),
+ * der Zeitpunkt (L-13), was eine Anfechtung bringt (Fach F-8) und ab wann die
+ * Frist läuft (F2-6), was ohne Beleg bleibt (L2-8).
+ */
+export const FONDSENTNAHME_STRENGER_OHNE_HAEKCHEN =
+	'Nach der strengeren Auffassung gilt auch eine strengere Regel nur sicher, wenn sie in der ursprünglichen ' +
+	'Fassung des Begründungsakts steht oder ihr alle zugestimmt haben. So sagen es ZGB Art. 712g ' +
+	'Abs. 2 und der SVIT-Kommentar (Rz. 35 und 78a ad Art. 712g). Trifft das zu, setzen Sie auf der Seite ' +
+	'«Reglement» das Häkchen an der Regel, vor der Freigabe der Einladung; ein Antrag, der an Ihrer Regel scheitert, ' +
+	'ist dann richtig abgelehnt. Sonst rechnet Votum trotzdem nach Ihrer Regel, denn ein Beschluss, der sie ' +
+	'erreicht, erreicht auch das Mehr dieser Karte. Erreicht ein Antrag das Mehr dieser Karte, aber nicht das Ihrer ' +
+	'Regel, kann seine Ablehnung angefochten werden. Halten Sie dann im Protokoll fest, dass er das Mehr dieser ' +
+	'Karte erreicht hätte. Wer der Ablehnung nicht zugestimmt hat, kann sie innert eines Monats ab Kenntnis ' +
+	'anfechten. Ob das Gericht dann nur die Ablehnung aufhebt oder den Antrag als angenommen feststellt, ist nicht ' +
+	'sicher (SVIT-Kommentar Rz. 234 und 235a ad Art. 712m). Oft schneller ist es, den Beleg zu suchen und an der ' +
+	'nächsten Versammlung neu abzustimmen. Findet sich keiner, ist offen, ob Ihre Regel gilt; halten Sie dann bei ' +
+	'jeder solchen Ablehnung im Protokoll fest, dass der Antrag das Mehr dieser Karte erreicht hätte.';
+
+/** H4, an der Karte im gewöhnlichen Zweck, wenn eine Regel mit Häkchen angewandt wird (Runde 3, Stelle C2; L2-7). */
+export const FONDSENTNAHME_MIT_HAEKCHEN =
+	'Sie haben angegeben, dass Ihre Regel in der ursprünglichen Fassung des Begründungsakts steht oder alle ' +
+	'Eigentümer ihr zugestimmt haben. Dann gilt sie auch nach der strengeren Auffassung, ob sie milder oder ' +
+	'strenger ist als das Gesetz (ZGB Art. 712g Abs. 2). Legen Sie den Beleg dafür bereit. Stimmt die Angabe ' +
+	'nicht, ist ein Beschluss, der nur nach Ihrer Regel zustande kam, anfechtbar. Bei einer strengeren Regel gilt ' +
+	'das für die Ablehnung eines Antrags, der das Mehr dieser Karte erreicht; halten Sie das dann im Protokoll fest.';
+
+/**
+ * An der vereinbarten Verwendung, wenn die Regel das Häkchen trägt: Es wirkt
+ * dort nicht (Fachprüfung F-5; Auftraggeber 17.11.2026; Rz. 138, 139 ad
+ * Art. 712l). Ersetzt `FONDSENTNAHME_VEREINBART_MILDER` ab der Fassung
+ * 2026-11-21, mit dessen Weg über L17 (Runde 3, Stelle C3; F2-5, L2-9).
+ */
+export const FONDSENTNAHME_VEREINBART_MIT_HAEKCHEN =
+	'Sie haben angegeben, dass Ihre Regel in der ursprünglichen Fassung des Begründungsakts steht oder alle ' +
+	'Eigentümer ihr zugestimmt haben. Nach dem SVIT-Kommentar gilt sie dann (Rz. 138 und 139 ad Art. 712l). Nach ' +
+	'der strengeren Auffassung ist diese Verwendung trotzdem nur mit der Zustimmung aller sicher; ein anderer Autor ' +
+	'hält sie auch dann für unzulässig (Rz. 138 ad Art. 712l). Votum zählt deshalb nach dem Erfordernis dieser ' +
+	'Karte. Folgt Ihre Gemeinschaft dem SVIT-Kommentar, stellen Sie die Lesart L17 auf der Seite «Lesarten» um. Das ' +
+	'senkt auch jede andere Bezahlung aus dem Fonds ohne eigene Regel auf das einfache Mehr nach Köpfen. Sicher ' +
+	'bleibt auch dann nur die Zustimmung aller.';
+
+/** H1, die Beschriftung des Häkchens auf der Seite «Reglement» (unverändert seit Runde 1). */
+export const FONDSREGEL_HAEKCHEN_BESCHRIFTUNG =
+	'Steht in der ursprünglichen Fassung des Begründungsakts oder hat die Zustimmung aller Eigentümer';
+
+/**
+ * H2, die Hilfe darunter (Runde 3, Stelle D): was als Begründungsakt, auch nach
+ * einer Revision (Fach F2-2), Zustimmung aller und Beleg zählt (F-7, Laien L-8,
+ * L-11), der Zeitpunkt (L-13), nur unter der strengeren Auffassung und im
+ * gewöhnlichen Zweck (L-10, F-5), die Folge eines falschen Häkchens (L-9).
+ */
+export const FONDSREGEL_HAEKCHEN_HILFE =
+	'Nur ankreuzen, wenn das zutrifft und Sie es belegen können. Zum Begründungsakt gehört ein Reglement, das bei ' +
+	'der Begründung als sein Bestandteil erlassen wurde, mit seinem damaligen Inhalt. Hat eine spätere Revision ' +
+	'eine Regel inhaltlich unverändert übernommen, zählt sie weiter; legen Sie dann beide Fassungen bereit. Eine ' +
+	'Regel, die eine spätere Versammlung mit Mehrheit neu eingeführt oder inhaltlich geändert hat, zählt nicht. ' +
+	'Die Zustimmung aller heisst: alle, die damals Eigentümer waren, auch die abwesenden; wer seither gekauft hat, ' +
+	'ist daran gebunden (ZGB Art. 712g Abs. 2, 649a Abs. 1). Als Beleg taugen die Urkunde der Begründung oder ein ' +
+	'Protokoll oder Zirkularbeschluss, aus dem die Zustimmung jedes Eigentümers hervorgeht. «Einstimmig» der ' +
+	'Anwesenden genügt nicht, wenn nicht alle anwesend oder vertreten waren. Setzen Sie das Häkchen vor der ' +
+	'Freigabe der Einladung. Votum wendet die Regel dann bei der Bezahlung aus dem Erneuerungsfonds im ' +
+	'gewöhnlichen Zweck an, auch wenn sie milder ist als das Gesetz, sofern sie die Köpfe zählt. So rechnet Votum, wenn die strengere ' +
+	'Auffassung (Lesart L17) eingestellt ist. Ist das Häkchen zu Unrecht gesetzt, rechnet Votum ein Mehr, das ' +
+	// Fachprüfung des Einfrierens F-2, Runde 2 F2-2 (Laien L2-1), im Wortlaut der Fachprüfung: Nach der
+	// Freigabe rechnet ein Traktandum unter einer milderen Regel weiter nach ihr, auch wenn das Häkchen
+	// fällt; an einer strengeren bleibt das Mehr, und der Kasten bietet nichts an.
+	'nicht gilt, und der Beschluss ist anfechtbar. Entfernen Sie es nach der Freigabe an einer milderen Regel, ' +
+	'leiten Sie das Traktandum vor der Eröffnung im Kasten neu her. An einer strengeren Regel halten Sie dann ' +
+	'bei einer Ablehnung, die nur an ihr scheitert, im Protokoll fest, dass der Antrag das Mehr der Karte ' +
+	'erreicht hätte. An anderen Geschäften ändert das Häkchen nichts.';
 
 /** Der Satz zur fallgenauen Regel, an deren Stelle eine strengere allgemeine gilt (L17 «streng»). */
 export const FONDSENTNAHME_VERDRAENGT =
@@ -1737,8 +2119,15 @@ export const FONDSENTNAHME_VERDRAENGT =
 	'Verwaltungshandlungen. ' +
 	FONDSENTNAHME_WEG_GUELTIG;
 
-function fondsentnahmeVerdraengtSatz(r: Reglementsregel): string {
-	return `Für genau diesen Fall ist zudem eine Regel hinterlegt (${r.fundstelle}): ${regelInWorten(r)} ${FONDSENTNAHME_VERDRAENGT}`;
+/** Der Kopf von `FONDSENTNAHME_VERDRAENGT` ohne den Weg; ab 2026-11-21 folgt der Weg mit Häkchen. */
+const FONDSENTNAHME_VERDRAENGT_KOPF = FONDSENTNAHME_VERDRAENGT.slice(0, -FONDSENTNAHME_WEG_GUELTIG.length);
+
+function fondsentnahmeVerdraengtSatz(r: Reglementsregel, fassung: string | undefined): string {
+	return (
+		`Für genau diesen Fall ist zudem eine Regel hinterlegt (${r.fundstelle}): ${regelInWorten(r)} ` +
+		FONDSENTNAHME_VERDRAENGT_KOPF +
+		fondsentnahmeWeg(fassung)
+	);
 }
 
 /**
@@ -1884,6 +2273,25 @@ export const FONDSENTNAHME_MILDER =
 	FONDSENTNAHME_WEG_GUELTIG +
 	' ' +
 	EINWAND_IM_SAAL;
+
+/** Der Kopf von `FONDSENTNAHME_MILDER` ohne Weg und Einwand; ab 2026-11-21 folgt der Weg mit Häkchen. */
+const FONDSENTNAHME_MILDER_KOPF = FONDSENTNAHME_MILDER.slice(
+	0,
+	-(FONDSENTNAHME_WEG_GUELTIG.length + 1 + EINWAND_IM_SAAL.length)
+);
+
+// Die beiden Köpfe schneiden den Weg ab; trägt einer ihn nicht mehr am Ende, stimmte der Schnitt nicht.
+if (
+	!FONDSENTNAHME_MILDER.endsWith(`${FONDSENTNAHME_WEG_GUELTIG} ${EINWAND_IM_SAAL}`) ||
+	!FONDSENTNAHME_VERDRAENGT.endsWith(FONDSENTNAHME_WEG_GUELTIG)
+) {
+	throw new Error('FONDSENTNAHME_MILDER oder FONDSENTNAHME_VERDRAENGT endet nicht mit dem Weg.');
+}
+
+/** `FONDSENTNAHME_MILDER` nach der Fassung des Erfordernisses. */
+function fondsentnahmeMilder(fassung: string | undefined): string {
+	return `${FONDSENTNAHME_MILDER_KOPF}${fondsentnahmeWeg(fassung)} ${EINWAND_IM_SAAL}`;
+}
 
 /**
  * Der Vorbehalt an der vereinbarten Verwendung unter der strengeren Auffassung
@@ -2161,7 +2569,18 @@ function vorbehaltInWorten(
 			 * L17 allein die vereinbarte Verwendung die Zustimmung aller; der Kern
 			 * kennt die Kennungen der Fassung nicht.
 			 */
-			return kopf + (typ === 'einstimmigkeit' ? FONDSENTNAHME_VEREINBART_MILDER : FONDSENTNAHME_MILDER);
+			if (typ !== 'einstimmigkeit') return kopf + fondsentnahmeMilder(fassung);
+			/*
+			 * **Mit Häkchen ab der Fassung 2026-11-21 ein eigener Satz** (Fachprüfung
+			 * F-5): Das Häkchen wirkt an der vereinbarten Verwendung nicht, und der
+			 * Satz sagt warum, statt die Herkunft der Regel zu bezweifeln.
+			 */
+			return (
+				kopf +
+				(regel.gesichert && haekchenFassung(fassung)
+					? `${FONDSENTNAHME_VEREINBART_MIT_HAEKCHEN} ${EINWAND_IM_SAAL}`
+					: FONDSENTNAHME_VEREINBART_MILDER)
+			);
 
 		case 'gemischt':
 			return (
@@ -2472,7 +2891,9 @@ export function karteMitReglement(
 	e?: Pick<Erfordernis, 'kopfbasis' | 'knotenId'> &
 		Partial<Pick<Erfordernis, 'reglementsverhalten' | 'typ' | 'fassung' | 'gemeinschaftslesart'>>,
 	/** `verdraengt` aus `wendeReglementAn`: die fallgenaue Regel, an deren Stelle eine allgemeine gilt (L17). */
-	verdraengt?: string
+	verdraengt?: string,
+	/** `fondsregel` aus `wendeReglementAn`: der Satz zum Häkchen an der angewandten Regel (Migration 197). */
+	fondsregel?: string
 ): Ergebniskarte {
 	/*
 	 * **Der Vermerk steht nicht mehr hier** (23.08.2026, Prüflauf I, B-23). Er
@@ -2672,6 +3093,8 @@ export function karteMitReglement(
 					'Sie Ihre Regel mit dem Gesetz, rechnen Sie nach beiden Zählweisen.'
 				: `nicht das Gesetz. Das gesetzliche Erfordernis wäre gewesen: ${karte.formel}`) +
 			(lesart ? ` ${lesart}` : '') +
+			// Vor `verdraengt`: Der Satz gilt der angewandten Regel, «zudem» folgt danach.
+			(fondsregel ? ` ${fondsregel}` : '') +
 			(verdraengt ? ` ${verdraengt}` : '') +
 			/*
 			 * **Unter der angewandten Regel steht die Bedingung** (ab Fassung
@@ -2697,18 +3120,25 @@ export function karteMitReglement(
 					// Endfassung Block C, Abschnitt 7: nicht «nach jeder Lesart»; an den
 					// Karten der Zählweise der Köpfe dazu der sichere Weg (R5-F-4).
 					'der Beschluss auch das gesetzliche Erfordernis, kommt es auf Ihre Bestimmung nicht an; den ' +
-					'Vergleich rechnen Sie aus dem Stimmenspiegel selbst. Sonst ist er angreifbarer: Ist ' +
-					`die Sache nicht dringlich, vollziehen Sie ihn ${NACH_DER_ANFECHTUNGSFRIST} ` +
+					'Vergleich rechnen Sie aus dem Stimmenspiegel selbst. Sonst ist er angreifbarer. ' +
 					// Hinter dem «Sonst», damit es sich auf das gesetzliche Erfordernis bezieht
-					// (Codeprüfung Block C, N4).
+					// (Codeprüfung Block C, N4); und vor der Wartezeit, damit das «er» beim Beschluss
+					// bleibt und der Ausweg vor der Anweisung zu warten steht (Laien- und Fachprüfung
+					// 17.11.2026, L-5, F-4).
 					(KOPFZAEHLWEISE_ARTIKEL.some((a) => karte.rechtsgrundlage.startsWith(a))
 						? 'Im Streit um die Zählweise der Köpfe sicher ist er, wenn mehr als die Hälfte aller ' +
 							'Eigentümer zugestimmt hat. '
 						: '') +
+					// Die Sätze für das Protokoll vor der Wartezeit, an deren Ende man aufhört zu
+					// lesen; die Wartezeit nur für einen angreifbaren Beschluss (Laien- und
+					// Fachprüfung 17.11.2026, Runde 2: L2-4, L2-1, F2-3).
 					'Scheitert ein Antrag nur an ' +
 					'einer strengeren Bestimmung, halten Sie im Protokoll fest, ob er das gesetzliche ' +
 					'Erfordernis erreicht hätte. Wird im Saal bestritten, dass Ihre Bestimmung so ' +
-					'eingeführt wurde, halten Sie den Einwand im Protokoll fest.'
+					'eingeführt wurde, halten Sie den Einwand im Protokoll fest. ' +
+					// «nicht sicher» statt «angreifbar» (Runde 3, F3-1, L3-1): «sicher» zur Zählweise allein heisst
+					// an Art. 647b Abs. 1 und 647e Abs. 2 nicht, dass die Wertquoten erreicht sind.
+					`Erreicht ein angenommener Beschluss das gesetzliche Erfordernis nicht sicher und ist die Sache nicht dringlich, vollziehen Sie ihn ${NACH_DER_ANFECHTUNGSFRIST}`
 				: '') +
 			/*
 			 * An der Einsprache (ab 2026-10-20) der Rechtssatz, warum nur eine

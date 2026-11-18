@@ -1,0 +1,21 @@
+-- 197: Häkchen an einer Reglementsregel, «steht im Begründungsakt oder alle haben zugestimmt»
+--
+-- **Der Anlass** ist der Produktentscheid vom 17.11.2026 zu R2-F-6 und R5-F-2
+-- der Fachprüfung (Bezahlung aus dem Erneuerungsfonds), Wortlaut der gewählten
+-- Antwort «Häkchen, sonst Hinweis»: «Neu ein Häkchen an der Regel: ‹steht im
+-- Begründungsakt oder alle haben zugestimmt›. Mit Häkchen rechnet Votum die
+-- Regel, ob milder oder strenger. Ohne Häkchen wie heute: Eine mildere Regel
+-- zählt nicht, eine strengere schon.»
+--
+-- Nach der strengeren Auffassung (Lesart L17 «streng») gilt eine Regel zur
+-- Bezahlung aus dem Fonds nur sicher, wenn sie im Begründungsakt steht oder
+-- alle Eigentümer ihr zugestimmt haben (ZGB Art. 712g Abs. 2; Rz. 35, 78a ad
+-- Art. 712g). Ob das zutrifft, kann Votum nicht prüfen; die Leitung hält es
+-- hier fest und legt den Beleg bereit. Wirkung nur an der Karte
+-- `k-erneuerungsfonds-entnahme`, nur unter L17 «streng» und erst ab der
+-- Fassung 2026-11-21 (`fondsregelHaekchenWirkt` in `domain/reglement.ts`).
+--
+-- NOT NULL mit der Vorgabe `false`: Jede bestehende Regel rechnet weiter wie
+-- bisher. Die Domäne setzt den Wert nur bei der Geschäftsart
+-- `verwaltung_wichtig` (für alle Fälle oder genau diesen), sonst `false`.
+ALTER TABLE bylaw_quorum_rule ADD COLUMN founding_or_unanimous boolean NOT NULL DEFAULT false;

@@ -32,8 +32,9 @@ import {
 } from '$lib/domain/gemeinsameliste';
 import { holeRegelwerk } from '$lib/rules';
 import { waehleErfordernis } from '$lib/domain/entscheidbaum';
-import { wendeReglementAn } from '$lib/domain/reglement';
+import { wendeReglementAn, wendeReglementAnNachFreigabe } from '$lib/domain/reglement';
 import {
+	gespeichertNachFreigabe,
 	holeEnthaltungseinstellungIn,
 	holeReglementsregelnIn,
 	schreibeErfordernisIn
@@ -852,10 +853,15 @@ export async function setzeErfordernisAmGeschaeft(
 				item_kind: string;
 				title: string;
 				nummer: string | null;
+				requirement_node: string | null;
+				requirement_source: string | null;
+				requirement_reference: string | null;
+				requirement_rule_secured: boolean | null;
 			}[]
 		>`
 			SELECT a.id, a.meeting_id, m.stweg_id, s.name AS stweg_name, m.state, a.item_kind, a.title,
-			       coalesce(a.manual_number, a.released_number) AS nummer
+			       coalesce(a.manual_number, a.released_number) AS nummer,
+			       a.requirement_node, a.requirement_source, a.requirement_reference, a.requirement_rule_secured
 			  FROM agenda_item a
 			  JOIN meeting m ON m.id = a.meeting_id
 			  JOIN stweg s   ON s.id = m.stweg_id
@@ -905,12 +911,15 @@ export async function setzeErfordernisAmGeschaeft(
 				enthaltungen.set(h.stweg_id, await holeEnthaltungseinstellungIn(tx, h.stweg_id));
 			}
 			// Je Versammlung, nicht je Haus: Ist sie freigegeben, gilt die
-			// eingefrorene Lesart (Migration 169).
-			const e = wendeReglementAn(
+			// eingefrorene Lesart (Migration 169) und das Häkchen von damals, wo es
+			// nur den Satz an der Karte ändert (Migration 198; Codeprüfung des
+			// Einfrierens, M1), wie auf der Erfordernisseite.
+			const e = wendeReglementAnNachFreigabe(
 				gewaehlt,
 				regeln.get(h.stweg_id)!,
 				enthaltungen.get(h.stweg_id) ?? null,
-				await holeLesartenIn(tx, { meetingId: h.meeting_id })
+				await holeLesartenIn(tx, { meetingId: h.meeting_id }),
+				gespeichertNachFreigabe({ ...h, meeting_state: h.state })
 			).erfordernis;
 			try {
 				await tx.savepoint((sp) => schreibeErfordernisIn(sp, handelnder, h.id, e));

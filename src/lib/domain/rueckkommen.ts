@@ -286,6 +286,9 @@ export function erfordernisFuerRueckkommen(
 		// Ebenso das Mehr aus Gesetz und Reglement des Beschlusses (Lesarten Block 6,
 		// Codeprüfung M1): Es gehört an den Beschluss, nicht an seine Aufhebung.
 		gesetzlich: undefined,
+		// Ebenso das Häkchen zum Satz an der Karte (Migration 198): Das Rückkommen
+		// hat keine Karte, an der ein Satz zur Regel stünde.
+		regelGesichert: undefined,
 		titel: `${RUECKKOMMEN_TITEL}${ziel.titel}`,
 		// Hat die Leitung die Mehrheit des Beschlusses gesetzt, ist dessen
 		// Rechtsgrundlage leer (30.09.2026); der Satz beginnt dann selbst. Aus der

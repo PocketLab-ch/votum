@@ -292,6 +292,17 @@ export interface Erfordernis {
 		andere?: Lesartmehr;
 		mitAllen?: boolean;
 	};
+	/**
+	 * Das Häkchen «Begründungsakt oder Zustimmung aller» der Regel, auf die sich
+	 * der Satz an der Karte stützt, wo es nur diesen Satz ändert und nicht das
+	 * Mehr (Migration 198, `agenda_item.requirement_rule_secured`; Entscheid des
+	 * Auftraggebers vom 18.11.2026, «Auch Häkchen einfrieren»). Gesetzt nur von
+	 * `wendeReglementAn` (Fälle dort); jede andere Herkunft trägt es nicht.
+	 * Gerechnet wird damit nicht: Freigabe und Kasten «nachziehen» vergleichen
+	 * es (`l17Regelstand`), und nach der Freigabe nimmt die Karte den Satz von
+	 * hier statt aus der Regel (`wendeReglementAnNachFreigabe`).
+	 */
+	regelGesichert?: boolean;
 }
 
 /**
@@ -1402,6 +1413,8 @@ export function uebersteuere(
 		quotenSchwelle: def.schwellen.quoten,
 		quelle: 'gewaehlt',
 		fundstelle: undefined,
+		// Von Hand gesetzt, also ohne Satz zur Regel an der Karte (Migration 198).
+		regelGesichert: undefined,
 		/*
 		 * **Die Rechtsgrundlage muss mit** (22.08.2026, Befunde B-03 und D-04).
 		 *
@@ -2123,6 +2136,33 @@ const HINTERLEGEN_NOTWENDIG =
 	'eine strengere nur, wenn ihre Einführung feststeht.';
 
 /**
+ * **Die Wartezeit nach der Frist, ein Wortlaut für alle Stellen** (17.11.2026).
+ * Geprüft am 15.11.2026 in `EINWAND_VOLLZUG` (`quellen`
+ * `pruefung/berichte/2026-11-15-votum-wartezeit-kern-*`); seit dem 17.11.2026
+ * auch in `NACH_DER_ANFECHTUNGSFRIST`, dort mit Stillstand und Kostenvorschuss
+ * nach der Fachprüfung (`…-antragsmuster-fonds-wartezeit-fach-runde2.md`, F2-2).
+ *
+ * **Exportiert und ohne Kommentar in der Kette**, damit `check:texte` jeden
+ * Satz misst (`scripts/lib/textform.mjs`, Konstantenform): Die Form liest nur
+ * `export const NAME = '…' + '…'` und hört am ersten Bezeichner auf
+ * (Codeprüfung 17.11.2026, Durchgang 2, N1).
+ */
+export const WARTEZEIT_NACH_DER_FRIST =
+	'Warten Sie nach Ablauf der Frist noch ' +
+	'einige Wochen. Ein Schlichtungsgesuch vom letzten Tag der Frist ist rechtzeitig, und die ' +
+	'Bewirtschaftung erhält es erst mit der Vorladung (ZPO Art. 62 Abs. 1, 143 Abs. 1, 202 Abs. 3). ' +
+	'Fragen Sie die Bewirtschaftung, ob Post der Schlichtungsbehörde gekommen ist. Ist ein Gesuch ' +
+	'eingegangen, vollziehen Sie nur, was eilt, bis das Verfahren abgeschlossen ist. Scheitert die ' +
+	'Schlichtung, erhält, wer das Gesuch gestellt hat, eine Klagebewilligung. Damit kann er noch drei ' +
+	'Monate lang klagen (ZPO Art. 209 Abs. 3; SVIT-Kommentar Rz. 231a ad Art. 712m; BGE 140 III 561 ' +
+	'E. 2.2.2.4 und 2.3). Diese Frist steht vom 15. Juli bis 15. August still, ebenso eine Woche vor bis ' +
+	'eine Woche nach Ostern und vom 18. Dezember bis 2. Januar (ZPO Art. 145 Abs. 1). Fällt der Sommer ' +
+	'hinein, dauert sie also gut einen Monat länger. Das Gericht stellt die Klage zudem oft erst zu, ' +
+	'nachdem die klagende Person den Kostenvorschuss bezahlt hat (ZPO Art. 98 Abs. 1, 101). Warten Sie ' +
+	'diese Zeit und danach noch einige Wochen ab und ' +
+	'fragen Sie die Bewirtschaftung, ob Post vom Gericht gekommen ist.';
+
+/**
  * Bis wann ein angreifbarer Beschluss nicht vollzogen wird, mit Fristbeginn
  * (Fachprüfung Runde 3, B1): Wer den Monat ab dem Versammlungstag zählt,
  * vollzieht, während die Frist für Abwesende noch läuft (Rz. 230 ad Art. 712m).
@@ -2133,11 +2173,16 @@ const HINTERLEGEN_NOTWENDIG =
  * weniger sagte in der Fassung 2026-10-15 nur «für Abwesende»; die
  * Fachprüfung des Website-Abzugs fand, dass Vertretene die Frist damit zu
  * spät rechneten, und die Fassung 2026-10-16 sagt «ohne Vertretung» wie hier.
+ *
+ * Dahinter die Wartezeit nach der Frist wie an `EINWAND_VOLLZUG`; ohne sie riet
+ * die Karte, gleich nach Ablauf zu vollziehen (Pendenz «Wartezeit»; Laien- und
+ * Fachprüfung 17.11.2026, drei Runden).
  */
 export const NACH_DER_ANFECHTUNGSFRIST =
 	'erst nach Ablauf der Anfechtungsfrist von einem Monat; für Abwesende ohne Vertretung ' +
 	'beginnt sie in der Regel erst, wenn sie das Protokoll erhalten haben. Stellen Sie es ' +
-	'deshalb rasch und nachweisbar zu (SVIT-Kommentar Rz. 230 f. ad Art. 712m).';
+	'deshalb rasch und nachweisbar zu (SVIT-Kommentar Rz. 230 f. ad Art. 712m). ' +
+	WARTEZEIT_NACH_DER_FRIST;
 
 /**
  * Ab welcher Fassung der Kasten «Reglement» sagt, wie die Leitung eine im Saal
@@ -2262,6 +2307,10 @@ export function einwandBedingungen(gegenstand: 'geschaeft' | 'erweiterung'): str
 	];
 }
 
+/** Der Schluss von `EINWAND_VOLLZUG`, eigen exportiert, damit `check:texte` ihn misst (N1). */
+export const EINWAND_VOLLZUG_SCHLUSS =
+	'Bis dahin vergibt sie nur, was eilt. Sagen Sie ihr das alles schon nach der Versammlung.';
+
 /**
  * Was gilt, wenn ein Antrag nach dem Gesetz angenommen ist und eine
  * eingewendete Bestimmung, die nicht feststeht, nicht erreicht. Gemeinsam für
@@ -2290,20 +2339,10 @@ export const EINWAND_VOLLZUG =
 	'Sie das nicht sicher nachrechnen, warten Sie ab wie unten beschrieben. ' +
 	'Die Frist beträgt einen Monat; für Abwesende ohne Vertretung beginnt sie in der ' +
 	'Regel erst, wenn sie das Protokoll erhalten haben. Stellen Sie es deshalb rasch und nachweisbar zu, ' +
-	'etwa eingeschrieben (SVIT-Kommentar Rz. 230 f. ad Art. 712m). Warten Sie nach Ablauf der Frist noch ' +
-	'einige Wochen. Ein Schlichtungsgesuch vom letzten Tag der Frist ist rechtzeitig, und die ' +
-	'Bewirtschaftung erhält es erst mit der Vorladung (ZPO Art. 62 Abs. 1, 143 Abs. 1, 202 Abs. 3). ' +
-	'Fragen Sie die Bewirtschaftung, ob Post der Schlichtungsbehörde gekommen ist. Ist ein Gesuch ' +
-	'eingegangen, vollziehen Sie nur, was eilt, bis das Verfahren abgeschlossen ist. Scheitert die ' +
-	'Schlichtung, erhält, wer das Gesuch gestellt hat, eine Klagebewilligung. Damit kann er noch drei ' +
-	'Monate lang klagen (ZPO Art. 209 Abs. 3; SVIT-Kommentar Rz. 231a ad Art. 712m; BGE 140 III 561 ' +
-	'E. 2.2.2.4 und 2.3). Diese Frist steht vom 15. Juli bis 15. August still, ebenso eine Woche vor bis ' +
-	'eine Woche nach Ostern und vom 18. Dezember bis 2. Januar (ZPO Art. 145 Abs. 1). Fällt der Sommer ' +
-	'hinein, dauert sie also gut einen Monat länger. Das Gericht stellt die Klage zudem oft erst zu, ' +
-	'nachdem die klagende Person den Kostenvorschuss bezahlt hat (ZPO Art. 98 Abs. 1, 101). Warten Sie ' +
-	'diese Zeit und danach noch einige Wochen ab und ' +
-	'fragen Sie die Bewirtschaftung, ob Post vom Gericht gekommen ist. Bis dahin vergibt sie nur, was ' +
-	'eilt. Sagen Sie ihr das alles schon nach der Versammlung.';
+	'etwa eingeschrieben (SVIT-Kommentar Rz. 230 f. ad Art. 712m). ' +
+	WARTEZEIT_NACH_DER_FRIST +
+	' ' +
+	EINWAND_VOLLZUG_SCHLUSS;
 
 /**
  * Wann eine Bestimmung als gültig eingeführt feststeht (Fachprüfung E2, F-2).

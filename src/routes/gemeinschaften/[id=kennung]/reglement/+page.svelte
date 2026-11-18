@@ -4,7 +4,14 @@
 	import { tick, untrack } from 'svelte';
 	import { anfangswert, angekreuzt } from '$lib/felder';
 	import { weisungsregelInWorten } from '$lib/domain/weisungsregel';
-	import { KOPFBASIS_HINWEIS, OHNE_KOEPFE_HINWEIS, OHNE_KOEPFE_RECHT } from '$lib/domain/reglement';
+	import {
+		FONDSREGEL_HAEKCHEN_BESCHRIFTUNG,
+		FONDSREGEL_HAEKCHEN_HILFE,
+		haekchenMoeglich,
+		KOPFBASIS_HINWEIS,
+		OHNE_KOEPFE_HINWEIS,
+		OHNE_KOEPFE_RECHT
+	} from '$lib/domain/reglement';
 	import Meldung from '$lib/components/Meldung.svelte';
 	import Suchauswahl from '$lib/components/Suchauswahl.svelte';
 	import Rueckfrage from '$lib/components/Rueckfrage.svelte';
@@ -448,7 +455,13 @@
 									{/if}
 								</td>
 								<td>{regel.satz}</td>
-								<td>{regel.fundstelle}</td>
+								<td>
+									{regel.fundstelle}
+									<!-- Das Häkchen der Migration 197 gehört zur Fundstelle: Es sagt, woher die Regel ihre Geltung hat. -->
+									{#if regel.gesichert}
+										<span class="klein nurfall">{FONDSREGEL_HAEKCHEN_BESCHRIFTUNG}</span>
+									{/if}
+								</td>
 								<td>{regel.enthaltungZaehltMit ? 'zählt mit' : 'fällt aus der Basis'}</td>
 								<td>
 									<!--
@@ -952,6 +965,26 @@
 					Ablehnung.
 				</span>
 			</label>
+
+			<!--
+				**Das Häkchen «Begründungsakt oder Zustimmung aller»** (Migration 197;
+				Produktentscheid 17.11.2026, «Häkchen, sonst Hinweis»). Nur, wo es wirken
+				kann: bei den wichtigeren Verwaltungshandlungen, für alle Fälle oder genau
+				die Bezahlung aus dem Fonds (`haekchenMoeglich`, dieselbe Bedingung wie im
+				Kern). Ein verborgenes Feld sendet nichts; der Kern setzt es dann auf nein.
+			-->
+			{#if haekchenMoeglich({ geschaeftsart: gewaehlteArt, knotenId: gewaehlterFall || null })}
+				<label class="kasten-label">
+					<input
+						type="checkbox"
+						name="gesichert"
+						value="true"
+						{...angekreuzt(bearbeitet?.gesichert ?? false)}
+					/>
+					{FONDSREGEL_HAEKCHEN_BESCHRIFTUNG}
+					<span class="hilfe">{FONDSREGEL_HAEKCHEN_HILFE}</span>
+				</label>
+			{/if}
 
 			<label class="breit">
 				Hinweis für die Sitzungsleitung (freiwillig)

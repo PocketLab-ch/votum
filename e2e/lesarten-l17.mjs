@@ -14,7 +14,8 @@
  * Protokoll nennen das. Am Ende stellt die Verwaltung zurück.
  *
  * **Nur im Hauptverzeichnis gegen den Dev-Stapel**, nach der Übernahme
- * (AGENTS.md, «Arbeiten im Worktree»), und erst nach der Migration 196 auf Dev:
+ * (AGENTS.md, «Arbeiten im Worktree»), und erst nach den Migrationen 196 bis 198
+ * auf Dev (198 für den Schritt zum eingefrorenen Häkchen):
  *
  *     node e2e/lesarten-l17.mjs
  *
@@ -331,6 +332,308 @@ try {
 			'Die Vorgabe ist nicht wieder angekreuzt'
 		);
 		return '«Strengere Auffassung»';
+	});
+
+	/*
+	 * **Das Häkchen «Begründungsakt oder Zustimmung aller»** (Migration 197,
+	 * Fassung 2026-11-21; Produktentscheid 17.11.2026, «Häkchen, sonst Hinweis»).
+	 * Unter «streng» gilt eine mildere Regel für genau diesen Fall erst mit dem
+	 * Häkchen; ohne nennt die Karte den Weg dorthin.
+	 */
+	const FUNDSTELLE_FONDS = `Reglement Art. 31 (erfunden) ${LAUF}`;
+	const abweichungsformular = () => seite.locator('form#abweichungsformular');
+
+	/** Der zweite Finder mit dieser Gemeinschaft bis zur Karte der Bezahlung im Zweck. */
+	async function karteDerBezahlung() {
+		await gehe(`/quorum?g=${gemeinschaft}`);
+		await seite.locator('a[href*="ast=a-geld"]').first().click();
+		await seite.waitForURL(/ast=a-geld/, { timeout: 30000 });
+		for (const antwort of [
+			'Mittel des Erneuerungsfonds für ein konkretes Bauvorhaben verwenden',
+			'Über die Bezahlung aus dem Fonds',
+			'Ja, eine notwendige oder nützliche Arbeit'
+		]) {
+			const a = seite.locator('a', { hasText: antwort }).first();
+			await a.waitFor({ state: 'visible', timeout: 30000 });
+			// Nach jedem Schritt auf die neue Adresse warten, sonst liest das Drehbuch die alte Seite.
+			const vor = seite.url();
+			await a.click();
+			await seite.waitForURL((u) => u.toString() !== vor, { timeout: 30000 });
+		}
+		// Auf die Überschrift der Karte warten, nicht auf den Text: Den nennt die Seite
+		// schon vorher in «Bisher gesetzt: …», und das Lesen kam dann vor der Karte
+		// (Lauf vom 18.11.2026, Schritt 11).
+		await seite
+			.getByRole('heading', { name: 'Arbeit aus dem Erneuerungsfonds bezahlen', exact: true })
+			.first()
+			.waitFor({ state: 'visible', timeout: 30000 });
+		return seitentext();
+	}
+
+	await schritt('Mildere Regel für die Bezahlung aus dem Fonds ohne Häkchen: nicht angewandt, mit dem Weg', async () => {
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		const rahmen = abweichungsformular();
+		await rahmen.locator('select[name="geschaeftsart"]').selectOption('verwaltung_wichtig');
+		await rahmen.locator('input[name="knotenId"][value="k-erneuerungsfonds-entnahme"]').check();
+		// Das Feld erscheint nur hier (`haekchenMoeglich`); vor dem Speichern bleibt es leer.
+		const haekchen = rahmen.locator('input[name="gesichert"]');
+		behaupte(await haekchen.count(), 'Das Häkchen fehlt bei der Bezahlung aus dem Fonds');
+		behaupte(!(await haekchen.isChecked()), 'Das Häkchen ist vorbelegt');
+		await rahmen.locator('input[name="kopfZaehler"]').fill('1');
+		await rahmen.locator('input[name="kopfNenner"]').fill('2');
+		await rahmen.locator('input[name="fundstelle"]').fill(FUNDSTELLE_FONDS);
+		await abschicken(rahmen.locator('button[type="submit"]'));
+		await seite.locator('main', { hasText: FUNDSTELLE_FONDS }).first().waitFor({ timeout: 10_000 });
+
+		const text = await karteDerBezahlung();
+		behaupte(/Sie wird hier nicht angewandt/.test(text), `Die mildere Regel gilt ohne Häkchen: ${text.slice(0, 900)}`);
+		behaupte(/das Häkchen dafür, vor der Freigabe der Einladung/.test(text), 'Der Weg über das Häkchen fehlt (H5)');
+		behaupte(/«Notweg»/.test(text), 'Der Notweg für den Fall nach der Freigabe fehlt');
+		return 'qualifiziertes Mehr, Weg über das Häkchen';
+	});
+
+	await schritt('Mit Häkchen gilt die mildere Regel, und die Karte sagt, worauf sie beruht', async () => {
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		const zeile = seite.locator('#abweichungstabelle tr', { hasText: FUNDSTELLE_FONDS }).first();
+		await zeile.locator('button', { hasText: 'Ändern' }).click();
+		await seite.waitForTimeout(300);
+		await abweichungsformular().locator('input[name="gesichert"]').check();
+		await abschicken(abweichungsformular().locator('button[type="submit"]'));
+		await seite.waitForTimeout(400);
+		const reglement = await seitentext();
+		behaupte(
+			/Steht in der ursprünglichen Fassung des Begründungsakts oder hat die Zustimmung aller Eigentümer/.test(reglement),
+			'Die Tabelle nennt das Häkchen an der Regel nicht'
+		);
+
+		const text = await karteDerBezahlung();
+		behaupte(/Angewandt wird die hinterlegte Regel/.test(text), `Die Regel mit Häkchen gilt nicht: ${text.slice(0, 900)}`);
+		behaupte(/Sie haben angegeben, dass Ihre Regel/.test(text), 'Der Satz zum Häkchen (H4) fehlt');
+		return 'Reglementsmehr mit H4';
+	});
+
+	await schritt('Ein Traktandum ohne die Regel erscheint nach dem Häkchen als veraltet und lässt sich neu herleiten', async () => {
+		/*
+		 * Die Fachprüfung hat das Erkennen nur aus dem Code übernommen (Auftrag
+		 * 2026-11-17, Runde 4). Ein Traktandum, das vor dem Häkchen nach der Karte
+		 * rechnet, trägt danach ein älteres Erfordernis; die Freigabe sagt ab, bis
+		 * es neu hergeleitet ist.
+		 */
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		const zeile = seite.locator('#abweichungstabelle tr', { hasText: FUNDSTELLE_FONDS }).first();
+		await zeile.locator('button', { hasText: 'Ändern' }).click();
+		await seite.waitForTimeout(300);
+		await abweichungsformular().locator('input[name="gesichert"]').uncheck();
+		await abschicken(abweichungsformular().locator('button[type="submit"]'));
+		await seite.waitForTimeout(400);
+
+		await gehe('/versammlungen/neu');
+		await seite.locator('input[name="art"][value="einzeln"]').check();
+		await seite.waitForTimeout(150);
+		await seite.locator(`input[name="gemeinschaft"][value="${gemeinschaft}"]`).check();
+		await seite.fill('input[name="datum"]', '2027-12-23');
+		await seite.fill('input[name="uhrzeit"]', '19:00');
+		await seite.fill('input[name="ort"]', 'Prüfsaal');
+		await abschicken(seite.locator('button[form="anlegen"]').first());
+		const zweite = seite.url().split('/versammlungen/')[1]?.split(/[/?#]/)[0];
+		behaupte(zweite && zweite !== 'neu', `Nicht angelegt: ${seite.url()}`);
+		await gehe(`/versammlungen/${zweite}/traktanden`);
+		await seite.locator('.neu button.haupt').click();
+		await seite.waitForTimeout(250);
+		const tf = seite.locator('form[action="?/anlegen"]').first();
+		await tf.locator('input[name="titel"]').fill(`${TITEL} mit Häkchen`);
+		await tf.locator('input[name="art"][value="abstimmung"]').check();
+		await seite.waitForTimeout(200);
+		await tf
+			.locator('textarea[name="antragswortlaut"], input[name="antragswortlaut"]')
+			.first()
+			.fill('Die Dachsanierung wird aus dem Erneuerungsfonds bezahlt.');
+		await tf.locator('select[name="erfordernis"]').selectOption('k-erneuerungsfonds-entnahme');
+		await abschicken(tf.locator('button[type="submit"]').first());
+
+		// Jetzt das Häkchen setzen: Die mildere Regel gilt neu, das Traktandum ist veraltet.
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		await seite.locator('#abweichungstabelle tr', { hasText: FUNDSTELLE_FONDS }).first().locator('button', { hasText: 'Ändern' }).click();
+		await seite.waitForTimeout(300);
+		await abweichungsformular().locator('input[name="gesichert"]').check();
+		await abschicken(abweichungsformular().locator('button[type="submit"]'));
+		await seite.waitForTimeout(400);
+		const kasten = await seitentext();
+		behaupte(/Traktand\S* tr(ägt|agen) noch ein älteres Erfordernis/.test(kasten), `Der Kasten zum älteren Erfordernis fehlt: ${kasten.slice(0, 900)}`);
+		behaupte(kasten.includes(`${TITEL} mit Häkchen`), 'Das Traktandum steht nicht im Kasten');
+
+		// Die Seite nennt den Grund schon beim Laden und bietet keinen Knopf an (Lauf vom
+		// 17.11.2026: hier stand ein Klick, der ins Leere wartete). Dass der Server die
+		// Freigabe selbst absagt, hält `tests/db/fondsregel-haekchen.test.ts` fest.
+		await gehe(`/versammlungen/${zweite}/freigabe`);
+		behaupte(
+			/Bezahlung aus dem Erneuerungsfonds stimmt nicht mehr mit den Regeln/.test(await seitentext()),
+			`Die Freigabe nennt den veralteten Fall nicht: ${(await seitentext()).slice(0, 600)}`
+		);
+		behaupte(
+			(await seite.locator('form[action$="freigeben"] button[type="submit"]').count()) === 0,
+			'Die Freigabe bietet trotz veraltetem Traktandum einen Knopf an'
+		);
+
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		await seite.locator('form[action="?/nachziehen"] button').first().click();
+		await seite.waitForTimeout(300);
+		const bestaetigen = seite.locator('button', { hasText: 'Neu herleiten' }).last();
+		if (await bestaetigen.count()) await abschicken(bestaetigen);
+		await gehe(`/versammlungen/${zweite}/freigabe`);
+		await abschicken(seite.locator('form[action$="freigeben"] button[type="submit"]').first());
+		behaupte(/Freigegeben\./.test(await seitentext()), `Nach dem Neuherleiten nicht freigegeben: ${(await seitentext()).slice(0, 400)}`);
+		return 'veraltet, Absage, neu hergeleitet, freigegeben';
+	});
+
+	/*
+	 * **Das Häkchen wird bei der Freigabe eingefroren** (Migration 198; Entscheid des
+	 * Auftraggebers vom 18.11.2026, «Auch Häkchen einfrieren»: «Das Häkchen kommt beim
+	 * Freigeben in die Momentaufnahme, und die Karte zeigt danach den damaligen Satz.»).
+	 * An einer strengeren Regel ändert das Häkchen nur den Satz (H3 ohne, H4 mit). Vor
+	 * der Freigabe ist das Traktandum dann veraltet; danach zeigt die Karte am
+	 * Traktandum den Satz von damals, der zweite Finder `/quorum` den von heute, weil er
+	 * keine Versammlung kennt.
+	 */
+	const H3 = /Nach der strengeren Auffassung gilt auch eine strengere Regel nur sicher/;
+	const H4 = /Sie haben angegeben, dass Ihre Regel/;
+
+	/** Die Erfordernisseite eines Traktandums bis zur Karte der Bezahlung im Zweck. */
+	async function karteAmTraktandum(versammlungId, traktandumId) {
+		await gehe(`/versammlungen/${versammlungId}/traktanden/${traktandumId}/erfordernis`);
+		await seite.locator('a[href*="ast=a-geld"]').first().click();
+		await seite.waitForURL(/ast=a-geld/, { timeout: 30000 });
+		for (const antwort of [
+			'Mittel des Erneuerungsfonds für ein konkretes Bauvorhaben verwenden',
+			'Über die Bezahlung aus dem Fonds',
+			'Ja, eine notwendige oder nützliche Arbeit'
+		]) {
+			const a = seite.locator('a', { hasText: antwort }).first();
+			await a.waitFor({ state: 'visible', timeout: 30000 });
+			// Nach jedem Schritt auf die neue Adresse warten, sonst liest das Drehbuch die alte Seite.
+			const vor = seite.url();
+			await a.click();
+			await seite.waitForURL((u) => u.toString() !== vor, { timeout: 30000 });
+		}
+		// Auf die Überschrift der Karte warten, nicht auf den Text: Den nennt die Seite
+		// schon vorher in «Bisher gesetzt: …», und das Lesen kam dann vor der Karte
+		// (Lauf vom 18.11.2026, Schritt 11).
+		await seite
+			.getByRole('heading', { name: 'Arbeit aus dem Erneuerungsfonds bezahlen', exact: true })
+			.first()
+			.waitFor({ state: 'visible', timeout: 30000 });
+		return seitentext();
+	}
+
+	/** Das Häkchen an der Regel mit `FUNDSTELLE_FONDS` setzen oder entfernen. */
+	async function haekchenAnDerRegel(gesetzt) {
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		await seite.locator('#abweichungstabelle tr', { hasText: FUNDSTELLE_FONDS }).first().locator('button', { hasText: 'Ändern' }).click();
+		await seite.waitForTimeout(300);
+		const feld = abweichungsformular().locator('input[name="gesichert"]');
+		if (gesetzt) await feld.check();
+		else await feld.uncheck();
+		await abschicken(abweichungsformular().locator('button[type="submit"]'));
+		await seite.waitForTimeout(400);
+		return seitentext();
+	}
+
+	await schritt('Strengere Regel: Häkchen vor der Freigabe macht das Traktandum veraltet, danach zeigt die Karte den Satz von damals', async () => {
+		// Die Regel strenger als das qualifizierte Mehr stellen, ohne Häkchen (erfundene Werte).
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		await seite.locator('#abweichungstabelle tr', { hasText: FUNDSTELLE_FONDS }).first().locator('button', { hasText: 'Ändern' }).click();
+		await seite.waitForTimeout(300);
+		const rahmen = abweichungsformular();
+		await rahmen.locator('select[name="kopfArt"]').selectOption('mindestens');
+		await rahmen.locator('input[name="kopfZaehler"]').fill('2');
+		await rahmen.locator('input[name="kopfNenner"]').fill('3');
+		await rahmen.locator('input[name="mitQuoten"]').check();
+		await seite.waitForTimeout(150);
+		await rahmen.locator('select[name="quotenArt"]').selectOption('mehr_als');
+		await rahmen.locator('input[name="quotenZaehler"]').fill('1');
+		await rahmen.locator('input[name="quotenNenner"]').fill('2');
+		await rahmen.locator('select[name="quotenbasis"]').selectOption('alle_quoten');
+		await rahmen.locator('input[name="gesichert"]').uncheck();
+		await abschicken(rahmen.locator('button[type="submit"]'));
+		await seite.waitForTimeout(400);
+
+		await gehe('/versammlungen/neu');
+		await seite.locator('input[name="art"][value="einzeln"]').check();
+		await seite.waitForTimeout(150);
+		await seite.locator(`input[name="gemeinschaft"][value="${gemeinschaft}"]`).check();
+		await seite.fill('input[name="datum"]', '2027-12-30');
+		await seite.fill('input[name="uhrzeit"]', '19:00');
+		await seite.fill('input[name="ort"]', 'Prüfsaal');
+		await abschicken(seite.locator('button[form="anlegen"]').first());
+		const dritte = seite.url().split('/versammlungen/')[1]?.split(/[/?#]/)[0];
+		behaupte(dritte && dritte !== 'neu', `Nicht angelegt: ${seite.url()}`);
+		await gehe(`/versammlungen/${dritte}/traktanden`);
+		await seite.locator('.neu button.haupt').click();
+		await seite.waitForTimeout(250);
+		const tf = seite.locator('form[action="?/anlegen"]').first();
+		const titel = `${TITEL} eingefroren`;
+		await tf.locator('input[name="titel"]').fill(titel);
+		await tf.locator('input[name="art"][value="abstimmung"]').check();
+		await seite.waitForTimeout(200);
+		await tf
+			.locator('textarea[name="antragswortlaut"], input[name="antragswortlaut"]')
+			.first()
+			.fill('Die Fassadensanierung wird aus dem Erneuerungsfonds bezahlt.');
+		await tf.locator('select[name="erfordernis"]').selectOption('k-erneuerungsfonds-entnahme');
+		await abschicken(tf.locator('button[type="submit"]').first());
+		const traktandum = await seite
+			.locator('[data-traktandum]', { hasText: titel })
+			.first()
+			.getAttribute('data-traktandum');
+		behaupte(traktandum, 'Das Traktandum fehlt in der Liste');
+		const ohne = await karteAmTraktandum(dritte, traktandum);
+		behaupte(/Angewandt wird die hinterlegte Regel/.test(ohne), `Die strengere Regel gilt nicht: ${ohne.slice(0, 900)}`);
+		behaupte(H3.test(ohne) && !H4.test(ohne), 'Vor dem Häkchen steht nicht H3');
+
+		// Vor der Freigabe gesetzt: Das Mehr bleibt, das Traktandum ist trotzdem veraltet.
+		const kasten = await haekchenAnDerRegel(true);
+		behaupte(kasten.includes(titel), `Das Traktandum steht nicht im Kasten: ${kasten.slice(0, 900)}`);
+		behaupte(
+			/Häkchen «Begründungsakt oder Zustimmung aller» gesetzt/.test(kasten),
+			'Der Kasten nennt das gewechselte Häkchen nicht'
+		);
+		await gehe(`/versammlungen/${dritte}/freigabe`);
+		behaupte(
+			/passt nicht mehr zum Häkchen «Begründungsakt oder Zustimmung aller» an seiner Regel/.test(await seitentext()),
+			`Die Freigabe nennt das gewechselte Häkchen nicht: ${(await seitentext()).slice(0, 600)}`
+		);
+		behaupte(
+			(await seite.locator('form[action$="freigeben"] button[type="submit"]').count()) === 0,
+			'Die Freigabe bietet trotz gewechseltem Häkchen einen Knopf an'
+		);
+		await gehe(`/gemeinschaften/${gemeinschaft}/reglement`);
+		await seite.locator('form[action="?/nachziehen"] button').first().click();
+		await seite.waitForTimeout(300);
+		const bestaetigen = seite.locator('button', { hasText: 'Neu herleiten' }).last();
+		if (await bestaetigen.count()) await abschicken(bestaetigen);
+		await gehe(`/versammlungen/${dritte}/freigabe`);
+		await abschicken(seite.locator('form[action$="freigeben"] button[type="submit"]').first());
+		behaupte(/Freigegeben\./.test(await seitentext()), `Nach dem Neuherleiten nicht freigegeben: ${(await seitentext()).slice(0, 400)}`);
+		behaupte(H4.test(await karteAmTraktandum(dritte, traktandum)), 'Nach der Freigabe mit Häkchen steht nicht H4');
+
+		// Nach der Freigabe entfernt: Die Karte am Traktandum bleibt bei H4, der Kasten zeigt nichts.
+		const danach = await haekchenAnDerRegel(false);
+		behaupte(!danach.includes(titel), 'Der Kasten bietet nach der Freigabe an, den Satz zu ändern');
+		const amTraktandum = await karteAmTraktandum(dritte, traktandum);
+		behaupte(H4.test(amTraktandum) && !H3.test(amTraktandum), `Die Karte zeigt nicht den Satz von damals: ${amTraktandum.slice(0, 900)}`);
+		// Der zweite Finder kennt keine Versammlung und zeigt den Satz von heute.
+		const finder = await karteDerBezahlung();
+		behaupte(H3.test(finder) && !H4.test(finder), 'Der zweite Finder zeigt nicht den Satz von heute');
+		return 'veraltet vor der Freigabe, danach H4 von damals, /quorum H3 von heute';
+	});
+
+	await schritt('Unter dem SVIT-Kommentar sagt die Karte nichts zum Häkchen', async () => {
+		await stelleUm(gemeinschaft, 'svit');
+		const text = await karteDerBezahlung();
+		behaupte(/Angewandt wird die hinterlegte Regel/.test(text), 'Die fallgenaue Regel gilt unter «svit» nicht');
+		behaupte(!/Sie haben angegeben, dass Ihre Regel/.test(text), 'Der Satz zum Häkchen steht auch unter «svit»');
+		await stelleUm(gemeinschaft, 'streng');
+		return 'ohne H4';
 	});
 } catch {
 	/* der Fehler steht schon in der Liste */

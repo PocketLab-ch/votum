@@ -567,8 +567,8 @@ async function kopiereTraktandumIn(
 			-- nur am Rückkommen, und Rückkommen sind spontan, die beide Aufrufer nicht
 			-- kopieren. Mitgenommen wird sie nur, damit die Kopie nicht von der Quelle
 			-- abweicht (Featureprüfung F4c, G2).
-			requirement_statutory, requirement_reading_reconsidered, copied_from_meeting_id,
-			concerns_management
+			requirement_statutory, requirement_reading_reconsidered, requirement_rule_secured,
+			copied_from_meeting_id, concerns_management
 		)
 		SELECT ${id}, ${operatorId}, ${meetingId}, ${parentId}, ${position}, a.title,
 		       a.item_kind, a.body, a.summary, a.motion_text, a.proposer_kind,
@@ -583,8 +583,10 @@ async function kopiereTraktandumIn(
 		       a.requirement_source, a.requirement_reason, a.requirement_risk,
 		       a.requirement_reference, a.requirement_path,
 		       a.requirement_abstention_counts, a.requirement_affected_consent_form, a.requirement_reading,
-		       a.requirement_statutory, a.requirement_reading_reconsidered, a.meeting_id,
-		       ${haekchen}
+		       -- Das Häkchen zum Satz an der Karte (Migration 198) wie das Mehr; die Freigabe
+		       -- der neuen Versammlung vergleicht es mit der Regel von heute.
+		       a.requirement_statutory, a.requirement_reading_reconsidered, a.requirement_rule_secured,
+		       a.meeting_id, ${haekchen}
 		FROM agenda_item a WHERE a.id = ${quelleId}
 	`;
 

@@ -709,6 +709,11 @@ describe('L13, Behebungsrunde 2 der Prüfungen (Block C)', () => {
 		expect(satz.indexOf('Sonst ist er angreifbarer')).toBeGreaterThan(-1);
 		expect(satz.indexOf(SICHER)).toBeGreaterThan(satz.indexOf('Sonst ist er angreifbarer'));
 		expect(satz.indexOf(SICHER)).toBeLessThan(satz.indexOf('Scheitert ein Antrag nur an'));
+		// Die Wartezeit hinter den Sätzen fürs Protokoll und nur für einen angreifbaren Beschluss
+		// (Laien- und Fachprüfung 17.11.2026, Runde 2: L2-4, F2-3).
+		const warten = satz.indexOf('Erreicht ein angenommener Beschluss das gesetzliche Erfordernis nicht sicher und ist die Sache nicht dringlich');
+		expect(warten).toBeGreaterThan(satz.indexOf('Wird im Saal bestritten'));
+		expect(satz.indexOf('Warten Sie nach Ablauf der Frist noch einige Wochen')).toBeGreaterThan(warten);
 		// Gegenprobe ausserhalb der vier Bestimmungen: ohne den Satz.
 		const n = RW.knoten.find((x) => x.id === 'k-baulich-nuetzlich')!;
 		const nuetzlich = karteMitReglement(ergebniskarte(RW, n), { ...regel, geschaeftsart: n.geschaeftsart!, knotenId: 'k-baulich-nuetzlich' }, null, null, null, undefined, erfordernisAusKnoten(RW, n));

@@ -27,6 +27,11 @@ import {
 import { HINWEIS_GEWOEHNLICH as HINWEIS_GEWOEHNLICH_2026_10_24 } from '$lib/rules/quorum-2026-10-24';
 import { nachDieserFassung as nachDerFassung_2026_11_19 } from '$lib/rules/quorum-2026-11-19';
 import {
+	LUXURIOES_NICHT_AUS_DEM_FONDS as LUXURIOES_2026_11_21,
+	RUECKNAHME_VOR_DER_WAHL as RUECKNAHME_2026_11_21,
+	nachDieserFassung as nachDerFassung_2026_11_21
+} from '$lib/rules/quorum-2026-11-21';
+import {
 	ENTNAHME as ENTNAHME_2026_11_20,
 	ENTNAHME_ID as ENTNAHME_ID_2026_11_20,
 	KARTEN_MIT_ENTNAHME as KARTEN_MIT_ENTNAHME_2026_11_20,
@@ -146,6 +151,7 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-21',
 			'2026-11-20',
 			'2026-11-19',
 			'2026-11-18',
@@ -1491,7 +1497,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb
@@ -3434,6 +3440,8 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(HINWEIS_GEWOEHNLICH_2026_10_24);
 		// Ab der Fassung 2026-11-19 mit dem Widerruf hinter dem Satz zur Erweiterung (Entscheid 0052).
 		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_19(HINWEIS_GEWOEHNLICH_2026_10_24));
+		// Ab der Fassung 2026-11-21 mit dem neu gefassten Widerruf (Auftrag 2026-11-17, Teil 1).
+		bekannt.get('k-bewirtschaftung-waehlen')!.add(nachDerFassung_2026_11_21(HINWEIS_GEWOEHNLICH_2026_10_24));
 		/*
 		 * **Die Verweise ab 2026-10-27** (Entscheiden statt der Versammlung) zeigen
 		 * auf eine andere Karte und erklären nicht das Mehr dieser Karte; sie
@@ -3532,6 +3540,14 @@ describe('Die Fassung 2026-10-08 gegenüber 2026-10-07', () => {
 		for (const id of KARTEN_MIT_ENTNAHME_2026_11_20) bekannt.get(id)!.add(ENTNAHME_2026_11_20);
 		bekannt.set(ENTNAHME_ID_2026_11_20, new Set([ZWEI_BESCHLUESSE_2026_11_20, ZWECK_2026_11_20]));
 		bekannt.set(VEREINBART_ID_2026_11_20, new Set([ZWEI_BESCHLUESSE_2026_11_20, ZWECK_2026_11_20]));
+		/*
+		 * **Ab der Fassung 2026-11-21:** Der Satz zur luxuriösen Arbeit an der
+		 * vereinbarten Verwendung und der Weg über die Rücknahme an der zweiten
+		 * Wahlkarte gelten unter jeder Regel; keiner erklärt das gerechnete Mehr.
+		 */
+		bekannt.get(VEREINBART_ID_2026_11_20)!.add(LUXURIOES_2026_11_21);
+		if (!bekannt.has('k-bewirtschaftung-waehlen-erweitert')) bekannt.set('k-bewirtschaftung-waehlen-erweitert', new Set());
+		bekannt.get('k-bewirtschaftung-waehlen-erweitert')!.add(RUECKNAHME_2026_11_21);
 		const erweitert = AKTUELL.knoten.find((k) => k.id === 'k-bewirtschaftung-erweitert')!;
 		expect(erweitert.hinweiseUnterRegel ?? []).toContainEqual({ hinweis: DELEGATION_RZ_115_2026_11_04, zumGesetz: true });
 		expect(bekannt.get('k-bewirtschaftung-erweitert')?.has(DELEGATION_RZ_115_2026_11_04)).toBe(false);

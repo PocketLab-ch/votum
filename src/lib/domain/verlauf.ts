@@ -1235,6 +1235,8 @@ export const ANGABEN_WOERTER: Record<string, string> = {
 	geschaeft: 'Geschäft',
 	geschaefte: 'Geschäfte',
 	geschaeftsart: 'Geschäftsart',
+	// Das Häkchen an einer Reglementsregel (Migration 197), der Wert steht in Worten.
+	gesichert: 'Begründungsakt oder Zustimmung aller',
 	gesetzt: 'Gesetzt',
 	// Entscheid 0045, Punkt 11: der entschiedene Folgeantrag, auf den sich die
 	// Angabe der Leitung stützt (`server/verwaltungsangabe.ts`).

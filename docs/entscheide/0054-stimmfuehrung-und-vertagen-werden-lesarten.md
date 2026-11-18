@@ -69,7 +69,7 @@ meint; mit «alle Eigentümer» zählt sie zu streng. Auf die Fragen dazu:
 
 Bis 2 und 3 gebaut sind, sagt das Handbuch, welcher Lesart Votum folgt, ohne
 Anwältin. Bau, Prüfung und Messung stehen in einem gemeinsamen Auftrag
-(`.auftraege/2026-11-16-votum-lesarten-stimmfuehrung-vertagen.md`).
+(`.auftraege/erledigt/2026-11-16-votum-lesarten-stimmfuehrung-vertagen.md`).
 
 ## Verwandt
 

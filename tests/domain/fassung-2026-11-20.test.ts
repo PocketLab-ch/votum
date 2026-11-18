@@ -82,7 +82,7 @@ const STRENGER = {
 
 describe('Fassung 2026-11-20', () => {
 	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);
@@ -213,7 +213,8 @@ describe('Fassung 2026-11-20', () => {
 		expect(vorher.ziel).toBe('f1-0');
 		expect(vorher.hilfe).toBe(VERWENDUNG_HILFE_VORHER);
 		const neu = [ENTNAHME_ID, VEREINBART_ID, AUSSERHALB_ID, FRAGE_BESCHLUSS_ID, FRAGE_ZWECK_ID];
-		for (const rw of alleFassungen().filter((r) => r.fassung !== '2026-11-20')) {
+		// Nur die Fassungen davor; die späteren leiten sich von dieser ab und tragen die Karten weiter.
+		for (const rw of alleFassungen().filter((r) => r.fassung < '2026-11-20')) {
 			expect([...rw.knoten, ...rw.fragen].some((x) => neu.includes(x.id)), rw.fassung).toBe(false);
 		}
 		for (const id of KARTEN_MIT_ENTNAHME) expect(knoten(VOR, id).hinweise, id).toContain(ENTNAHME_VORHER);

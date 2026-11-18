@@ -1,6 +1,6 @@
 ---
 title: Dienste einbinden
-description: Authentik, Dateiablage, Zeitquelle, Zeitstempel, KI, Mailausgang und die Übernahme aus immotool
+description: Authentik, Dateiablage, Zeitquelle, Zeitstempel, KI und Mailausgang
 date: 2026-07-31
 ---
 
@@ -27,8 +27,8 @@ trotzdem geht. Sonst legte jemand mitten in der Versammlung los, das Netz zu
 reparieren. Der Alleinbetrieb bekommt keine Meldung: Eine, die jeden Tag
 dasteht, wird nicht mehr gelesen.
 
-Gefragt werden Authentik, Mailausgang, immotool und — seit dem 14.08.2026 —
-**KI-Kette und Zeitstempeldienst**. Bei diesen beiden wird geprüft, **ob das
+Gefragt werden Authentik, Mailausgang, eine angebundene Verwaltungssoftware, falls
+eingerichtet, und, seit dem 14.08.2026, **KI-Kette und Zeitstempeldienst**. Bei diesen beiden wird geprüft, **ob das
 Haus antwortet, nicht ob der Schlüssel gilt**: Ein echter Modellaufruf bei jedem
 Seitenaufbau kostete Geld und Sekunden, ein echter Zeitstempel belastete eine
 fremde Stelle für nichts. Ob Schlüssel und Modellname stimmen, sagt der
@@ -230,9 +230,10 @@ steht die Antwort in zwei Sekunden fest.
 Anmeldeweg ist gebaut.** Bis dahin war zwar die Ablage vorhanden
 (`person.authentik_subject`, Migration 030), aber leer — der einzige Weg, sie zu
 füllen, wäre Handarbeit gewesen, und die veraltet genau dann, wenn sie zählt:
-beim Eigentümerwechsel. Jetzt liefert immotool die Authentik-User-UUID je
-Eigentümer mit, und die Übernahme legt sie an der Partei ab (siehe
-[Die Authentik-Kennung](#die-authentik-kennung-seit-20082026) weiter unten).
+beim Eigentümerwechsel. Jetzt kommt die Authentik-User-UUID je Eigentümer mit der
+Übernahme der Stammdaten, aus einer angebundenen Verwaltungssoftware oder aus einer
+Datei in der wahlfreien Spalte `person_authentik`, und wird an der Partei abgelegt
+(siehe [Die Authentik-Kennung bei der Übernahme](#die-authentik-kennung-bei-der-ubernahme-seit-20082026)).
 
 **Der Anmeldeweg:** Auf `/z` erscheint neben dem
 Eingabefeld für den Code der Knopf «Mit meinem Konto anmelden» — sofern
@@ -262,8 +263,8 @@ Was noch fehlt:
 
 Im Saal führt der Weg bis dahin über die persönliche Zugangskarte. Und auch
 danach gilt: **Das Stimmrecht folgt aus dem festgehaltenen Stand, nie aus
-einer Kennung oder einer Gruppe.** Ein Konto überlebt den Verkauf einer Wohnung
-(in immotool 90 Tage Karenz), ein festgehaltener Stand nicht.
+einer Kennung oder einer Gruppe.** Ein Konto kann den Verkauf einer Wohnung
+überdauern, ein festgehaltener Stand nicht.
 
 ## Die Dateiablage
 
@@ -802,6 +803,8 @@ Beim Protokollentwurf gilt schon das Übernehmen eines Absatzes als Entscheid.
 darüber, wer was entschieden hat, kein zweiter Speicher für Personenbezogenes an
 einer Stelle, die nie gelöscht wird.
 
+<!-- nur-intern: Produktentscheid 16.11.2026, das Werkzeug des Hauses steht nicht im öffentlichen Handbuch; scripts/handbuch-bauen.mjs lässt den Abschnitt weg. -->
+
 ## Die Übernahme aus immotool
 
 **Vorgabe: aus.** Ohne Eintrag erscheint die Wahl auf der Übernahmeseite gar
@@ -881,54 +884,6 @@ Alle vier stehen vor der Übernahme als Hinweis auf dem Bildschirm, und jede
 Abweichung erscheint in der Vorschau als Änderung. Sie sind danach bei den
 Eigentümern und Einheiten zu berichtigen.
 
-### Die Authentik-Kennung (seit 20.08.2026)
-
-Führt immotool zu einem Eigentümer eine Authentik-Identität, kommt deren
-Kennung mit — die UUID aus dem `sub`-Anspruch, nie die E-Mail-Adresse. Sie ist
-die Grundlage des Eigentümerzugangs (siehe oben) und steht danach bei den
-Eigentümern als «Authentik-Kennung hinterlegt».
-
-> **Dieser Absatz sagte bis zum 15.09.2026 das Gegenteil** («Sie bewirkt heute
-> noch nichts: Einen Anmeldeweg für Eigentümer gibt es nicht»). Das stimmte, als
-> er geschrieben wurde, und war seit den Migrationen 067/068/071 überholt —
-> während derselbe Text weiter oben den gebauten Weg bereits beschrieb. Ein
-> Widerspruch im selben Dokument ist schlimmer als eine Lücke, weil man der
-> falschen Hälfte glaubt.
-
-Das Stimmrecht folgt unverändert aus dem festgehaltenen Stand, nie aus einer
-Kennung. Und die Kennung muss **vor der Freigabe** stehen: Eingelöst wird gegen
-`snapshot_party`, und die Freigabe friert ein.
-
-Drei Regeln:
-
-- **Nur, wo eine Person allein besitzt.** Gehört eine Einheit zweien, gehört
-  ihnen auch die Stimme gemeinsam; welche der beiden sich dafür anmelden darf,
-  entscheidet die Bewirtschaftung. Die Übernahme lässt die Kennung dann weg und
-  sagt es im Hinweis, statt eine der beiden auszuwählen.
-- **Gesetzt wird sie, entfernt nie.** Eine Datei ohne die Spalte
-  `person_authentik` — eine ältere oder eine von Hand geschriebene — ist kein
-  Löschauftrag. Sonst nähme ein harmloser zweiter Lauf einem Eigentümer den
-  Zugang weg, und niemand suchte den Grund in der Datei.
-- **Nur eine je Zeile, und nur in UUID-Form.** Zwei Kennungen an einer Stimme
-  wären zwei Menschen, die sich beide dafür anmelden dürften; eine
-  E-Mail-Adresse an dieser Stelle wäre eine Kennung, die neu vergeben werden
-  kann. Beides weist die Vorschau ab.
-- **Eine Kennung gehört einer Partei.** Steht dieselbe zweimal in der Datei
-  oder gehört sie hier schon einer anderen Partei, fällt die betroffene Zeile
-  durch — mit Nennung der Zeile beziehungsweise der Partei, der sie gehört. Die
-  übrigen Zeilen laufen normal durch. Der Grund für die Prüfung an dieser
-  Stelle: In der Datenbank wacht ein eindeutiger Index darüber, aber der
-  schlägt erst beim Schreiben zu, und die Übernahme läuft in **einer**
-  Transaktion — eine doppelte Kennung nähme sonst allen anderen Zeilen ihren
-  Lauf.
-
-> **Wenn eine Kennung wirklich wandern soll**, etwa weil dieselbe Person in
-> immotool doppelt erfasst war: Sie ist dort zu bereinigen. Die Anwendung löst
-> das nicht von selbst auf — sie sagt, was sie vorfindet.
-
-Auf dem Handweg gilt dasselbe: Die Spalte heisst `person_authentik` und ist
-wahlfrei.
-
 ### Der Stichtag
 
 immotool führt Eigentum mit Gültigkeitszeitraum. Übernommen wird, wer **am
@@ -951,6 +906,58 @@ weiterhin geht: die Übernahme aus einer CSV-Datei und die Erfassung von Hand.
 **Eine laufende Versammlung ist nie betroffen** — übernommen wird bei der
 Vorbereitung, nicht im Saal. Auf dem Notebook im Versammlungsraum bleiben beide
 Einträge deshalb leer.
+
+<!-- /nur-intern -->
+
+## Die Authentik-Kennung bei der Übernahme (seit 20.08.2026)
+
+Bringt die Übernahme der Stammdaten zu einem Eigentümer eine Authentik-Identität
+mit, aus einer angebundenen Verwaltungssoftware oder aus der Spalte
+`person_authentik` einer Datei, kommt deren Kennung mit: die UUID aus dem
+`sub`-Anspruch, nie die E-Mail-Adresse. Sie ist
+die Grundlage des Eigentümerzugangs (siehe oben) und steht danach bei den
+Eigentümern als «Authentik-Kennung hinterlegt».
+
+> **Dieser Absatz sagte bis zum 15.09.2026 das Gegenteil** («Sie bewirkt heute
+> noch nichts: Einen Anmeldeweg für Eigentümer gibt es nicht»). Das stimmte, als
+> er geschrieben wurde, und war seit den Migrationen 067/068/071 überholt —
+> während derselbe Text weiter oben den gebauten Weg bereits beschrieb. Ein
+> Widerspruch im selben Dokument ist schlimmer als eine Lücke, weil man der
+> falschen Hälfte glaubt.
+
+Das Stimmrecht folgt unverändert aus dem festgehaltenen Stand, nie aus einer
+Kennung. Und die Kennung muss **vor der Freigabe** stehen: Eingelöst wird gegen
+`snapshot_party`, und die Freigabe friert ein.
+
+Drei Regeln:
+
+- **Nur, wo eine Person allein besitzt** (bei der Übernahme aus einer
+  angebundenen Verwaltungssoftware). Gehört eine Einheit zweien, gehört
+  ihnen auch die Stimme gemeinsam; welche der beiden sich dafür anmelden darf,
+  entscheidet die Bewirtschaftung. Die Übernahme lässt die Kennung dann weg und
+  sagt es im Hinweis, statt eine der beiden auszuwählen. Beim Dateiweg prüft
+  Votum das nicht; tragen Sie die Kennung dort nur an einer Einheit mit einer
+  Person ein.
+- **Gesetzt wird sie, entfernt nie.** Eine Datei ohne die Spalte
+  `person_authentik` — eine ältere oder eine von Hand geschriebene — ist kein
+  Löschauftrag. Sonst nähme ein harmloser zweiter Lauf einem Eigentümer den
+  Zugang weg, und niemand suchte den Grund in der Datei.
+- **Nur eine je Zeile, und nur in UUID-Form.** Zwei Kennungen an einer Stimme
+  wären zwei Menschen, die sich beide dafür anmelden dürften; eine
+  E-Mail-Adresse an dieser Stelle wäre eine Kennung, die neu vergeben werden
+  kann. Beides weist die Vorschau ab.
+- **Eine Kennung gehört einer Partei.** Steht dieselbe zweimal in der Datei
+  oder gehört sie hier schon einer anderen Partei, fällt die betroffene Zeile
+  durch — mit Nennung der Zeile beziehungsweise der Partei, der sie gehört. Die
+  übrigen Zeilen laufen normal durch. Der Grund für die Prüfung an dieser
+  Stelle: In der Datenbank wacht ein eindeutiger Index darüber, aber der
+  schlägt erst beim Schreiben zu, und die Übernahme läuft in **einer**
+  Transaktion — eine doppelte Kennung nähme sonst allen anderen Zeilen ihren
+  Lauf.
+
+> **Wenn eine Kennung wirklich wandern soll**, etwa weil dieselbe Person in der
+> Quelle doppelt erfasst war: Sie ist dort zu bereinigen. Die Anwendung löst
+> das nicht von selbst auf — sie sagt, was sie vorfindet.
 
 ## Der Mailausgang
 

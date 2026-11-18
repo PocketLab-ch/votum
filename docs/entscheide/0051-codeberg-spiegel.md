@@ -13,7 +13,7 @@ Aus dem Produktentscheid vom 15.11.2026 zum Quellcode der eigenen Werkzeuge
 
 > «Ich würde sonst nur Votum auf Codeberg laden. Als Testlauf. ImmoPortal erst zusammen mit Immotool.»
 
-Zu den Issues im Spiegel, am selben Tag (`.auftraege/2026-11-15-votum-codeberg-plan.md`,
+Zu den Issues im Spiegel, am selben Tag (`.auftraege/erledigt/2026-11-15-votum-codeberg-plan.md`,
 «Was der Spiegel ist»):
 
 > «weil wenn was gefunden wird, kann man den Issues melden»

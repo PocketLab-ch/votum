@@ -603,6 +603,48 @@ function seite({ titel, kopfTitel, kapitel, aktuell, inhalt, gliederung, zurueck
 </html>`;
 }
 
+/**
+ * **Abschnitte nur für das Repo** (Produktentscheid 16.11.2026: das Werkzeug
+ * des Hauses steht nicht im öffentlichen Handbuch). Was zwischen
+ * `<!-- nur-intern … -->` und `<!-- /nur-intern -->` steht, bleibt in `docs/`
+ * und im öffentlichen Stand des Quelltexts, kommt aber nicht ins gebaute
+ * Handbuch. Die Zeilen werden durch leere ersetzt, damit die Zeilennummern der
+ * Meldungen weiter auf die Quelle zeigen. Eine Marke ohne Gegenstück bricht ab:
+ * Sie liesse sonst still den Rest des Kapitels weg oder gar nichts.
+ * @param {string} roh
+ * @param {string} datei
+ * @returns {string}
+ */
+export function ohneInterneAbschnitte(roh, datei) {
+  const auf = /^<!--\s*nur-intern\b[^\n]*-->\s*$/;
+  const zu = /^<!--\s*\/nur-intern\s*-->\s*$/;
+  // Was wie eine Marke aussieht, aber keine ist (eingerückt, «nur intern», mehrzeilig),
+  // bricht ab: Sonst bliebe der Abschnitt still im Handbuch, und der Renderer zeigte den
+  // Kommentar als Text (Codeprüfung 17.11.2026).
+  const fast = /<!--\s*\/?\s*nur[\s_-]*intern/i;
+  let drin = false;
+  let beginn = 0;
+  const zeilen = roh.split("\n").map((zeile, i) => {
+    if (auf.test(zeile)) {
+      if (drin) throw new Error(`${datei}:${i + 1}: «nur-intern» geöffnet, der Abschnitt ab Zeile ${beginn} ist noch offen`);
+      drin = true;
+      beginn = i + 1;
+      return "";
+    }
+    if (zu.test(zeile)) {
+      if (!drin) throw new Error(`${datei}:${i + 1}: «/nur-intern» ohne Anfang`);
+      drin = false;
+      return "";
+    }
+    if (fast.test(zeile)) {
+      throw new Error(`${datei}:${i + 1}: Marke «nur-intern» nicht erkannt; sie steht allein auf einer Zeile, ohne Einzug, als <!-- nur-intern … --> oder <!-- /nur-intern -->`);
+    }
+    return drin ? "" : zeile;
+  });
+  if (drin) throw new Error(`${datei}:${beginn}: «nur-intern» ohne Ende`);
+  return zeilen.join("\n");
+}
+
 // ─── Lauf ────────────────────────────────────────────────────────────────
 
 /** @param {Einstellung} cfg */
@@ -637,7 +679,7 @@ function bauen(cfg) {
   }
 
   const kapitel = dateien.map((f) => {
-    const roh = readFileSync(join(quelle, f), "utf8");
+    const roh = ohneInterneAbschnitte(readFileSync(join(quelle, f), "utf8"), f);
     const u1 = roh.match(/^#\s+(.*)$/m);
     return {
       datei: kapitelDatei(basename(f, ".md")),

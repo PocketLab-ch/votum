@@ -5091,6 +5091,13 @@ async function main() {
 			const zurueck = leitung.locator(
 				'section.entscheid[data-richtung="gesetzt"] button[type="submit"]'
 			);
+			/*
+			 * **Erst warten, dann zählen** (17.11.2026). Am Entwicklungsserver steht
+			 * der Kasten nach dem Absenden noch nicht da, wenn `count()` fragt; zwei
+			 * Läufe brachen hier ab, das Fehlerbild zeigte ihn (`docs/proben.md`).
+			 * Gewartet wird höchstens so lange, wie das Fenster offen ist.
+			 */
+			await zurueck.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
 			behaupte(
 				await zurueck.count(),
 				'Nach dem Vermerk steht kein Rückweg da — der Fehlgriff am Eingang bliebe stehen'

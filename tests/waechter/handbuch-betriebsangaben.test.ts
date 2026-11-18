@@ -10,7 +10,8 @@ import {
 	BETRIEBSANGABEN_SPERRDATEI,
 	CONFIG,
 	betriebsangaben,
-	ladeBetriebsangaben
+	ladeBetriebsangaben,
+	ohneInterneAbschnitte
 } from '../../scripts/handbuch-bauen.mjs';
 
 /**
@@ -28,9 +29,23 @@ describe('das öffentliche Handbuch', () => {
 
 	it('trägt in keiner Quelle eine Betriebsangabe', () => {
 		for (const datei of CONFIG.dateien ?? []) {
-			const text = readFileSync(join(CONFIG.quellen[0], datei), 'utf8');
+			// Wie der Bau: ohne die Abschnitte, die nur im Repo stehen.
+			const text = ohneInterneAbschnitte(readFileSync(join(CONFIG.quellen[0], datei), 'utf8'), datei);
 			expect(betriebsangaben(text, datei), datei).toEqual([]);
 		}
+	});
+
+	/**
+	 * **Das Werkzeug des Hauses steht nicht im öffentlichen Handbuch**
+	 * (Produktentscheid 16.11.2026). Den Abschnitt zur Übernahme hält nur die
+	 * Marke `nur-intern` heraus; ohne sie träfe die Regel der Sperrdatei, und der
+	 * Bau bräche ab. Rot, wenn die Marke fällt oder die Regel fehlt.
+	 */
+	it('hält das Werkzeug des Hauses nur über die Marke aus dem Kapitel «Dienste»', () => {
+		const roh = readFileSync(join(CONFIG.quellen[0], 'dienste.md'), 'utf8');
+		expect(betriebsangaben(roh, 'dienste.md').some((b) => /immotool/i.test(b.treffer))).toBe(true);
+		expect(betriebsangaben(ohneInterneAbschnitte(roh, 'dienste.md'), 'dienste.md')).toEqual([]);
+		expect(ohneInterneAbschnitte(roh, 'dienste.md')).not.toMatch(/immotool|\bcmms\b/i);
 	});
 
 	it('jede Ausnahme trifft in ihrer Datei wirklich etwas', () => {
@@ -59,6 +74,31 @@ function sperrdatei(inhalt: unknown): { pfad: string; weg: () => void } {
 	writeFileSync(pfad, typeof inhalt === 'string' ? inhalt : JSON.stringify(inhalt));
 	return { pfad, weg: () => rmSync(ort, { recursive: true, force: true }) };
 }
+
+describe('Abschnitte nur für das Repo', () => {
+	const auf = '<!-- nur-intern: Probe -->';
+	const zu = '<!-- /nur-intern -->';
+
+	it('lässt sie weg und hält die Zeilennummern', () => {
+		const roh = ['vorher', auf, 'geheim', zu, 'nachher'].join('\n');
+		const aus = ohneInterneAbschnitte(roh, 'probe.md');
+		expect(aus.split('\n')).toEqual(['vorher', '', '', '', 'nachher']);
+	});
+
+	it('bricht ab, wenn eine Marke kein Gegenstück hat', () => {
+		expect(() => ohneInterneAbschnitte(['a', auf, 'b'].join('\n'), 'probe.md')).toThrow(/ohne Ende/);
+		expect(() => ohneInterneAbschnitte(['a', zu, 'b'].join('\n'), 'probe.md')).toThrow(/ohne Anfang/);
+		expect(() => ohneInterneAbschnitte([auf, auf, zu].join('\n'), 'probe.md')).toThrow(/noch offen/);
+	});
+
+	it('bricht ab, wenn eine Marke nicht erkannt wird, statt den Abschnitt stehen zu lassen', () => {
+		for (const falsch of ['  <!-- nur-intern -->', '<!-- nur intern -->', '<!-- nur-intern', 'Text <!-- /nur-intern -->']) {
+			expect(() => ohneInterneAbschnitte(['a', falsch, 'b', zu].join('\n'), 'probe.md'), falsch).toThrow(/nicht erkannt/);
+		}
+		// Der stille Fall: falscher Anfang und falsches Ende zusammen (Codeprüfung, Durchgang 2, N3).
+		expect(() => ohneInterneAbschnitte(['a', '<!-- nur intern -->', 'b', '<!-- / nur intern -->'].join('\n'), 'probe.md')).toThrow(/nicht erkannt/);
+	});
+});
 
 describe('die Sperrdatei des Betriebs', () => {
 	// Im öffentlichen Stand fehlt sie mit Absicht; dort ist dieser Test rot wie der

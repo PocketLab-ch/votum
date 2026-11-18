@@ -1,12 +1,12 @@
 # 0056: Die Bezahlung aus dem Erneuerungsfonds wird ein eigener Fall, streng als Vorgabe, mit der Lesart L17
 
-- **Status:** gilt
+- **Status:** gilt; für eine Regel mit dem Häkchen «Begründungsakt oder Zustimmung aller» ergänzt durch [0057](0057-haekchen-an-der-fondsregel.md)
 - **Datum:** 2026-11-17
 - **Rolle:** Produktentscheid
 
 ## Wortlaut
 
-Zum Entwurf (Auftrag `.auftraege/2026-11-15-votum-erneuerungsfonds-entnahme.md`),
+Zum Entwurf (Auftrag `.auftraege/erledigt/2026-11-15-votum-erneuerungsfonds-entnahme.md`),
 je die empfohlene Antwort:
 
 > «Zuerst fragen» (der Finder fragt nach dem Beschluss: Arbeit oder Bezahlung),

@@ -80,7 +80,7 @@ function sichtbar(karte: ReturnType<typeof karteUnterRegel>): string {
 
 describe('Fassung 2026-11-04', () => {
 	it('ist seit F4c nicht mehr die aktuelle Fassung und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
 		expect(NEU.fassung).toBe('2026-11-04');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);

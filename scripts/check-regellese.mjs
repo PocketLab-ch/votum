@@ -29,7 +29,9 @@ import { mindestens } from './lib/pruefmenge.mjs';
 const WURZEL = process.cwd();
 
 /** Merkmale, an denen die Anwendung entscheidet — ohne sie ist eine Regel halb. */
-const PFLICHT = ['knotenId'];
+// `gesichert` seit Migration 197: Ohne ihn rechnete eine Lesestelle eine Regel
+// mit Häkchen an der Bezahlung aus dem Fonds wie eine ohne.
+const PFLICHT = ['knotenId', 'gesichert'];
 
 /** Eine Lesestelle: `SELECT` auf der Regeltabelle. */
 const LIEST = /SELECT[\s\S]{0,400}?FROM\s+bylaw_quorum_rule/i;

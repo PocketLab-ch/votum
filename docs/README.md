@@ -84,7 +84,6 @@ Diese Punkte sind geplant, aber nicht gebaut. Rechnen Sie im Betrieb mit ihnen:
 | Fehlt | Behelf heute |
 |---|---|
 | Eine Versammlung nachträglich hier anlegen | Wurde sie auf einem anderen Gerät geführt und dort versiegelt, nehmen Sie das **Abschlusspaket** auf: **Gemeinschaft → Versammlungen → Eine Versammlung von aussen aufnehmen**. Nachgebaut wird nichts — das Paket bleibt, wie es ist. |
-| Nutzniessung aus immotool übernehmen | Kennt immotool nicht — hier erfassen unter **Gemeinschaft → Nutzniessung**. Alles Übrige holt **Gemeinschaft → Stammdaten übernehmen**, siehe [Dienste einbinden](dienste.md). |
 | Anmeldung der Eigentümer über Authentik | Im Saal führt der Weg über die persönliche Zugangskarte, siehe [Dienste einbinden](dienste.md). |
 | Kennwort in der Anwendung ändern | Über `scripts/benutzer-anlegen.mjs`, siehe [Installation](installation.md). |
 | Jede Liste sortieren und filtern | Sortierbar sind Einheiten, Eigentümer und Personen; durchsuchbar Versammlungen, Eigentümer, Gemeinschaften, Personen und der Verlauf. Traktanden, Anwesenheit, Vollmachten und Auswertungen stehen in fester Reihenfolge — dort ist die Reihenfolge die Aussage. |

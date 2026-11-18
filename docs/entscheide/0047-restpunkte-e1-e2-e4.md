@@ -38,7 +38,7 @@ Was daraus folgt:
   `GEGEN_EIGENTUEMER`; beide sind Wortlaut nach aussen und brauchen Laien- und
   Fachprüfung.
 - Alle vier Reste führt der Auftrag
-  `.auftraege/2026-11-13-votum-texte-nach-0047.md`.
+  `.auftraege/erledigt/2026-11-13-votum-texte-nach-0047.md`.
 
 ## Alternativen
 

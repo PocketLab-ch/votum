@@ -5,7 +5,10 @@
  * die Geschäftsart, den Titel und den Betrag.»
  */
 import { describe, expect, it } from 'vitest';
-import { antragsmuster, hatMuster } from '$lib/domain/antragsmuster';
+import { readFileSync } from 'node:fs';
+import { antragsmuster, FAELLE_MIT_MUSTER, hatMuster } from '$lib/domain/antragsmuster';
+import { holeRegelwerk } from '$lib/rules';
+import { AUSSERHALB_ID, ENTNAHME_ID, VEREINBART_ID } from '$lib/rules/quorum-2026-11-20';
 
 describe('antragsmuster', () => {
 	it('schreibt einen führenden Artikel klein', () => {
@@ -86,4 +89,50 @@ describe('antragsmuster', () => {
 			expect(antragsmuster(art, 'die Dachsanierung'), art).not.toMatch(/Erneuerungsfonds|Fonds/);
 		}
 	});
+
+	/**
+	 * **Die Bezahlung aus dem Fonds hat ein eigenes Muster** (17.11.2026,
+	 * Codeprüfung zur Fassung 2026-11-20). Nach der Geschäftsart allein schlug
+	 * Votum dort «die dafür nötigen Verträge abzuschliessen» vor.
+	 */
+	describe('Bezahlung aus dem Erneuerungsfonds', () => {
+		it.each([ENTNAHME_ID, VEREINBART_ID, AUSSERHALB_ID])('schlägt an «%s» die Bezahlung vor', (fall) => {
+			const satz = antragsmuster('verwaltung_wichtig', 'Dachsanierung', fall)!;
+			expect(satz).toContain('aus dem Erneuerungsfonds zu bezahlen');
+			expect(satz).not.toMatch(/Verträge/);
+			// Ohne Titel: «Dachsanierung» ergäbe hier keinen Gegenstand.
+			expect(satz).not.toContain('Dachsanierung');
+			expect(satz.startsWith('Die Versammlung')).toBe(true);
+		});
+
+		it('lässt die übrigen wichtigeren Verwaltungshandlungen beim Muster der Art', () => {
+			expect(antragsmuster('verwaltung_wichtig', 'Probe', 'k-irgendein-fall')).toMatch(/nötigen Verträge/);
+			expect(antragsmuster('verwaltung_wichtig', 'Probe')).toMatch(/nötigen Verträge/);
+			// Nur eigene Schlüssel: «constructor» fände sonst eine Funktion in der Prototypenkette.
+			expect(antragsmuster('verwaltung_wichtig', 'Probe', 'constructor')).toMatch(/nötigen Verträge/);
+		});
+
+		it('kennt nur Fälle, die es in der neuesten Fassung gibt, alle unter verwaltung_wichtig', () => {
+			// Hiesse eine Karte um, schwiege das Muster still, und es käme wieder das der Art.
+			const rw = holeRegelwerk();
+			for (const fall of FAELLE_MIT_MUSTER) {
+				expect(rw.knoten.find((k) => k.id === fall)?.geschaeftsart, fall).toBe('verwaltung_wichtig');
+			}
+			expect([...FAELLE_MIT_MUSTER].sort()).toEqual([ENTNAHME_ID, VEREINBART_ID, AUSSERHALB_ID].sort());
+		});
+
+		it('bekommt an beiden Formularen den gewählten Fall', () => {
+			// Ohne `fall=` an einer der beiden Stellen bliebe dort das alte Muster stehen.
+			// Mit dem Wert, nicht nur dem Attribut: `fall={null}` blieb sonst grün (Featureprüfung 17.11.2026).
+			for (const [datei, wert] of [
+				['src/lib/components/TraktandumFormular.svelte', 'fall={gewaehlterFall || null}'],
+				['src/routes/tage/[id=kennung]/geschaefte/+page.svelte', 'fall={neuFall || null}']
+			] as const) {
+				const quelle = readFileSync(datei, 'utf-8');
+				const stelle = quelle.slice(quelle.indexOf('<Antragsvorschlag'));
+				expect(stelle.slice(0, stelle.indexOf('/>')), datei).toContain(wert);
+			}
+		});
+	});
 });
+

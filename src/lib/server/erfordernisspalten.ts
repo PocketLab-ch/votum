@@ -62,6 +62,8 @@ export interface ErfordernisSpalten {
 	requirement_statutory?: Gesetzesmass | null;
 	/** Seit Migration 181; nur am Rückkommen, sonst `null`. */
 	requirement_reading_reconsidered?: Erfordernis['lesartDesBeschlusses'] | null;
+	/** Seit Migration 198; `null` ohne Satz zum Häkchen an der Karte. */
+	requirement_rule_secured?: boolean | null;
 	requirement_reference: string | null;
 	requirement_path: Schritt[] | null;
 }
@@ -120,6 +122,7 @@ export function erfordernisAusZeile(z: ErfordernisSpalten): Erfordernis | null {
 		angehoerigenlesart: z.requirement_reading_l10 ?? undefined,
 		kopfzaehlweise: z.requirement_reading_l13 ?? undefined,
 		gesetzlich: z.requirement_statutory ?? undefined,
-		lesartDesBeschlusses: z.requirement_reading_reconsidered ?? undefined
+		lesartDesBeschlusses: z.requirement_reading_reconsidered ?? undefined,
+		regelGesichert: z.requirement_rule_secured ?? undefined
 	};
 }

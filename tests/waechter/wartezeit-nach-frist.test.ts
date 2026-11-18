@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { EINWAND_VOLLZUG } from '$lib/domain/entscheidbaum';
+import { EINWAND_VOLLZUG, NACH_DER_ANFECHTUNGSFRIST } from '$lib/domain/entscheidbaum';
 import { VON_HAND_FESTGEHALTEN_AUSSTAND, VON_HAND_FESTGEHALTEN_NEU_GESPERRT } from '$lib/domain/vonhand';
 
 /**
@@ -15,11 +16,21 @@ describe('Wartezeit nach der Anfechtungsfrist im Kern', () => {
 	it.each([
 		['EINWAND_VOLLZUG', EINWAND_VOLLZUG],
 		['VON_HAND_FESTGEHALTEN_NEU_GESPERRT', VON_HAND_FESTGEHALTEN_NEU_GESPERRT],
-		['VON_HAND_FESTGEHALTEN_AUSSTAND', VON_HAND_FESTGEHALTEN_AUSSTAND]
+		['VON_HAND_FESTGEHALTEN_AUSSTAND', VON_HAND_FESTGEHALTEN_AUSSTAND],
+		// An drei Reglementskarten (`reglement.ts`); bis zum 17.11.2026 ohne Wartezeit
+		// (Auftrag `.auftraege/2026-11-17-votum-pendenzen-folge.md`, Teil 5).
+		['NACH_DER_ANFECHTUNGSFRIST', NACH_DER_ANFECHTUNGSFRIST]
 	])('%s rechnet Wochen, nicht Tage, und fragt bei der Bewirtschaftung', (_, satz) => {
 		expect(satz).toContain('einige Wochen');
 		expect(satz).not.toMatch(/einige Tage/);
 		expect(satz).toMatch(/Fragen Sie die Bewirtschaftung, ob Post der Schlichtungsbehörde/);
+	});
+
+	it('steht an allen drei Reglementskarten, die nach der Frist vollziehen lassen (Featureprüfung 17.11.2026)', () => {
+		// Die Konstante allein zu prüfen, liess die Karten aus: Eine ersetzte Stelle blieb grün.
+		const quelle = readFileSync('src/lib/domain/reglement.ts', 'utf-8');
+		expect(quelle.split('${NACH_DER_ANFECHTUNGSFRIST}').length - 1).toBe(3);
+		expect(quelle).not.toMatch(/(vollziehen Sie ihn|vergeben Sie den Auftrag) erst nach Ablauf der (Anfechtungs)?[Ff]rist/);
 	});
 
 	it('nennt beim Einwand den Stillstand und den Fall, dass der Antrag die Bestimmung erreicht, vorn', () => {

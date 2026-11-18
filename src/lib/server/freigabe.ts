@@ -12,6 +12,7 @@ import { schreibeUebergang, type Handelnder } from './audit';
 import {
 	gibFrei,
 	veraltetInWorten,
+	type VeraltetGrund,
 	nimmFreigabeZurueck,
 	pruefeFreigabe,
 	type Freigabebefund,
@@ -24,7 +25,7 @@ import type { Versammlung } from '$lib/domain/versammlung';
 import { AUSNAHMEN_VORGABE, type Universalvariante } from '$lib/domain/ausnahmen';
 import { LESARTEN_VORGABE, wahlOhneGespeicherte, zaehlweiseVeraltet, type Lesartenwahl } from '$lib/domain/lesarten';
 import { holeRegelwerk, knotenDerFassung } from '$lib/rules';
-import { l17Regelstand, wendeReglementAn } from '$lib/domain/reglement';
+import { l17Regelstaende, l17Regelstand, wendeReglementAn } from '$lib/domain/reglement';
 import { waehleErfordernis } from '$lib/domain/entscheidbaum';
 import { holeEnthaltungseinstellungIn, holeReglementsregelnIn } from './erfordernisse';
 import { holeVersammlung } from './versammlungen';
@@ -336,7 +337,7 @@ async function veralteteLesartenIn(
 	tx: postgres.TransactionSql,
 	meetingId: Id,
 	lesarten: Lesartenwahl
-): Promise<{ nummer: string; titel: string; grund?: 'fondsentnahme' }[]> {
+): Promise<{ nummer: string; titel: string; grund?: VeraltetGrund }[]> {
 	const zeilen = await tx<
 		{
 			title: string;
@@ -355,10 +356,11 @@ async function veralteteLesartenIn(
 			andere_rechtsgrundlage: string | null;
 			andere_kopfbasis: string | null;
 			fundstelle: string | null;
+			regelGesichert: boolean | null;
 		}[]
 	>`
 		SELECT title, coalesce(manual_number, released_number, position::text) AS nummer,
-		       requirement_reference AS fundstelle,
+		       requirement_reference AS fundstelle, requirement_rule_secured AS "regelGesichert",
 		       requirement_node AS knoten, requirement_source AS quelle,
 		       requirement_reading->>'kennung' AS kennung, requirement_reading->>'wahl' AS wahl,
 		       requirement_head_base AS kopfbasis, requirement_version AS fassung,
@@ -442,33 +444,65 @@ async function veralteteLesartenIn(
 	/*
 	 * **An den Karten mit L17 auch unter einer Regel** (Codeprüfung L17, A): Dort
 	 * entscheidet die Wahl, ob und welche Regel gilt. Neu hergeleitet wie im
-	 * Kasten «Erfordernisse nachziehen» und über `l17Regelstand` verglichen,
-	 * aber nur an Traktanden unter einer Regel und nur nach diesem Wert; der
-	 * Kasten prüft alle Traktanden und dazu das ganze Mehr, zeigt also jedes,
-	 * zu dem hier abgesagt wird. Die übrigen Traktanden unter einer Regel
-	 * bleiben, wie oben begründet, aussen vor.
+	 * Kasten «Erfordernisse nachziehen» und über `l17Regelstand` verglichen, an
+	 * allen Traktanden dieser Karten und nur nach diesem Wert; der Kasten prüft
+	 * alle Traktanden und dazu das ganze Mehr, zeigt also jedes, zu dem hier
+	 * abgesagt wird. Die Traktanden unter einer Regel an anderen Karten bleiben,
+	 * wie oben begründet, aussen vor.
 	 *
 	 * **Mit eigener Ursache** (Codeprüfung L17, M1): Das Mehr kann hier auch
 	 * nach einer bloss geänderten Regel nicht mehr stimmen, bei gleicher Lesart.
 	 * Die Absage sagt deshalb `FONDSENTNAHME_VERALTET`, nicht «Lesarten
 	 * umgestellt», und führt auf die Reglementseite.
+	 *
+	 * **Seit Migration 197 auch nach dem Gesetz gerechnete Traktanden dieser
+	 * Karten** (Codeprüfung des Zweigs, N1, übernommen): Mit dem Häkchen
+	 * «Begründungsakt oder Zustimmung aller» kann dort eine mildere Regel neu
+	 * gelten, ohne dass Lesart oder Regel sonst wechseln, und ebenso gilt eine
+	 * strengere Regel, die nach einem Traktandum nach dem Gesetz hinterlegt wurde.
+	 * In beiden Fällen stimmt das gespeicherte Mehr nicht mehr; die Freigabe
+	 * fröre es sonst ein. Der Kasten zeigt den Weg. Wechselt das Häkchen an
+	 * einer angewandten strengeren Regel, bleibt das Mehr gleich; seit Migration
+	 * 198 ist das Traktandum trotzdem veraltet, weil die Freigabe den Satz an der
+	 * Karte einfriert (unten). Der Kasten zeigt jedes Traktandum, zu dem hier
+	 * abgesagt wird: Er vergleicht denselben Wert.
 	 */
 	const rw = holeRegelwerk();
 	const l17Karten = new Set(rw.knoten.filter((k) => k.lesart?.kennung === 'L17').map((k) => k.id));
-	const unterRegelMitL17 = zeilen.filter((z) => z.quelle === 'reglement' && l17Karten.has(z.knoten));
-	let l17Veraltet = (_z: (typeof zeilen)[number]): boolean => false;
-	if (unterRegelMitL17.length > 0) {
+	/*
+	 * Jede Quelle: Auch ein über die Karte gewähltes Erfordernis (`waehleErfordernis`,
+	 * Quelle `gewaehlt`) rechnet nach dem Knoten und der Regel. Von Hand Gesetztes mit
+	 * Begründung schliesst die Abfrage oben aus, eines ohne Knoten trifft keine L17-Karte.
+	 */
+	const anL17Karten = zeilen.filter((z) => l17Karten.has(z.knoten));
+	/*
+	 * **Seit Migration 198 auch, wenn nur der Satz an der Karte wechselt**
+	 * (Entscheid des Auftraggebers vom 18.11.2026, «Auch Häkchen einfrieren»):
+	 * Die Freigabe friert das Häkchen mit dem gespeicherten Erfordernis ein
+	 * (`regelGesichert`), und die Karte zeigt danach den Satz von damals. Wechselt
+	 * es vorher an einer strengeren Regel, bleibt das Mehr gleich, der
+	 * eingefrorene Satz stimmte aber nicht mehr. Die Absage nennt dann den eigenen
+	 * Grund (`haekchen`, `FONDSENTNAHME_HAEKCHEN_VERALTET`), wenn die Regel nach
+	 * Fundstelle dieselbe bleibt; der Satz nennt einen Zustand und kein gleiches
+	 * Mehr, weil das hier nicht verglichen wird (Codeprüfung N1). Der Kasten
+	 * vergleicht denselben Wert mit derselben Fassung.
+	 */
+	const l17Grund = new Map<(typeof zeilen)[number], 'fondsentnahme' | 'haekchen'>();
+	if (anL17Karten.length > 0) {
 		const [m] = await tx<{ stweg_id: string }[]>`SELECT stweg_id FROM meeting WHERE id = ${meetingId}`;
 		const regeln = await holeReglementsregelnIn(tx, m.stweg_id);
 		const enthaltung = await holeEnthaltungseinstellungIn(tx, m.stweg_id);
-		l17Veraltet = (z) => {
-			if (!unterRegelMitL17.includes(z)) return false;
+		for (const z of anL17Karten) {
 			const gewaehlt = waehleErfordernis(rw, z.knoten).ergebnis;
-			if (!gewaehlt) return false;
+			if (!gewaehlt) continue;
+			// Im Entwurf, also mit dem Häkchen der Gemeinschaft (`wendeReglementAn`).
 			const neu = wendeReglementAn(gewaehlt, regeln, enthaltung, lesarten).erfordernis;
-			return l17Regelstand(true, z) !== l17Regelstand(true, neu);
-		};
+			const { bisher, jetzt } = l17Regelstaende(true, z, neu, z.fassung);
+			if (bisher === jetzt) continue;
+			l17Grund.set(z, l17Regelstand(true, z) === l17Regelstand(true, neu) ? 'haekchen' : 'fondsentnahme');
+		}
 	}
+	const l17Veraltet = (z: (typeof zeilen)[number]): boolean => l17Grund.has(z);
 	return zeilen
 		.filter((z) => {
 			if (l10Veraltet(z)) return true;
@@ -486,7 +520,10 @@ async function veralteteLesartenIn(
 				});
 			return gewaehlt !== undefined && gewaehlt !== wahl;
 		})
-		.map((z) => ({ nummer: z.nummer, titel: z.title, ...(l17Veraltet(z) ? { grund: 'fondsentnahme' as const } : {}) }));
+		.map((z) => {
+			const grund = l17Grund.get(z);
+			return { nummer: z.nummer, titel: z.title, ...(grund ? { grund } : {}) };
+		});
 }
 
 /**

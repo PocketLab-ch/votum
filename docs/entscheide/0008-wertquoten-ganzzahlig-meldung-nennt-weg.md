@@ -14,7 +14,7 @@ Die gewählte Möglichkeit lautete: «Kleiner Block: Die Absage nennt den Weg ü
 
 ## Anlass
 
-Speicherung, Vergleich und Anzeige sind ganzzahlig (`migrations/005_einheiten.sql`, `domain/mehrheit.ts`); «123,5» wird abgewiesen, ohne den Ausweg zu nennen (`domain/einheiten.ts`). Ein «Schwellenobjekt mit Klasse» aus der Zweitprüfung gibt es nicht; sein Zweck ist durch die Entscheide «Hinweis statt Sperre» erfüllt. Keine Anwaltsfrage. Sitzungsprotokoll vom 18.10.2026, 16:28 UTC; gewählt wie empfohlen. Zu bauen in Schritt 3b des Ablaufs (`.auftraege/2026-10-18-votum-ablauf-entscheide-nach-block3.md`).
+Speicherung, Vergleich und Anzeige sind ganzzahlig (`migrations/005_einheiten.sql`, `domain/mehrheit.ts`); «123,5» wird abgewiesen, ohne den Ausweg zu nennen (`domain/einheiten.ts`). Ein «Schwellenobjekt mit Klasse» aus der Zweitprüfung gibt es nicht; sein Zweck ist durch die Entscheide «Hinweis statt Sperre» erfüllt. Keine Anwaltsfrage. Sitzungsprotokoll vom 18.10.2026, 16:28 UTC; gewählt wie empfohlen. Zu bauen in Schritt 3b des Ablaufs (`.auftraege/erledigt/2026-10-18-votum-ablauf-entscheide-nach-block3.md`).
 
 ## Alternativen
 

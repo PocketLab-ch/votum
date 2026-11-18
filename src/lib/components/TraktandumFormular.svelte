@@ -185,6 +185,7 @@
 			<Antragsvorschlag
 				art={fallart}
 				{titel}
+				fall={gewaehlterFall || null}
 				vorhanden={wortlaut}
 				uebernehmen={(satz) => (wortlaut = satz)}
 			/>

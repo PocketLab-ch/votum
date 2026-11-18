@@ -14,7 +14,7 @@
  * nehmen beide Funktionen die Gemeinschaft und nicht die gemeinsame Versammlung.
  */
 import type postgres from 'postgres';
-import type { Erfordernis } from '$lib/domain/entscheidbaum';
+import type { Erfordernis, Erfordernisquelle } from '$lib/domain/entscheidbaum';
 import type { Enthaltungseinstellung } from '$lib/domain/reglement';
 import type { holeReglementsregeln } from './reglement';
 import type { Id } from '$lib/domain/types';
@@ -174,6 +174,7 @@ export async function holeReglementsregelnIn(
 			quota_base: string;
 			source_reference: string;
 			abstention_counts: boolean;
+			founding_or_unanimous: boolean;
 			note: string | null;
 			node_id: string | null;
 		}[]
@@ -217,6 +218,8 @@ export async function holeReglementsregelnIn(
 		quotenbasis: z.quota_base as never,
 		fundstelle: z.source_reference,
 		enthaltungZaehltMit: z.abstention_counts,
+		// Seit Migration 197; derselbe Leser wie in `reglement.ts` (`check-regellese`).
+		gesichert: z.founding_or_unanimous,
 		hinweis: z.note ?? undefined
 	}));
 }
@@ -298,7 +301,33 @@ export async function schreibeErfordernisIn(
 			requirement_statutory = ${e.gesetzlich ? tx.json(e.gesetzlich as never) : null},
 			-- Nur das Rückkommen setzt sie; jedes andere Schreiben löscht sie (Migration 181).
 			requirement_reading_reconsidered = ${e.lesartDesBeschlusses ? tx.json(e.lesartDesBeschlusses as never) : null},
+			-- Das Häkchen zum Satz an der Karte (Migration 198), wo wendeReglementAn es setzt.
+			requirement_rule_secured = ${e.regelGesichert ?? null},
 			requirement_path = ${tx.json(e.pfad as never)}
 		WHERE id = ${traktandumId}
 	`;
+}
+
+/**
+ * Was eine Herleitung nach der Freigabe vom gespeicherten Erfordernis braucht, um
+ * das Häkchen von damals zu nehmen (Migration 198, `wendeReglementAnNachFreigabe`);
+ * im Entwurf `null`, dann gilt das Häkchen der Gemeinschaft. Dieselbe Stelle
+ * auf der Erfordernisseite (`regelanwendungAmTraktandum` in `traktanden.ts`), im
+ * Kasten «nachziehen», beim Nachziehen selbst und am Abend
+ * (`setzeErfordernisAmGeschaeft` in `geschaeft.ts`).
+ */
+export function gespeichertNachFreigabe(z: {
+	meeting_state: string;
+	requirement_node: string | null;
+	requirement_source: string | null;
+	requirement_reference: string | null;
+	requirement_rule_secured: boolean | null;
+}): Pick<Erfordernis, 'knotenId' | 'quelle' | 'fundstelle' | 'regelGesichert'> | null {
+	if (z.meeting_state === 'entwurf') return null;
+	return {
+		knotenId: z.requirement_node ?? '',
+		quelle: (z.requirement_source ?? 'hergeleitet') as Erfordernisquelle,
+		fundstelle: z.requirement_reference ?? undefined,
+		regelGesichert: z.requirement_rule_secured ?? undefined
+	};
 }

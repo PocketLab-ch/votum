@@ -191,7 +191,8 @@ export const load: PageServerLoad = mitAbsage(async ({ locals, url }) => {
 						: null,
 					angewandt.lesart,
 					hergeleitet,
-					angewandt.verdraengt
+					angewandt.verdraengt,
+					angewandt.fondsregel
 				),
 				angewandt.enthaltung
 			),

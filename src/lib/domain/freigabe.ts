@@ -108,8 +108,15 @@ export interface Freigabelage {
 	 * die Freigabe einfriert (Migration 169; Rest aus Lesarten Block 1, Review
 	 * DeepSeek). Fehlt das Feld: keine.
 	 */
-	lesartVeraltet?: { nummer: string; titel: string; grund?: 'fondsentnahme' }[];
+	lesartVeraltet?: { nummer: string; titel: string; grund?: VeraltetGrund }[];
 }
+
+/**
+ * Warum ein Traktandum an einer Karte mit L17 veraltet ist: das Mehr passt
+ * nicht mehr (`fondsentnahme`), oder nur das Häkchen zum Satz an der Karte hat
+ * gewechselt (`haekchen`, Migration 198).
+ */
+export type VeraltetGrund = 'fondsentnahme' | 'haekchen';
 
 /**
  * Die Absage an einem Traktandum zur Bezahlung aus dem Erneuerungsfonds, dessen
@@ -124,8 +131,28 @@ export const FONDSENTNAHME_VERALTET =
 	'Lesart L17 Ihrer Gemeinschaft überein. Leiten Sie es auf der Reglementseite neu her und geben Sie dann frei; ' +
 	'die Einladung nennt das neue Mehr.';
 
+/**
+ * Die Absage, wenn an einem Traktandum zur Bezahlung aus dem Erneuerungsfonds
+ * der Teil zum Häkchen «Begründungsakt oder Zustimmung aller» nicht mehr passt
+ * (Migration 198; Entscheid des Auftraggebers vom 18.11.2026, «Auch Häkchen
+ * einfrieren»). Ab der Freigabe zeigt die Karte den Satz von damals.
+ *
+ * **Als Zustand, nicht als Änderung** (Codeprüfung N1, Laienprüfung L-1 und
+ * L-3, 18.11.2026): Den Grund gibt es auch, wo niemand das Häkchen angefasst
+ * hat (L17 von «svit» auf «streng» zurückgestellt, vor Migration 198
+ * hergeleitet), und wo zugleich die Schwelle einer Regel mit derselben
+ * Fundstelle wechselte; «hat sich geändert» und «Das Mehr bleibt gleich» wären
+ * dort falsch. Die Prüfung des Häkchens steht vor dem Herleiten (L-1).
+ */
+export const FONDSENTNAHME_HAEKCHEN_VERALTET =
+	'Der Hinweis an der Karte eines Traktandums zur Bezahlung aus dem Erneuerungsfonds passt nicht mehr zum ' +
+	'Häkchen «Begründungsakt oder Zustimmung aller» an seiner Regel. Die Freigabe hielte ihn so fest. ' +
+	'Prüfen Sie, ob das Häkchen stimmt. Leiten Sie das Traktandum dann auf der Reglementseite neu her und ' +
+	'geben Sie frei.';
+
 /** Der Satz zu einem veralteten Traktandum, nach seinem Grund. */
-export function veraltetInWorten(t: { titel: string; grund?: 'fondsentnahme' }): string {
+export function veraltetInWorten(t: { titel: string; grund?: VeraltetGrund }): string {
+	if (t.grund === 'haekchen') return `${FONDSENTNAHME_HAEKCHEN_VERALTET} Betroffen ist «${t.titel}».`;
 	return t.grund === 'fondsentnahme' ? `${FONDSENTNAHME_VERALTET} Betroffen ist «${t.titel}».` : lesartVeraltetInWorten(t.titel);
 }
 
@@ -222,7 +249,7 @@ export function pruefeFreigabe(lage: Freigabelage): Freigabebefund {
 		hindernisse.push({
 			kennung: 'lesart_veraltet',
 			text: veraltetInWorten(t),
-			weg: t.grund === 'fondsentnahme' ? 'reglement' : 'lesarten'
+			weg: t.grund ? 'reglement' : 'lesarten'
 		});
 	}
 

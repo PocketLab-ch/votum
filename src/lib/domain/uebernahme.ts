@@ -769,7 +769,9 @@ export function erzeugeVorschauAus(
 							zeile: z.nummer,
 							grund:
 								`Diese Authentik-Kennung gehört hier bereits zu «${gehoertZu}». Wandern ` +
-								'darf sie nicht von selbst: Entweder ist die Person in immotool doppelt ' +
+								// Ohne den Namen des Hauswerkzeugs: Die Meldung sieht jede Gemeinschaft, auch
+								// beim Dateiweg (Produktentscheid 17.11.2026).
+								'darf sie nicht von selbst: Entweder ist die Person in der Quelle doppelt ' +
 								'erfasst, oder die alte Zuordnung gehört zuerst aufgehoben.',
 							spalte: 'person_authentik'
 						}

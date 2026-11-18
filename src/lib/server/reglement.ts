@@ -19,8 +19,9 @@ import {
 	type Reglementsregel,
 	type ReglementsregelEingabe,
 	type Reglementspruefstand,
-	l17Regelstand,
-	wendeReglementAn
+	haekchenZusatz,
+	l17Regelstaende,
+	wendeReglementAnNachFreigabe
 } from '$lib/domain/reglement';
 import {
 	angehoerigeNachzuziehen,
@@ -30,6 +31,7 @@ import {
 } from '$lib/domain/entscheidbaum';
 import { knotenVon } from '$lib/domain/regelwerk';
 import {
+	gespeichertNachFreigabe,
 	holeEnthaltungseinstellungIn,
 	holeReglementsregelnIn,
 	schreibeErfordernisIn
@@ -88,6 +90,8 @@ interface DbZeile {
 	quota_base: Quotenbasis;
 	source_reference: string;
 	abstention_counts: boolean;
+	/** Seit Migration 197: Begründungsakt oder Zustimmung aller. */
+	founding_or_unanimous: boolean;
 	note: string | null;
 }
 
@@ -109,6 +113,7 @@ function ausDb(z: DbZeile): Reglementsregel {
 		quotenbasis: z.quota_base,
 		fundstelle: z.source_reference,
 		enthaltungZaehltMit: z.abstention_counts,
+		gesichert: z.founding_or_unanimous,
 		hinweis: z.note ?? undefined
 	};
 }
@@ -177,7 +182,7 @@ export async function erstelleReglementsregel(
 				id, operator_id, stweg_id, business_kind, node_id,
 				head_numerator, head_denominator, head_mode, head_base,
 				quota_numerator, quota_denominator, quota_mode, quota_base,
-				source_reference, abstention_counts, note
+				source_reference, abstention_counts, founding_or_unanimous, note
 			) VALUES (
 				${regel.id}, ${operatorId}, ${regel.stwegId}, ${regel.geschaeftsart},
 				${regel.knotenId ?? null},
@@ -185,7 +190,8 @@ export async function erstelleReglementsregel(
 				${regel.kopfSchwelle?.art ?? null}, ${regel.kopfbasis},
 				${regel.quotenSchwelle?.zaehler ?? null}, ${regel.quotenSchwelle?.nenner ?? null},
 				${regel.quotenSchwelle?.art ?? null}, ${regel.quotenbasis},
-				${regel.fundstelle}, ${regel.enthaltungZaehltMit}, ${regel.hinweis ?? null}
+				${regel.fundstelle}, ${regel.enthaltungZaehltMit}, ${regel.gesichert === true},
+				${regel.hinweis ?? null}
 			)
 			-- Je Geschäftsart UND Fall genau eine Regel: Eine zweite ersetzt die
 			-- erste, statt daneben zu stehen. Zwei widersprüchliche wären schlimmer
@@ -203,6 +209,7 @@ export async function erstelleReglementsregel(
 				quota_base = EXCLUDED.quota_base,
 				source_reference = EXCLUDED.source_reference,
 				abstention_counts = EXCLUDED.abstention_counts,
+				founding_or_unanimous = EXCLUDED.founding_or_unanimous,
 				note = EXCLUDED.note
 			RETURNING id
 		`;
@@ -322,6 +329,7 @@ export async function aendereReglementsregelAn(
 				quota_base = ${regel.quotenbasis},
 				source_reference = ${regel.fundstelle},
 				abstention_counts = ${regel.enthaltungZaehltMit},
+				founding_or_unanimous = ${regel.gesichert === true},
 				note = ${regel.hinweis ?? null}
 			 WHERE id = ${regelId}
 			`;
@@ -1050,9 +1058,12 @@ async function veralteteErfordernisseIn(
 			andere_typ: string | null;
 			andere_rechtsgrundlage: string | null;
 			andere_kopfbasis: string | null;
+			requirement_rule_secured: boolean | null;
+			meeting_state: string;
 		}[]
 	>`
 		SELECT a.id, a.meeting_id, a.title, a.requirement_reading->>'kennung' AS lesart_kennung,
+		       a.requirement_rule_secured, m.state AS meeting_state,
 		       a.requirement_reading->>'wahl' AS lesart_wahl,
 		       a.requirement_reading->'andere'->>'typ' AS andere_typ,
 		       a.requirement_reading->'andere'->>'rechtsgrundlage' AS andere_rechtsgrundlage,
@@ -1200,8 +1211,20 @@ async function veralteteErfordernisseIn(
 		if (!lesartenJe.has(z.meeting_id)) {
 			lesartenJe.set(z.meeting_id, await holeLesartenIn(tx, { meetingId: z.meeting_id }));
 		}
-		const neu = wendeReglementAn(gewaehlt.ergebnis, regeln, enthaltung, lesartenJe.get(z.meeting_id)!)
-			.erfordernis;
+		/*
+		 * Nach der Freigabe mit dem Häkchen des gespeicherten Erfordernisses, wo es
+		 * nur den Satz ändert (Migration 198, `wendeReglementAnNachFreigabe`): Der
+		 * Satz von damals bleibt, und der Kasten bietet nicht an, ihn zu ändern.
+		 * Ein geändertes Mehr erscheint weiter und lässt sich bis zur Eröffnung
+		 * nachziehen (Migration 144).
+		 */
+		const neu = wendeReglementAnNachFreigabe(
+			gewaehlt.ergebnis,
+			regeln,
+			enthaltung,
+			lesartenJe.get(z.meeting_id)!,
+			gespeichertNachFreigabe(z)
+		).erfordernis;
 		/*
 		 * **Ohne gespeicherte Wahl rechnet das Traktandum, was der Knoten seiner
 		 * Fassung rechnet** (Codeprüfung Lesarten Block 3, M2; Entscheid 0048,
@@ -1241,6 +1264,12 @@ async function veralteteErfordernisseIn(
 		 * Titel und Rechtsgrundlage bleiben ebenfalls aussen vor — sie ändern sich
 		 * mit jeder Regelwerksfassung, ohne dass sich am Ergebnis etwas ändert.
 		 */
+		const l17 = l17Regelstaende(
+			mitL17(z.requirement_node),
+			{ quelle: z.requirement_source, fundstelle: z.requirement_reference, regelGesichert: z.requirement_rule_secured },
+			neu,
+			z.requirement_version
+		);
 		const bisher = [
 			z.requirement_type,
 			z.requirement_head_numerator,
@@ -1277,8 +1306,12 @@ async function veralteteErfordernisseIn(
 			// Seit Migration 196: an den Karten mit L17 die Regel, nach der gerechnet
 			// wird; nach einer Umstellung von L17 kann eine andere gelten, bei gleichem
 			// Mehr (`l17Regelstand`). Die Freigabe sagt an einer Teilmenge davon ab:
-			// nur unter einer Regel, nur nach diesem Wert (siehe dort).
-			l17Regelstand(mitL17(z.requirement_node), { quelle: z.requirement_source, fundstelle: z.requirement_reference })
+			// an allen Traktanden dieser Karten, nur nach diesem Wert (siehe dort).
+			// Seit Migration 197 wechselt den Wert auch das Häkchen an einer milderen Regel.
+			// Seit Migration 198 dazu das Häkchen, wo es nur den Satz an der Karte ändert
+			// (`regelGesichert`), ab der Fassung 2026-11-21 des gespeicherten Erfordernisses;
+			// beide Seiten aus `l17Regelstaende`, wie die Freigabe.
+			l17.bisher
 		].join('|');
 		const jetzt = [
 			neu.typ,
@@ -1295,9 +1328,21 @@ async function veralteteErfordernisseIn(
 			neu.gemeinschaftslesart?.wahl ?? null,
 			l10Jetzt(z, neu),
 			null,
-			l17Regelstand(mitL17(z.requirement_node), neu)
+			l17.jetzt
 		].join('|');
 		if (bisher === jetzt) continue;
+
+		/*
+		 * Der Zusatz zum Häkchen nur, wo es im Vergleich oben wechselt (Migration
+		 * 198); dieselbe Funktion mit derselben Fassung, ohne die Regel.
+		 */
+		const nurHaekchen = l17Regelstaende(
+			mitL17(z.requirement_node),
+			{ regelGesichert: z.requirement_rule_secured },
+			{ regelGesichert: neu.regelGesichert },
+			z.requirement_version
+		);
+		const haekchenGewechselt = nurHaekchen.bisher !== nurHaekchen.jetzt;
 
 		aus.push({
 			traktandumId: z.id,
@@ -1334,7 +1379,8 @@ async function veralteteErfordernisseIn(
 						}
 					: null,
 				l10Bisher(z),
-				l13Zusatz(z, neu).bisher
+				l13Zusatz(z, neu).bisher,
+				haekchenGewechselt ? { wert: z.requirement_rule_secured } : null
 			),
 			neu: mehrheitInWorten(
 				neu.kopfSchwelle?.zaehler ?? null,
@@ -1354,7 +1400,8 @@ async function veralteteErfordernisseIn(
 						}
 					: null,
 				l10Jetzt(z, neu),
-				l13Zusatz(z, neu).jetzt
+				l13Zusatz(z, neu).jetzt,
+				haekchenGewechselt ? { wert: neu.regelGesichert ?? null } : null
 			)
 		});
 	}
@@ -1392,7 +1439,14 @@ export function mehrheitInWorten(
 	 */
 	angehoerigenlesart: string | null,
 	/** Seit Migration 192: die Zählweise der Köpfe, wo sie wirkt (L13). */
-	kopfzaehlweise: string | null
+	kopfzaehlweise: string | null,
+	/**
+	 * Seit Migration 198: das Häkchen an der Regel, nur wo es im Vergleich
+	 * wechselt; `wert: null` heisst, das gespeicherte trägt keines. Ohne es stünde
+	 * im Kasten «von X auf X», wenn nur der Satz an der Karte wechselt
+	 * (`haekchenZusatz`).
+	 */
+	haekchen: { wert: boolean | null } | null = null
 ): string {
 	/*
 	 * **Ohne Köpfe nur die Wertquoten** (Regel «Köpfe zählen nicht», 16.11.2026;
@@ -1422,7 +1476,8 @@ export function mehrheitInWorten(
 	const nachKoepfen = kopfzaehlweise ? ` · Lesart L13: ${wahlInWorten('L13', kopfzaehlweise)}` : '';
 	const nachQuoten = quoten ? ` und ${quotenBruch}` : '';
 	const mehr = ohneKoepfe ? `${quotenBruch}, ${UNABHAENGIG_VON_KOEPFEN}` : `${bruch} ${wovon}${nachQuoten}`;
-	return `${mehr}${enthaltung}${woher}${nachLesart}${nachAngehoerigen}${nachKoepfen}`;
+	const nachHaekchen = haekchen === null ? '' : ` · ${haekchenZusatz(haekchen.wert)}`;
+	return `${mehr}${enthaltung}${woher}${nachLesart}${nachAngehoerigen}${nachKoepfen}${nachHaekchen}`;
 }
 
 /**
@@ -1444,9 +1499,22 @@ export async function erfordernisseNachziehen(
 		const enthaltung = await holeEnthaltungseinstellungIn(tx, stwegId);
 		const rw = holeRegelwerk();
 		const [zeilen] = [
-			await tx<{ id: string; meeting_id: string; requirement_node: string }[]>`
-				SELECT id, meeting_id, requirement_node FROM agenda_item
-				 WHERE id = ANY(${offen.map((o) => o.traktandumId)}::uuid[])
+			await tx<
+				{
+					id: string;
+					meeting_id: string;
+					requirement_node: string;
+					requirement_source: string | null;
+					requirement_reference: string | null;
+					requirement_rule_secured: boolean | null;
+					meeting_state: string;
+				}[]
+			>`
+				SELECT a.id, a.meeting_id, a.requirement_node, a.requirement_source,
+				       a.requirement_reference, a.requirement_rule_secured, m.state AS meeting_state
+				  FROM agenda_item a
+				  JOIN meeting m ON m.id = a.meeting_id
+				 WHERE a.id = ANY(${offen.map((o) => o.traktandumId)}::uuid[])
 			`
 		];
 		/*
@@ -1462,11 +1530,13 @@ export async function erfordernisseNachziehen(
 		for (const z of zeilen) {
 			const gewaehlt = waehleErfordernis(rw, z.requirement_node);
 			if (!gewaehlt.ergebnis) continue;
-			const e = wendeReglementAn(
+			// Wie im Kasten: nach der Freigabe mit dem Häkchen von damals (Migration 198).
+			const e = wendeReglementAnNachFreigabe(
 				gewaehlt.ergebnis,
 				regeln,
 				enthaltung,
-				await holeLesartenIn(tx, { meetingId: z.meeting_id })
+				await holeLesartenIn(tx, { meetingId: z.meeting_id }),
+				gespeichertNachFreigabe(z)
 			).erfordernis;
 			try {
 				await tx.savepoint((sp) => schreibeErfordernisIn(sp, handelnder, z.id, e));

@@ -59,7 +59,12 @@ import {
 	type Erfordernis,
 	type Erfordernisauswahl
 } from '$lib/domain/entscheidbaum';
-import { erfordernisAusRegel, wendeReglementAn } from '$lib/domain/reglement';
+import {
+	erfordernisAusRegel,
+	wendeReglementAn,
+	wendeReglementAnNachFreigabe,
+	type Regelanwendung
+} from '$lib/domain/reglement';
 import {
 	durchgangAngenommenInTx,
 	durchgangMitAllenJaInTx,
@@ -77,6 +82,7 @@ import {
 	leseReglementsregeln
 } from './reglement';
 import {
+	gespeichertNachFreigabe,
 	holeEnthaltungseinstellungIn,
 	verlangeKeinVerwaltungsgeschaeftAmWahlknoten,
 	verlangeKeinVerwaltungsgeschaeftAmWahlknotenIn
@@ -778,7 +784,9 @@ export async function bearbeiteTraktandum(
 				-- Ohne Erfordernis keine Lesart (Migration 169).
 				requirement_reading = CASE WHEN ${t.art} = 'kenntnisnahme' THEN NULL ELSE requirement_reading END,
 				requirement_statutory = CASE WHEN ${t.art} = 'kenntnisnahme' THEN NULL ELSE requirement_statutory END,
-				requirement_reading_reconsidered = CASE WHEN ${t.art} = 'kenntnisnahme' THEN NULL ELSE requirement_reading_reconsidered END
+				requirement_reading_reconsidered = CASE WHEN ${t.art} = 'kenntnisnahme' THEN NULL ELSE requirement_reading_reconsidered END,
+				-- Ohne Erfordernis keine Karte, also kein Satz zum Häkchen (Migration 198).
+				requirement_rule_secured = CASE WHEN ${t.art} = 'kenntnisnahme' THEN NULL ELSE requirement_rule_secured END
 			WHERE id = ${id}
 		`;
 
@@ -1413,6 +1421,8 @@ export async function haltErfordernisAmTraktandumFest(
 				requirement_statutory = ${e.gesetzlich ? tx.json(e.gesetzlich as never) : null},
 				-- Nur das Rückkommen setzt sie; jedes andere Schreiben löscht sie (Migration 181).
 				requirement_reading_reconsidered = ${e.lesartDesBeschlusses ? tx.json(e.lesartDesBeschlusses as never) : null},
+				-- Das Häkchen zum Satz an der Karte (Migration 198), wo wendeReglementAn es setzt.
+				requirement_rule_secured = ${e.regelGesichert ?? null},
 				requirement_path = ${tx.json(e.pfad as never)},
 				copied_from_meeting_id = NULL
 			WHERE id = ${id}
@@ -1522,6 +1532,51 @@ async function erfordernisAmHausIn(
 		await holeEnthaltungseinstellungIn(tx, wo.stwegId),
 		await holeLesartenIn(tx, { meetingId: wo.meetingId })
 	).erfordernis;
+}
+
+/**
+ * Die Regeln dieses Hauses auf ein Erfordernis angewandt, das auf der
+ * Erfordernisseite für dieses Traktandum hergeleitet wird: Anzeige der Karte und
+ * die drei Aktionen, die es festhalten (`uebernehmen`, `kifolgen`, der Vorschlag
+ * in `setzen`). Eine Stelle für alle vier, damit Karte und gespeichertes
+ * Erfordernis dasselbe sagen.
+ *
+ * **Nach der Freigabe mit dem Häkchen von damals** (Migration 198; Entscheid des
+ * Auftraggebers vom 18.11.2026, «Auch Häkchen einfrieren»): Wo das Häkchen nur
+ * den Satz an der Karte ändert, nimmt `wendeReglementAnNachFreigabe` es vom
+ * gespeicherten Erfordernis statt von der Regel. Vor der Freigabe gilt das
+ * Häkchen der Gemeinschaft, wie die Lesarten (Migration 169).
+ */
+export async function regelanwendungAmTraktandum(
+	operatorId: Id,
+	wo: { meetingId: Id; stwegId: Id },
+	traktandumId: Id,
+	hergeleitet: Erfordernis
+): Promise<Regelanwendung> {
+	return alsBetreiber(operatorId, async (tx) => {
+		const [z] = await tx<
+			{
+				meeting_state: string;
+				requirement_node: string | null;
+				requirement_source: string | null;
+				requirement_reference: string | null;
+				requirement_rule_secured: boolean | null;
+			}[]
+		>`
+			SELECT m.state AS meeting_state, a.requirement_node, a.requirement_source,
+			       a.requirement_reference, a.requirement_rule_secured
+			  FROM agenda_item a
+			  JOIN meeting m ON m.id = a.meeting_id
+			 WHERE a.id = ${traktandumId} AND a.meeting_id = ${wo.meetingId}
+		`;
+		return wendeReglementAnNachFreigabe(
+			hergeleitet,
+			await leseReglementsregeln(tx, wo.stwegId),
+			await holeEnthaltungseinstellungIn(tx, wo.stwegId),
+			await holeLesartenIn(tx, { meetingId: wo.meetingId }),
+			z ? gespeichertNachFreigabe(z) : null
+		);
+	});
 }
 
 /**
@@ -2137,6 +2192,8 @@ export async function stelleRueckkommensantrag(
 				requirement_statutory = ${e.gesetzlich ? tx.json(e.gesetzlich as never) : null},
 				-- Nur das Rückkommen setzt sie; jedes andere Schreiben löscht sie (Migration 181).
 				requirement_reading_reconsidered = ${e.lesartDesBeschlusses ? tx.json(e.lesartDesBeschlusses as never) : null},
+				-- Das Häkchen zum Satz an der Karte (Migration 198), wo wendeReglementAn es setzt.
+				requirement_rule_secured = ${e.regelGesichert ?? null},
 				requirement_path = ${tx.json(e.pfad as never)}
 			WHERE id = ${id}
 		`;

@@ -2,7 +2,7 @@
 
 - **Status:** gilt
 - **Datum:** 2026-10-29
-- **Rolle:** Produktentscheid, Entscheidrunde A0 (`.auftraege/2026-10-29-votum-ablaufplan-pendenzen-und-freigabe.md`)
+- **Rolle:** Produktentscheid, Entscheidrunde A0 (`.auftraege/erledigt/2026-10-29-votum-ablaufplan-pendenzen-und-freigabe.md`)
 
 ## Wortlaut
 

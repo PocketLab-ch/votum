@@ -316,8 +316,8 @@
 				<li><code>person_count</code></li>
 				<li>
 					<code>person_authentik</code> — die Authentik-Kennung (UUID) der Person, die sich
-					später selbst anmelden können soll. Wahlfrei, höchstens eine je Zeile; die
-					Übernahme aus immotool bringt sie mit.
+					später selbst anmelden können soll. Wahlfrei, höchstens eine je Zeile; eine
+					angebundene Verwaltungssoftware bringt sie mit.
 				</li>
 			</ul>
 			<h3>Einheiten</h3>

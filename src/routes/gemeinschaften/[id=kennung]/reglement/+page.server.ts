@@ -391,6 +391,8 @@ export const actions: Actions = {
 				knotenId: text(daten.get('knotenId')) || null,
 				fundstelle: text(daten.get('fundstelle')),
 				enthaltungZaehltMit: jaNein(daten.get('enthaltungZaehltMit')),
+				// Migration 197; der Kern behält es nur, wo es wirken kann (`haekchenMoeglich`).
+				gesichert: jaNein(daten.get('gesichert')),
 				hinweis: text(daten.get('hinweis')) || undefined
 			});
 			return { gespeichert: true };
@@ -460,6 +462,7 @@ export const actions: Actions = {
 					knotenId: text(daten.get('knotenId')) || null,
 					fundstelle: text(daten.get('fundstelle')),
 					enthaltungZaehltMit: jaNein(daten.get('enthaltungZaehltMit')),
+					gesichert: jaNein(daten.get('gesichert')),
 					hinweis: text(daten.get('hinweis')) || undefined
 				}
 			);

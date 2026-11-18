@@ -579,6 +579,16 @@ ab, und aus demselben Grund sind `tests/waechter/handbuch-betriebsangaben.test.t
 und `tests/waechter/ci-skripte.test.ts` rot. Geprüft wird im internen Repo,
 per Hook vor jedem Commit am Code und per CI nach jedem Push.
 
+**Abschnitte nur im Repo, nicht im Handbuch** (seit 17.11.2026). Was in einem
+Kapitel des öffentlichen Handbuchs zwischen `<!-- nur-intern: Grund -->` und
+`<!-- /nur-intern -->` steht, je allein auf einer Zeile, lässt
+`scripts/handbuch-bauen.mjs` weg; es bleibt in `docs/` und im Quelltext des
+Spiegels. Eine Marke ohne Gegenstück oder eine, die nicht erkannt wird, bricht
+den Bau ab. Anlass: Der Abschnitt zur Übernahme aus dem Verwaltungswerkzeug des
+Hauses (Produktentscheid 16.11.2026); damit er nicht still zurückkommt, sperrt
+ihn zudem eine Regel in `scripts/betriebsangaben-sperre.json`. Wächter:
+`tests/waechter/handbuch-betriebsangaben.test.ts`.
+
 Drei getrennte Reihen, weil sie Verschiedenes prüfen:
 
 ```bash
@@ -636,7 +646,7 @@ node e2e/lesarten-l10.mjs                  # Lesart L10: Angehörige im Ausstand
 node e2e/lesarten-l11.mjs                  # Lesart L11: Ermächtigung zur Prozessführung, qualifiziertes Mehr eingefroren, Satz vor der Abstimmung, zweites Ergebnis nach dem einfachen Mehr, Protokoll
 node e2e/lesarten-l12.mjs                  # Lesart L12: luxuriöse bauliche Massnahme, unter «anwesende» angenommen, obwohl ein Eigentümer fehlt, Rat und zweites Ergebnis nach «alle», Protokoll
 node e2e/lesarten-l13.mjs                  # Lesart L13: Zählweise der Köpfe, Art. 647b mit Ausstand unter «anwesende» angenommen, unter «alle» abgelehnt, zweites Ergebnis im Protokoll, keine Wirkung an 647d, Reglement und Klausel, Rückkommen, Auszählmappe mit 9 und 7; Sätze aus dem Wächter, braucht soffice und python3
-node e2e/lesarten-l17.mjs                  # Lesart L17: Bezahlung aus dem Erneuerungsfonds, unter «svit» mit dem einfachen Mehr angenommen, nach der strengeren Auffassung abgelehnt, Seite «Lesarten», Karte und Protokoll
+node e2e/lesarten-l17.mjs                  # Lesart L17: Bezahlung aus dem Erneuerungsfonds, unter «svit» mit dem einfachen Mehr angenommen, nach der strengeren Auffassung abgelehnt, Seite «Lesarten», Karte und Protokoll; ab 2026-11-21 das Häkchen an einer milderen Regel (ohne: Weg auf der Karte, mit: angewandt mit Satz, unter «svit» ohne Satz); an einer strengeren Regel veraltet vor der Freigabe, danach der Satz von damals (Migration 198)
 node e2e/lesarten-l15-l16.mjs              # Lesarten L15 und L16 in fünf Fällen: Vertagen nach verlorener Beschlussfähigkeit ergibt unter der Vorgabe eine neue erste, unter «zweite» eine zweite mit Vorgängerin, elftem Tag, Ausklappersatz und Einladungszusatz, noch beschlussfähig eine neue erste; Einlass einer Mitberechtigten über der Höchstzahl angenommen, unter «Zählt mit» abgewiesen; ROTPROBE=L15 oder L16 lässt die Wahl weg; braucht pdftotext
 node e2e/lesarten-1a-a.mjs                 # 1a und Anhang A: Ausschlussklage nach den Anwesenden, Mehr aus Gesetz und Reglement nach einer Abweichung, nur in der Leitung
 node e2e/statt-versammlung.mjs             # C1 und C2: drei Traktanden über den Baum (Einstimmigkeit, Einstimmigkeit, einfaches Mehr), Gegenproben Nein und Ausgabenrahmen, im Saal 2 von 3 Ja scheitert nur an der Einstimmigkeit
@@ -1608,10 +1618,21 @@ zwei Wahlkarten der Bewirtschaftung, der Freigabevermerk ohne ausstehende
 Gegenlesung; Entscheid 0052). Sie
 ändern kein Erfordernis und brauchen keine Migration. **Eine Fassung, die die
 Rechnung ändert**, ohne neue Karten: 2026-10-25 (Angehörige im Ausstand an der
-Ausschlussklage) und 2026-11-16 (Ausstand unter einer von Hand gesetzten
-Kopfbasis «aller Eigentümer», Entscheid 0050, Antwort 1). Ihre Karten sind die
+Ausschlussklage), 2026-11-16 (Ausstand unter einer von Hand gesetzten
+Kopfbasis «aller Eigentümer», Entscheid 0050, Antwort 1) und 2026-11-21 (das
+Häkchen «Begründungsakt oder Zustimmung aller» an einer Regel zur Bezahlung aus dem
+Fonds, Migration 197, Entscheid 0057, siehe L17). Ihre Karten sind die
 der Vorfassung; die Rechnung hängt an der Fassungskennung
-(`AUSSTAND_IN_DER_ZAHL_AB`, `AUSSTAND_BEI_GEWAEHLTER_BASIS_AB`). 2026-11-16
+(`AUSSTAND_IN_DER_ZAHL_AB`, `AUSSTAND_BEI_GEWAEHLTER_BASIS_AB`,
+`FONDSREGEL_HAEKCHEN_AB`). 2026-11-21 ändert dazu Wortlaut: den Widerruf im
+Wortlaut der Website mit dem offenen Fall aus dem Begründungsakt und der Antwort im
+Baum, die Rücknahme vor der Wahl an der zweiten Wahlkarte, die luxuriöse Arbeit an
+der vereinbarten Verwendung und an `k-reglement-quoren` die Wartezeit nach der Frist
+im Wortlaut der Website (Teil 1 des Auftrags `2026-11-17-votum-pendenzen-folge`).
+Den Wortlaut der Website zur Wartezeit setzt der Abzug selbst nach dem Text ein,
+nicht an den Konstanten (`mitWartezeit` in `scripts/quorumsbaum-export.mjs`): an der
+Stelle, die auf der Karte zuoberst steht, den Kernsatz, an weiteren die Kurzform, mit
+einer Probe der Zahl je Karte. 2026-11-16
 ändert dazu Wortlaut: die allgemeine Erklärung zum Wortlaut (`ZAEHLUNG_ANWESENDE`,
 T4) und den Freigabevermerk (`FREIGABEVERMERK_ZUSATZ`, T7d; Textrunde zu den
 Pendenzen nach Regel 43). Sätze im Kern
@@ -1782,6 +1803,68 @@ Traktandum mit Häkchen abgestimmt wird.
   Traktanden und das ganze Mehr. Unter einer Regel der Zustimmung aller zeigt
   `karteMitReglement` den Weg des Knotens, nicht den der anderen Lesart
   (`einstimmigkeitswegDesKnotens`; gilt auch für L6).
+- **Das Häkchen «Begründungsakt oder Zustimmung aller», ab Fassung 2026-11-21**
+  (Migration 197, `bylaw_quorum_rule.founding_or_unanimous`, Domäne `gesichert`;
+  Entscheid 0057). Nur an `k-erneuerungsfonds-entnahme` und nur unter L17
+  `streng`: Eine Regel mit Häkchen besteht `l17Regelvorbehalt`, ob milder oder
+  strenger; eine fallgenaue mit Häkchen wird nicht gegen eine allgemeine
+  getauscht, eine allgemeine mit Häkchen kommt auch milder als Ersatz in Frage.
+  An einer angewandten Regel setzt `wendeReglementAn` den Satz `fondsregel`
+  (H4 mit, H3 ohne Häkchen), den `karteMitReglement` vor `verdraengt` stellt;
+  an einer milderen ohne Häkchen nennt die Karte den Weg `FONDSENTNAHME_WEG_HAEKCHEN`
+  (Häkchen vor der Freigabe, Nachziehen, danach der bisherige Notweg). An der
+  vereinbarten Verwendung wirkt es nicht (Rz. 138 ad Art. 712l, a.M. Bloch;
+  Fachprüfung F-5), dort steht mit Häkchen `FONDSENTNAHME_VEREINBART_MIT_HAEKCHEN`.
+  Der Schalter ist die Fassung (`fondsregelHaekchenWirkt`, `FONDSREGEL_HAEKCHEN_AB`):
+  Ein Traktandum der Fassung 2026-11-20 rechnet wie bisher, Sätze und Rechnung
+  (AD-4); nachgezogen kommt es auf die geltende Fassung. Gespeichert wird das
+  Häkchen nur, wo es wirken kann (`haekchenMoeglich`, dieselbe Bedingung zeigt das
+  Feld auf der Reglementseite), der Verlauf nennt Vorzustand und neuen Wert in
+  Worten. **Freigabe und Kasten:** Ändert das Häkchen das Mehr, ist das
+  Traktandum veraltet; die Freigabe prüft dafür an den L17-Karten alle Traktanden,
+  auch die nach dem Gesetz und die über die Karte gewählten (`veralteteLesartenIn`),
+  der Kasten vergleicht ohnehin das ganze Mehr. Damit sagt sie dort auch ab, wenn
+  ohne Häkchen eine Regel neu gilt, etwa eine strengere nach einem Traktandum nach
+  dem Gesetz (Codeprüfung des Zweigs, N1, übernommen). Nach der Freigabe lässt
+  der Kasten das Nachziehen bis zur Eröffnung zu, wie für jede Regel (Migration 144).
+- **Das Häkchen ist eingefroren, wo es nur den Satz ändert, ab Migration 198**
+  (`agenda_item.requirement_rule_secured`, Domäne `Erfordernis.regelGesichert`;
+  Entscheid des Auftraggebers vom 18.11.2026, «Auch Häkchen einfrieren», Entscheid
+  0057). `wendeReglementAn` schreibt es ans Erfordernis an einer angewandten
+  strengeren Regel im Zweck (H3 oder H4) und an der vereinbarten Verwendung
+  (eigener Satz), je unter `streng`, ab 2026-11-21 und nur an einer Regel, die es
+  tragen kann; dort ändert es das Mehr nicht. An einer milderen Regel ändert es das
+  Mehr und steht deshalb nicht am Erfordernis: Das gespeicherte Mehr hält es fest.
+  **Am Erfordernis, nicht in `snapshot`:** Die Momentaufnahme trägt, was für die
+  ganze Versammlung gilt; was eine Regel am Traktandum rechnet, steht am Traktandum
+  (wie `requirement_abstention_counts`), und `released_requirement` nimmt es als
+  Abschrift mit. In `snapshot` hätte es zudem den Weg der Karte nach der Freigabe
+  abgeschnitten (`FONDSENTNAHME_WEG_HAEKCHEN`). **Vor der Freigabe** vergleicht
+  `l17Regelstand` es mit, sofern das gespeicherte Erfordernis der Fassung
+  2026-11-21 oder später angehört (`haekchenSeit`), und nur, wo am neu hergeleiteten
+  ein Satz daran hängt (`l17Regelstaende`; nach einer Umstellung auf «svit» bleibt ein
+  Traktandum unter derselben Regel gültig, Befund im Prüflauf beim Bau, 18.11.2026):
+  Wechselt nur das Häkchen, ist
+  das Traktandum veraltet, die Freigabe sagt mit eigenem Satz ab
+  (`FONDSENTNAHME_HAEKCHEN_VERALTET`, Grund `haekchen`, als Zustand gesagt, weil es
+  ihn auch ohne geändertes Häkchen gibt, etwa nach L17 von «svit» zurück auf «streng»),
+  und der Kasten nennt es in Worten (`haekchenZusatz`, «nicht vermerkt», wo das
+  gespeicherte keines trägt). **Nach der Freigabe** leiten
+  Erfordernisseite (`regelanwendungAmTraktandum`, für Karte, «Übernehmen», KI und
+  den Vorschlag beim Setzen), Kasten und Nachziehen mit
+  `wendeReglementAnNachFreigabe` her, ebenso das Geschäft des Abends
+  (`setzeErfordernisAmGeschaeft`, Codeprüfung M1; die Bedingung liegt in
+  `gespeichertNachFreigabe`, `erfordernisse.ts`): Trägt das gespeicherte Erfordernis ein
+  solches Häkchen, an derselben Karte und Regel, rechnet die Herleitung mit ihm
+  statt mit dem der Regel. Die Karte zeigt so den Satz von damals, der Kasten
+  bietet nicht an, ihn zu ändern, und ein geändertes Mehr lässt sich weiter
+  nachziehen. Nach einer Rücknahme der Freigabe gilt wieder das Häkchen der
+  Gemeinschaft. **Grenze:** Ein Traktandum, das erst nach der Freigabe entsteht oder
+  die Karte wechselt (Folgeantrag, Aufnahme im Saal, neues Geschäft des Abends),
+  trägt kein Häkchen von damals und bekommt das von heute (Pendenz «Häkchen
+  eingefroren, Restpunkte»). **Der zweite Finder `/quorum` bleibt live:** Er kennt keine
+  Versammlung, wie bei den Lesarten. Proben: `tests/domain/haekchen-eingefroren.test.ts`,
+  `tests/db/fondsregel-haekchen.test.ts`; Drehbuch `e2e/lesarten-l17.mjs`.
 - **Von Hand gesetzte Kopfbasis «aller Eigentümer», ab Fassung 2026-11-16**
   (Entscheid 0050, Antwort 1, «Angleichen»): Unter einem Mehr, das die Leitung
   in «Anderes Erfordernis setzen» oder ohne Herleitung gesetzt hat (`quelle
@@ -2012,7 +2095,9 @@ Erneuerungsfonds nach der Lesart L17** (`k-erneuerungsfonds-entnahme` und
 ist, auch eine für alle wichtigeren Verwaltungshandlungen (Eigenmann hält die
 Entnahme für eine, Fachprüfung F-5); nach dem SVIT-Kommentar nur eine für genau
 diesen Fall, strenger wie milder (Fachprüfung F-1; Produktentscheid
-17.11.2026). Welche Verhalten eine Regel überhaupt durchlassen, sagt
+17.11.2026). **Seit der Fassung 2026-11-21** gilt nach der Vorgabe im Zweck auch
+eine mildere Regel, wenn sie das Häkchen «Begründungsakt oder Zustimmung aller»
+trägt (Migration 197, oben unter L17). Welche Verhalten eine Regel überhaupt durchlassen, sagt
 `regelKannGreifen` an einer Stelle; Fallwahl, Absage beim Erfassen, `regelGiltFuer`
 und der Satz «nirgends angewandt» der Reichweite lesen sie. Ob eine mit
 weniger als allen Stimmen eingeführte Bestimmung trotzdem gilt, beantworten
@@ -2124,6 +2209,17 @@ den Stammdaten, stünde nach einer Berichtigung in der Auswertung einer längst
 gehaltenen Versammlung der heutige Beleg. Fehlt sie, sagt der Satz das
 ausdrücklich, statt sie wegzulassen: Eine benannte Lücke lässt sich vor der
 nächsten Versammlung schliessen, eine verschwiegene fällt erst im Streitfall auf.
+
+**Was eine Regel des Reglements am Traktandum bewirkt, friert das Traktandum ein,
+nicht die Momentaufnahme.** In `snapshot` stehen Einstellungen der ganzen
+Gemeinschaft: Zählweise, Lesarten, Stichentscheid, Universalversammlung. Die Regeln
+selbst stehen nicht darin; was eine angewandte Regel rechnet, schreibt die
+Herleitung ans Erfordernis des Traktandums (Schwellen, Bezugsgrössen,
+`requirement_abstention_counts`, Fundstelle), und die Freigabe hält es fest, samt
+Abschrift für die Einladung (`released_requirement`, Migration 144). Ebenso seit
+Migration 198 das Häkchen «Begründungsakt oder Zustimmung aller», wo es nur den Satz
+an der Karte ändert (unter L17). Der Wortlaut einer hinterlegten Bestimmung bleibt
+live (Pendenz «Die hinterlegte Bestimmung ist nicht eingefroren»).
 
 ## Zwei Zählweisen der Kopfstimme
 

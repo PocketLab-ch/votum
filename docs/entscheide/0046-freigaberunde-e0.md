@@ -6,7 +6,7 @@
 
 ## Wortlaut
 
-Zum Ablauf bis zur Freigabe (`.auftraege/2026-11-10-votum-ablauf-bis-freigabe.md`
+Zum Ablauf bis zur Freigabe (`.auftraege/erledigt/2026-11-10-votum-ablauf-bis-freigabe.md`
 im Arbeitsverzeichnis):
 
 > «Ok, F6 fällt weg.»
@@ -38,7 +38,7 @@ offenen Pendenzen die Freigabe halten (`docs/freigabe.md`, Punkte 4 und 7).
 Massstab der Einteilung: ob eine Sitzungsleitung ohne den Punkt an einer echten
 Versammlung ein falsches Ergebnis verkünden, ein falsches Protokoll erhalten oder
 nicht weiterkommen kann. Grundlage: Erhebung aller 97 Punkte von
-`docs/pendenzen.md` am Code (`.auftraege/2026-11-10-votum-e0-einteilung.md` im
+`docs/pendenzen.md` am Code (`.auftraege/erledigt/2026-11-10-votum-e0-einteilung.md` im
 Arbeitsverzeichnis).
 
 ## Was gilt

@@ -18,7 +18,7 @@ const ALLE: Lesartenwahl = { ...LESARTEN_VORGABE, L13: 'alle' };
 
 describe('Fassung 2026-11-14', () => {
 	it('ist seit der Fassung 2026-11-15 nicht mehr die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-20');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-21');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);

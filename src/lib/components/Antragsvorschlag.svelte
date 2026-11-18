@@ -1,6 +1,6 @@
 <script lang="ts">
 	/**
-	 * Ein Musterwortlaut zur gewählten Geschäftsart, auf Knopfdruck.
+	 * Ein Musterwortlaut zur gewählten Geschäftsart oder zum Fall, auf Knopfdruck.
 	 *
 	 * **Der Anlass** (Prüflauf I, B-18): «Für elf Traktanden habe ich elf Anträge
 	 * frei formuliert. Die Anwendung kennt die Geschäftsart, den Titel und den
@@ -24,17 +24,20 @@
 	let {
 		art = null as Geschaeftsart | null,
 		titel = '',
+		/** Die Kennung des gewählten Falls; einige Fälle haben ein eigenes Muster. */
+		fall = null as string | null,
 		/** Was im Feld steht. Ist es nicht leer, schweigt der Vorschlag. */
 		vorhanden = '',
 		uebernehmen
 	}: {
 		art?: Geschaeftsart | null;
 		titel?: string;
+		fall?: string | null;
 		vorhanden?: string;
 		uebernehmen: (satz: string) => void;
 	} = $props();
 
-	const satz = $derived(antragsmuster(art, titel));
+	const satz = $derived(antragsmuster(art, titel, fall));
 </script>
 
 {#if satz && !vorhanden.trim()}

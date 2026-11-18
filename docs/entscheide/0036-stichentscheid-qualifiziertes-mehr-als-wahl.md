@@ -2,7 +2,7 @@
 
 - **Status:** gilt, nicht gebaut
 - **Datum:** 2026-10-30
-- **Rolle:** Produktentscheid nach A2 (`.auftraege/2026-10-29-votum-ablaufplan-pendenzen-und-freigabe.md`)
+- **Rolle:** Produktentscheid nach A2 (`.auftraege/erledigt/2026-10-29-votum-ablaufplan-pendenzen-und-freigabe.md`)
 
 ## Wortlaut
 

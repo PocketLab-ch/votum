@@ -143,21 +143,27 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-20): Die Wortlaute der Website hängen an den Ersetzungen
-// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17 und 2026-11-19 (`nachDieserFassung`;
-// 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung). Die Fassung 2026-11-20 führt
+// Die aktuelle Fassung (2026-11-21): Die Wortlaute der Website hängen an den Ersetzungen
+// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19 und 2026-11-21 (`nachDieserFassung`;
+// 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung, 2026-11-21 fasst ihn neu und
+// trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`). Die Fassung 2026-11-20 führt
 // die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
 // Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_20 } from '../src/lib/rules/quorum-2026-11-20.ts';
+import { REGELWERK_2026_11_21 } from '../src/lib/rules/quorum-2026-11-21.ts';
 import {
 	ENTNAHME_ID as FONDS_ENTNAHME_ID,
 	VEREINBART_ID as FONDS_VEREINBART_ID,
 	AUSSERHALB_ID as FONDS_AUSSERHALB_ID
 } from '../src/lib/rules/quorum-2026-11-20.ts';
-import { WIDERRUF, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-19.ts';
+import {
+	WARTEZEIT_K,
+	WARTEZEIT_KK,
+	WIDERRUF_WEBSITE as WIDERRUF,
+	nachDieserFassung
+} from '../src/lib/rules/quorum-2026-11-21.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -219,7 +225,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_20;
+const rw = REGELWERK_2026_11_21;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -810,8 +816,8 @@ const WAHL_ERSTER_SATZ_WEBSITE =
 	'Mehr; um statt der Versammlung zu entscheiden, etwa Budget oder Fondseinlagen festlegen ' +
 	'statt nur vorschlagen, Einstimmigkeit (ZGB Art. 647b Abs. 1, 712g Abs. 3; ' +
 	'SVIT-Kommentar Rz. 46 ad Art. 712q, Rz. 91 ad Art. 712g, Rz. 45 ad Art. 712m). ' +
-	// Ab der Fassung 2026-11-19 der Widerruf, derselbe Wortlaut wie in der Anwendung und
-	// auf der Website-Karte `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026).
+	// Ab der Fassung 2026-11-19 der Widerruf, ab 2026-11-21 nach dem Wortlaut der Website-Karte
+	// `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026), ohne die Sätze zu Votum.
 	WIDERRUF;
 
 /**
@@ -2265,6 +2271,95 @@ const abzug = {
 };
 
 pruefeUmformulierungen();
+
+/*
+ * **Die Wartezeit nach Ablauf der Anfechtungsfrist** (Website-Prüfung
+ * `quellen/pruefung/berichte/2026-11-17-website-wartezeit-nach-frist-*-runde3.md`,
+ * Befund M1 der Fachprüfung zur Fassung 2026-11-17). Ein Schlichtungsgesuch vom
+ * letzten Tag der Frist kommt erst mit der Vorladung an; «einige Tage» genügen
+ * nicht. Der Satz davor heisst «nicht vor Ablauf», dahinter steht an der Stelle,
+ * die auf der Karte zuoberst erscheint, der Kernsatz K, an jeder weiteren die
+ * Kurzform KK. Zuoberst heisst in der Reihenfolge der Karte, nicht der Daten:
+ * «Wortlaut und Rechtsprechung» vor «Und Ihr Reglement?» vor «Gut zu wissen».
+ * Folgt ein Satz «Das gilt auch, wenn …», kommt der Zusatz hinter ihn (Fachprüfung
+ * Runde 2). Die Karte `k-reglement-quoren` trägt K schon aus der Fassung
+ * 2026-11-21 (`QUOREN_FRIST`); nicht an `k-reglement-beschlussfaehigkeit`,
+ * Hinweis 5 (Fachprüfung W-F-4), den keine der Formen trifft.
+ *
+ * **Nach dem Text, nicht an den Konstanten:** Dieselbe Konstante steht auf
+ * mehreren Karten, und ob sie dort zuoberst steht, entscheidet die Karte. Die
+ * Probe darunter hält fest, an welchen Karten wie oft ersetzt wird; ändert sich
+ * eine Konstante oben, bricht der Export ab, statt still eine Stelle zu verlieren.
+ */
+const WARTEN_FORMEN = [
+	['erst einige Tage nach Ablauf dieser Frist aus.', 'nicht vor Ablauf dieser Frist aus.'],
+	['erst einige Tage nach Ablauf dieser Frist an.', 'nicht vor Ablauf dieser Frist an.'],
+	['erst einige Tage nach Ablauf dieser Frist.', 'nicht vor Ablauf dieser Frist.'],
+	[
+		`erst nach Ablauf der Anfechtungsfrist von einem Monat aus; ${FRISTBEGINN}.`,
+		`nicht vor Ablauf der Anfechtungsfrist von einem Monat aus; ${FRISTBEGINN}.`
+	],
+	['erst nach Ablauf der Anfechtungsfrist aus.', 'nicht vor Ablauf der Anfechtungsfrist aus.']
+];
+const DAS_GILT_AUCH = ' Das gilt auch, wenn ';
+/** Die Felder einer Karte in der Reihenfolge, in der die Website sie zeigt. */
+const SICHTBAR = ['wortlautErklaerung', 'reglementshinweis', 'hinweise'];
+/** Je Karte, wie oft der Zusatz gesetzt wird (Probe; Website-Prüfung, Runde 2, Laien 6). */
+const WARTEN_ERWARTET = {
+	'k-baulich-notwendig': 2,
+	'k-baulich-nuetzlich': 1,
+	'k-baulich-luxurioes-ausweg': 2,
+	'k-bewirtschaftung-waehlen-erweitert': 1,
+	'k-bewirtschaftung-erweitert': 4,
+	'k-prozessfuehrung': 1,
+	'k-benutzungsweise': 2,
+	'k-grenzfall-nutzung': 1,
+	'k-verwaltung-wichtig': 3,
+	'k-zustaendigkeit-gewoehnlich': 2,
+	'k-reglement-beschlussfaehigkeit': 1,
+	'k-erneuerungsfonds-entnahme': 1
+};
+
+function mitWartezeit(knoten) {
+	let gesetzt = (knoten.hinweise ?? []).some((h) => h.includes(WARTEZEIT_K)) ? 1 : 0;
+	let neu = 0;
+	const ersetze = (t) => {
+		if (typeof t !== 'string') return t;
+		let aus = t;
+		let ab = 0;
+		for (;;) {
+			let treffer = null;
+			for (const [alt, ersatz] of WARTEN_FORMEN) {
+				const i = aus.indexOf(alt, ab);
+				if (i !== -1 && (treffer === null || i < treffer.i)) treffer = { i, alt, ersatz };
+			}
+			if (!treffer) return aus;
+			aus = aus.slice(0, treffer.i) + treffer.ersatz + aus.slice(treffer.i + treffer.alt.length);
+			let stelle = treffer.i + treffer.ersatz.length;
+			if (aus.startsWith(DAS_GILT_AUCH, stelle)) {
+				const ende = aus.indexOf('.', stelle + DAS_GILT_AUCH.length);
+				if (ende === -1) throw new Error(`Wartezeit an «${knoten.id}»: Der Satz «Das gilt auch, wenn …» endet nicht.`);
+				stelle = ende + 1;
+			}
+			const zusatz = gesetzt === 0 ? WARTEZEIT_K : WARTEZEIT_KK;
+			gesetzt += 1;
+			neu += 1;
+			aus = `${aus.slice(0, stelle)} ${zusatz}${aus.slice(stelle)}`;
+			ab = stelle + zusatz.length + 1;
+		}
+	};
+	const ergebnis = { ...knoten };
+	for (const feld of SICHTBAR) {
+		ergebnis[feld] = Array.isArray(knoten[feld]) ? knoten[feld].map(ersetze) : ersetze(knoten[feld]);
+	}
+	if (neu !== (WARTEN_ERWARTET[knoten.id] ?? 0)) {
+		throw new Error(`Wartezeit an «${knoten.id}»: ${neu}-mal gesetzt statt ${WARTEN_ERWARTET[knoten.id] ?? 0}-mal.`);
+	}
+	return ergebnis;
+}
+abzug.knoten = abzug.knoten.map(mitWartezeit);
+const nochEinigeTage = JSON.stringify(abzug).match(/.{0,80}einige Tage nach Ablauf.{0,40}/);
+if (nochEinigeTage) throw new Error(`«einige Tage nach Ablauf» steht noch im Abzug: «${nochEinigeTage[0]}»`);
 
 /*
  * **Kein Gedankenstrich im Abzug** (Website-Abzug E4, 11.11.2026). `text()`

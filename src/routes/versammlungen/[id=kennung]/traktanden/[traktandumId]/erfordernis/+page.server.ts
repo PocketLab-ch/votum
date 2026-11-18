@@ -37,11 +37,9 @@ import {
 } from '$lib/domain/entscheidbaum';
 import {
 	enthaltungNachWahl,
-	enthaltungseinstellungVon,
 	karteMitEnthaltung,
 	zaehlweiseFuerKarte,
 	karteMitReglement,
-	wendeReglementAn,
 	zahlenbeispielNachZaehlweise
 } from '$lib/domain/reglement';
 import { FachlicherFehler } from '$lib/domain/gemeinschaft';
@@ -52,7 +50,7 @@ import { entscheidetDasGeschaeft } from '$lib/domain/konsultativ';
 import { durchAnderesTraktandumErsetzt } from '$lib/domain/abstimmung';
 import { holeGemeinschaft } from '$lib/server/gemeinschaften';
 import { stimmkraftAnsicht } from '$lib/server/eigentuemer';
-import { holeEnthaltungseinstellung, holeReglementsregeln } from '$lib/server/reglement';
+import { holeEnthaltungseinstellung } from '$lib/server/reglement';
 import { knotenNachLesart } from '$lib/domain/lesarten';
 import { holeLesarten } from '$lib/server/lesarten';
 import { holeVersammlung } from '$lib/server/versammlungen';
@@ -64,7 +62,8 @@ import { verfuegbarkeit, verlangeEntscheid } from '$lib/domain/ki';
 import {
 	ERFORDERNIS_NACH_DER_ABSTIMMUNG,
 	haltErfordernisAmTraktandumFest,
-	holeTraktanden
+	holeTraktanden,
+	regelanwendungAmTraktandum
 } from '$lib/server/traktanden';
 import type { Actions, PageServerLoad } from './$types';
 import { holeBetreiber } from '$lib/server/betreiber';
@@ -90,9 +89,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 	if (!eintrag) error(404, FREMDES_TRAKTANDUM);
 
 	const regelwerk = holeRegelwerk();
-	const [gemeinschaft, regeln, durchgaenge, lesarten] = await Promise.all([
+	const [gemeinschaft, durchgaenge, lesarten] = await Promise.all([
 		holeGemeinschaft(locals.benutzer.operatorId, versammlung.stwegId),
-		holeReglementsregeln(locals.benutzer.operatorId, versammlung.stwegId),
 		holeDurchgaenge(locals.benutzer.operatorId, params.id),
 		holeLesarten(locals.benutzer.operatorId, { meetingId: params.id })
 	]);
@@ -291,11 +289,17 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 		}
 
 		const hergeleitet = erfordernisAus(regelwerk, lauf);
-		const angewandt = wendeReglementAn(
-			hergeleitet,
-			regeln,
-			enthaltungseinstellungVon(gemeinschaft),
-			lesarten
+		/*
+		 * Nach der Freigabe mit dem Häkchen von damals, wo es nur den Satz an der
+		 * Karte ändert (Migration 198; Entscheid des Auftraggebers vom 18.11.2026,
+		 * «Auch Häkchen einfrieren»). Dieselbe Stelle wie die Aktionen unten, damit
+		 * die Karte sagt, was «Übernehmen» festhält.
+		 */
+		const angewandt = await regelanwendungAmTraktandum(
+			locals.benutzer.operatorId,
+			{ meetingId: params.id, stwegId: versammlung.stwegId },
+			params.traktandumId,
+			hergeleitet
 		);
 		// Nach der eingestellten Lesart, wie das gespeicherte Erfordernis (Review DeepSeek, B1).
 		const gesetzliche = ergebniskarte(
@@ -321,7 +325,8 @@ export const load: PageServerLoad = async ({ locals, params, url }) => {
 							: null,
 						angewandt.lesart,
 						hergeleitet,
-						angewandt.verdraengt
+						angewandt.verdraengt,
+						angewandt.fondsregel
 					),
 					angewandt.enthaltung
 				),
@@ -511,12 +516,6 @@ export const actions: Actions = {
 
 		await verlangeTraktandumDieserVersammlung(locals.benutzer.operatorId, params.id, params.traktandumId);
 
-		const regeln = await holeReglementsregeln(locals.benutzer.operatorId, versammlung.stwegId);
-		const enthaltung = await holeEnthaltungseinstellung(
-			locals.benutzer.operatorId,
-			versammlung.stwegId
-		);
-		const lesarten = await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id });
 
 		try {
 			const lauf = laufe(
@@ -524,7 +523,12 @@ export const actions: Actions = {
 				text(daten.get('ast')),
 				text(daten.get('p')).split(',').filter(Boolean)
 			);
-			const angewandt = wendeReglementAn(erfordernisAus(regelwerk, lauf), regeln, enthaltung, lesarten);
+			const angewandt = await regelanwendungAmTraktandum(
+				locals.benutzer.operatorId,
+				{ meetingId: params.id, stwegId: versammlung.stwegId },
+				params.traktandumId,
+				erfordernisAus(regelwerk, lauf)
+			);
 
 			await haltErfordernisAmTraktandumFest(
 				{
@@ -591,12 +595,6 @@ export const actions: Actions = {
 
 		await verlangeTraktandumDieserVersammlung(locals.benutzer.operatorId, params.id, params.traktandumId);
 
-		const regeln = await holeReglementsregeln(locals.benutzer.operatorId, versammlung.stwegId);
-		const enthaltung = await holeEnthaltungseinstellung(
-			locals.benutzer.operatorId,
-			versammlung.stwegId
-		);
-		const lesarten = await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id });
 
 		try {
 			const lauf = laufe(
@@ -604,7 +602,12 @@ export const actions: Actions = {
 				text(daten.get('ast')),
 				text(daten.get('p')).split(',').filter(Boolean)
 			);
-			const angewandt = wendeReglementAn(erfordernisAus(regelwerk, lauf), regeln, enthaltung, lesarten);
+			const angewandt = await regelanwendungAmTraktandum(
+				locals.benutzer.operatorId,
+				{ meetingId: params.id, stwegId: versammlung.stwegId },
+				params.traktandumId,
+				erfordernisAus(regelwerk, lauf)
+			);
 
 			await haltErfordernisAmTraktandumFest(
 				{
@@ -641,12 +644,10 @@ export const actions: Actions = {
 		const begruendung = text(daten.get('begruendung'));
 		const astId = text(daten.get('ast'));
 		const pfad = text(daten.get('p')).split(',').filter(Boolean);
-		const regeln = await holeReglementsregeln(locals.benutzer.operatorId, versammlung.stwegId);
 		const enthaltung = await holeEnthaltungseinstellung(
 			locals.benutzer.operatorId,
 			versammlung.stwegId
 		);
-		const lesarten = await holeLesarten(locals.benutzer.operatorId, { meetingId: params.id });
 
 		try {
 			// Abgewichen wird vom **angewandten** Vorschlag: Sonst bliebe ein
@@ -668,11 +669,11 @@ export const actions: Actions = {
 				quotenbasis: (text(daten.get('quotenbasis')) || undefined) as never
 			};
 			const vorschlag = astId
-				? wendeReglementAn(
-						erfordernisAus(regelwerk, laufe(regelwerk, astId, pfad)),
-						regeln,
-						enthaltung,
-						lesarten
+				? await regelanwendungAmTraktandum(
+						locals.benutzer.operatorId,
+						{ meetingId: params.id, stwegId: versammlung.stwegId },
+						params.traktandumId,
+						erfordernisAus(regelwerk, laufe(regelwerk, astId, pfad))
 					)
 				: null;
 			const uebergang = vorschlag

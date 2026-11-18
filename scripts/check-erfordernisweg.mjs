@@ -208,10 +208,20 @@ const ausRegel = rumpfVon(reglement, 'erfordernisAusRegel');
  * hergeleitete Erfordernis, das es ergänzt statt neu zu bauen.
  */
 const ZUORDNUNG = ['stwegId', 'geschaeftsart', 'knotenId', 'id'];
+/*
+ * **`gesichert` entscheidet, ob eine Regel gilt, nicht was sie rechnet**
+ * (Migration 197). Es wirkt nur an der Bezahlung aus dem Fonds unter L17
+ * «streng» und bestimmt dort, ob `wendeReglementAn` die Regel anwendet; ins
+ * Erfordernis geht es nur als `regelGesichert`, wo es allein den Satz an der
+ * Karte ändert (Migration 198), und gerechnet wird damit nicht.
+ * `erfordernisAusRegel` (Rückkommen) hat keinen Knoten mit Lesart, an dem das
+ * Häkchen etwas entscheiden könnte.
+ */
+const GELTUNG = ['gesichert'];
 const regelfelder = felderVon(reglement, 'ReglementsregelEingabe');
 
 for (const feld of regelfelder) {
-	if (ZUORDNUNG.includes(feld)) continue;
+	if (ZUORDNUNG.includes(feld) || GELTUNG.includes(feld)) continue;
 	const inAusRegel = new RegExp(`\\bregel\\.${feld}\\b`).test(ausRegel);
 	const inWende = new RegExp(`\\bregel\\.${feld}\\b`).test(wende);
 	/*

@@ -1,5 +1,6 @@
 /**
- * Musterwortlaute für Anträge, je Geschäftsart.
+ * Musterwortlaute für Anträge, je Geschäftsart; wo die Art nicht trägt, je Fall
+ * (`FALLMUSTER`, seit 17.11.2026).
  *
  * **Der Anlass** (Prüflauf I, B-18): «Für elf Traktanden habe ich elf Anträge
  * frei formuliert. Die Anwendung kennt die Geschäftsart, den Titel und den
@@ -14,7 +15,8 @@
  * **Warum die Geschäftsart und nicht der Fall.** «Notwendige bauliche
  * Massnahme» und «Nützliche bauliche Massnahme» tragen denselben Satzbau; was
  * sie unterscheidet, ist das Mehr, nicht die Formulierung. Dreizehn Muster
- * lassen sich pflegen, siebzig nicht.
+ * lassen sich pflegen, siebzig nicht. Ausnahme ist ein Fall, dessen Handlung
+ * eine andere ist als die seiner Art (`FALLMUSTER`, Begründung dort).
  *
  * Der Titel wird eingesetzt, wo er passt — «Die Versammlung beschliesst die
  * Sanierung der Tiefgaragen-Einfahrt» liest sich besser als ein Platzhalter.
@@ -76,12 +78,52 @@ const MUSTER: Partial<Record<Geschaeftsart, string>> = {
 };
 
 /**
- * Der Musterwortlaut zu einer Geschäftsart, mit eingesetztem Titel.
+ * **Muster je Fall, wo die Geschäftsart nicht trägt** (17.11.2026, Codeprüfung
+ * zur Fassung 2026-11-20). Die drei Karten zur Bezahlung aus dem
+ * Erneuerungsfonds stehen unter `verwaltung_wichtig`, und deren Muster schlug
+ * vor, «die dafür nötigen Verträge abzuschliessen». Bei einer Entnahme gibt es
+ * keinen Vertrag; beschlossen wird die Bezahlung einer Arbeit, über die ein
+ * eigenes Traktandum entscheidet (Produktentscheid 17.11.2026, «Hinweis, zwei
+ * Traktanden»).
+ *
+ * Ohne Titel: Das Traktandum heisst hier meist wie die Arbeit oder «Bezahlung
+ * aus dem Fonds», und beides ergäbe mitten im Satz keinen Gegenstand.
+ *
+ * Die Kennungen stehen als Zeichenketten da wie in `reglement.ts`, weil der
+ * Kern die Regelwerke nicht einbindet; `tests/domain/antragsmuster.test.ts`
+ * prüft, dass es die Karten in der neuesten Fassung gibt.
+ */
+const FONDSBEZAHLUNG =
+	// Laien- und Fachprüfung 17.11.2026 (F-1, F-2, L-1, L-2): eine Obergrenze statt einer festen
+	// Summe, denn einen Mehrbetrag bezahlte die Bewirtschaftung sonst ohne Beschluss (Rz. 139,
+	// 139a ad Art. 712l); und der Bezug zur Kostenverteilung im Beschluss über die Arbeit, die
+	// sonst daneben stünde («nach Wertquoten verlegt»).
+	'Die Versammlung beschliesst, die Kosten für … (Traktandum …) bis höchstens … Franken aus dem ' +
+	'Erneuerungsfonds zu bezahlen. Soweit der Fonds sie bezahlt, gilt das statt der Kostenverteilung ' +
+	'im Beschluss über die Arbeit. Die Bewirtschaftung wird mit der Auszahlung beauftragt.';
+
+const FALLMUSTER: Record<string, string> = {
+	'k-erneuerungsfonds-entnahme': FONDSBEZAHLUNG,
+	'k-erneuerungsfonds-entnahme-vereinbart': FONDSBEZAHLUNG,
+	'k-erneuerungsfonds-entnahme-ausserhalb': FONDSBEZAHLUNG
+};
+
+/** Die Fälle mit eigenem Muster, für den Abgleich im Test. */
+export const FAELLE_MIT_MUSTER = Object.keys(FALLMUSTER);
+
+/**
+ * Der Musterwortlaut zu einer Geschäftsart, mit eingesetztem Titel; hat der
+ * gewählte Fall ein eigenes Muster (`FALLMUSTER`), dieses.
  *
  * `null`, wo es keinen gibt: Für Sonderfälle und Kenntnisnahmen lässt sich
  * nichts vorschlagen, was mehr wäre als eine Behauptung.
  */
-export function antragsmuster(art: Geschaeftsart | null, titel: string): string | null {
+export function antragsmuster(
+	art: Geschaeftsart | null,
+	titel: string,
+	fall: string | null = null
+): string | null {
+	if (fall && Object.hasOwn(FALLMUSTER, fall)) return FALLMUSTER[fall];
 	if (!art) return null;
 	const muster = MUSTER[art];
 	if (!muster) return null;

@@ -382,7 +382,7 @@ merkt es.
 sie aus **Excel oder CSV** ein. Der Knopf **«Aus Datei übernehmen»** steht oben
 rechts — auf dieser Seite und ebenso unter *Gemeinschaft → Eigentümer*; in der
 Leiste links heisst derselbe Weg **«Stammdaten übernehmen»**, weil er auch die
-Übernahme aus immotool führt.
+Übernahme aus einer angebundenen Verwaltungssoftware führt.
 
 Eines verlangt der Dateiweg mehr als das Formular hier: **je einen Eigentümer**
 in der Zeile. Eine Einheit ohne Eigentümer lässt sich von Hand erfassen, über
@@ -1091,14 +1091,20 @@ zuerst auf.
 > an, die Gemeinschaft trägt die Wahl). Sagen Sie vor
 > der Abstimmung an, nach welcher Bestimmung gezählt wird. Erreicht der
 > Beschluss auch das gesetzliche Erfordernis, kommt es auf Ihre Bestimmung nicht
-> an. Sonst ist er angreifbarer, und bei einer Sache, die nicht dringlich ist,
-> vollziehen Sie ihn erst nach Ablauf der Anfechtungsfrist von einem Monat; für
-> Abwesende ohne Vertretung beginnt sie in der Regel erst, wenn sie das
-> Protokoll erhalten haben. Stellen Sie es deshalb rasch und nachweisbar zu
-> (SVIT-Kommentar Rz. 230 f. ad Art. 712m). Bei den Beschlüssen nach
+> an. Sonst ist er angreifbarer. Bei den Beschlüssen nach
 > Art. 647a Abs. 2, 647b Abs. 1, 647c und 647e Abs. 2 gilt dazu: Im Streit um
 > die Zählweise der Köpfe sicher ist er, wenn mehr als die Hälfte aller
-> Eigentümer zugestimmt hat.
+> Eigentümer zugestimmt hat. Erreicht ein angenommener Beschluss das gesetzliche
+> Erfordernis nicht sicher und ist die Sache nicht dringlich, vollziehen Sie ihn
+> erst nach Ablauf der
+> Anfechtungsfrist von einem Monat; für Abwesende ohne Vertretung beginnt sie in
+> der Regel erst, wenn sie das Protokoll erhalten haben. Stellen Sie es deshalb
+> rasch und nachweisbar zu (SVIT-Kommentar Rz. 230 f. ad Art. 712m). Warten Sie
+> danach noch einige Wochen und fragen Sie die Bewirtschaftung, ob Post der
+> Schlichtungsbehörde gekommen ist; ein Gesuch vom letzten Tag der Frist ist
+> rechtzeitig (ZPO Art. 62 Abs. 1, 143 Abs. 1, 202 Abs. 3). Ist ein Gesuch
+> eingegangen, vollziehen Sie nur, was eilt, bis das Verfahren abgeschlossen ist.
+> Wie lange danach noch geklagt werden kann, sagt die Karte.
 > Ein bestehendes Traktandum ziehen Sie auf der
 > Reglementsseite nach, solange die Versammlung nicht eröffnet ist.
 >
@@ -1665,6 +1671,57 @@ eine für alle wichtigeren Verwaltungshandlungen; eine mildere trägt nach der
 strengeren Auffassung nur aus dem Begründungsakt oder mit Zustimmung aller.
 Nach dem SVIT-Kommentar wendet Votum nur eine Regel für genau diesen Fall an,
 strenger wie milder. Die Karte sagt jeweils, warum eine Regel nicht greift.
+
+**Das Häkchen an der Regel** (ab der Regelwerksfassung 2026-11-21). Wählen Sie
+beim Hinterlegen die Geschäftsart «Wichtigere Verwaltungshandlungen», für alle
+Fälle oder nur für «Arbeit aus dem Erneuerungsfonds bezahlen», erscheint unter
+den Enthaltungen das Häkchen «Steht in der ursprünglichen Fassung des
+Begründungsakts oder hat die Zustimmung aller Eigentümer». Kreuzen Sie es nur an,
+wenn das zutrifft und Sie es belegen können; die Hilfe darunter sagt, was als
+Begründungsakt, als Zustimmung aller und als Beleg zählt. Setzen Sie es vor der
+Freigabe der Einladung. Mit Häkchen rechnet Votum unter der strengeren
+Auffassung im gewöhnlichen Zweck nach Ihrer Regel, auch wenn sie milder ist,
+sofern sie die Köpfe zählt, und die Karte sagt, dass Sie es angegeben haben. Ist
+das Häkchen zu Unrecht gesetzt, ist ein Beschluss, der nur nach Ihrer Regel
+zustande kam, anfechtbar; halten Sie den Beleg bereit. Ohne Häkchen rechnet Votum eine
+strengere Regel weiter, sagt aber, dass eine Ablehnung allein an ihr angreifbar
+ist; an einer milderen nennt die Karte den Weg über das Häkchen. Nach der
+Freigabe nennt sie zuerst das Häkchen mit «Erfordernis neu herleiten», wenn nötig
+mit einer berichtigten Einladung, dann, vor dem Versand der Einladung, «Anderes
+Erfordernis setzen» und zuletzt den Notweg. An der vereinbarten Verwendung und unter «Nach dem
+SVIT-Kommentar» ändert das Häkchen am Mehr nichts. Die Tabelle der hinterlegten
+Abweichungen nennt es bei der Fundstelle, der Verlauf hält jede Änderung fest.
+Ändert sich durch das Häkchen das Mehr eines Traktandums, das schon angelegt ist,
+sagt die Freigabe ab: Setzen Sie es an einer milderen Regel, rechnet das Traktandum
+noch nach der Karte, obwohl nun Ihre Regel gilt; entfernen Sie es, rechnet es noch
+nach Ihrer Regel, obwohl sie nicht mehr gilt. Dasselbe gilt an diesen Karten für
+jede Regel, die nach dem Anlegen dazukommt oder sich ändert, auch ohne Häkchen,
+etwa eine strengere. Leiten Sie das Traktandum dann auf derselben Seite mit
+«Erfordernis neu herleiten» neu her. Auch wenn das Häkchen nur den Hinweis an der
+Karte ändert und das Mehr gleich bleibt, an einer strengeren Regel oder an der
+vereinbarten Verwendung, sagt die Freigabe ab, bis Sie das Traktandum neu
+hergeleitet haben. Mit der Freigabe hält Votum dort fest, welcher Hinweis an der
+Karte des Traktandums steht. Ändern Sie das Häkchen danach, zeigt die Karte des
+Traktandums weiter den Hinweis von damals. Am Mehr und an der Auszählung ändert das
+dort nichts: Ob eine strengere Regel gilt, hängt nicht am Häkchen, sondern daran,
+ob sie im Begründungsakt steht oder alle zugestimmt haben; an der vereinbarten
+Verwendung zählt Votum ohnehin nach der Karte. Finden Sie den Beleg erst danach,
+ist eine Ablehnung an Ihrer strengeren Regel trotzdem richtig; bringen Sie ihn zur
+Versammlung mit und nennen Sie ihn im Protokoll. Stellt sich die Angabe danach als
+falsch heraus, halten Sie bei einer Ablehnung, die nur an Ihrer Regel scheitert, im
+Protokoll fest, dass der Antrag das Mehr der Karte erreicht hätte.
+
+An einer milderen Regel ändert das Häkchen das Mehr, und der Kasten «Ein
+Traktandum trägt noch ein älteres Erfordernis» zeigt das Traktandum. Setzen Sie es
+nach der Freigabe, zählt Votum für diese Versammlung weiter nach der Karte, bis Sie
+das Traktandum im Kasten neu herleiten; ist die Einladung schon verschickt,
+kündigen Sie das mildere Mehr mit einer berichtigten Einladung an alle nach.
+Entfernen Sie es nach der Freigabe, zählt Votum weiter nach Ihrer Regel, obwohl sie
+nicht gilt; leiten Sie das Traktandum dann vor der Eröffnung im Kasten neu her und
+sagen Sie das strengere Mehr zu Beginn des Traktandums an. Ein Traktandum, das erst
+nach der Freigabe dazukommt, etwa ein Folgeantrag, oder dessen Fall Sie nach der
+Freigabe wechseln, zeigt den Hinweis nach dem Häkchen von heute. Der Quorum-Finder ohne Traktandum zeigt immer den Hinweis nach
+dem Häkchen von heute.
 
 Legen Sie Arbeit und Bezahlung in zwei Traktanden, zuerst die Arbeit, und sagen
 Sie in deren Antrag, wie sie bezahlt wird, wenn die Bezahlung aus dem Fonds
