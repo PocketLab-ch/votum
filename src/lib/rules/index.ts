@@ -72,6 +72,7 @@ import { REGELWERK_2026_11_20 } from './quorum-2026-11-20';
 import { REGELWERK_2026_11_21 } from './quorum-2026-11-21';
 import { REGELWERK_2026_11_22 } from './quorum-2026-11-22';
 import { REGELWERK_2026_11_23 } from './quorum-2026-11-23';
+import { REGELWERK_2026_11_24 } from './quorum-2026-11-24';
 
 /** Alle bekannten Fassungen, nach Kennung. */
 export const FASSUNGEN: Record<string, Regelwerk> = {
@@ -134,11 +135,12 @@ export const FASSUNGEN: Record<string, Regelwerk> = {
 	[REGELWERK_2026_11_20.fassung]: REGELWERK_2026_11_20,
 	[REGELWERK_2026_11_21.fassung]: REGELWERK_2026_11_21,
 	[REGELWERK_2026_11_22.fassung]: REGELWERK_2026_11_22,
-	[REGELWERK_2026_11_23.fassung]: REGELWERK_2026_11_23
+	[REGELWERK_2026_11_23.fassung]: REGELWERK_2026_11_23,
+	[REGELWERK_2026_11_24.fassung]: REGELWERK_2026_11_24
 };
 
 /** Die Fassung, unter der neue Herleitungen laufen. */
-export const AKTUELLE_FASSUNG = REGELWERK_2026_11_23.fassung;
+export const AKTUELLE_FASSUNG = REGELWERK_2026_11_24.fassung;
 
 /**
  * Holt eine Fassung. Ohne Angabe die aktuelle.

@@ -155,6 +155,7 @@ describe('Die Fassung 2026-08-05 gegenüber 2026-07-30', () => {
 		// Sie trägt Beschlüsse, die schon gefasst sind.
 		expect(ALT.fragen.find((f) => f.id === 'f1-1')!.hilfe).not.toMatch(/Erhalten lässt sich nur/);
 		expect(alleFassungen().map((r) => r.fassung)).toEqual([
+			'2026-11-24',
 			'2026-11-23',
 			'2026-11-22',
 			'2026-11-21',
@@ -1503,7 +1504,7 @@ describe('Die Fassung 2026-09-23 gegenüber 2026-09-22', () => {
 
 	it('ist nicht mehr die aktuelle Fassung und weiter als nicht gegengelesen gekennzeichnet', () => {
 		// Seit der Fassung 2026-09-24 leitet die Anwendung unter jener her.
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
 		/*
 		 * **Und das bleibt so, obwohl gerade zwei Prüfungen gelaufen sind.**
 		 * Sie prüften die Vorfassung; die Texte hier sind neu und deshalb

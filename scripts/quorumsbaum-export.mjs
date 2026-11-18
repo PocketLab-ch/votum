@@ -143,20 +143,21 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-23, in der Anwendung gleich 2026-11-22): Die Wortlaute der Website hängen an den Ersetzungen
+// Die aktuelle Fassung (2026-11-24): Die Wortlaute der Website hängen an den Ersetzungen
 // der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19, 2026-11-21 und 2026-11-22 (`nachDieserFassung`;
 // 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung, 2026-11-21 fasst ihn neu und
 // trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`; 2026-11-22 stellt
 // ihn um, trägt die Rücknahme vor der Wahl auf der Website ohne die Bedienung von Votum,
 // `RUECKNAHME_WEBSITE`, gibt die Sätze nach dem Kernsatz K, `NACH_K`, und den Eilweg der
 // Prozessführung mit Dringlichkeit und Nein wie in der Anwendung, `EILWEG`; 2026-11-23 stellt den Fallteil
-// als eigenen Absatz vor K, `VOR_K`, und lässt nach K nur, was bei einem Gesuch zählt, `NACH_K`). Die Fassung 2026-11-20 führt
+// als eigenen Absatz vor K, `VOR_K`, und lässt nach K nur, was bei einem Gesuch zählt, `NACH_K`;
+// 2026-11-24 fasst an der Prozessführung die Ermächtigung im Voraus enger, `IM_VORAUS`). Die Fassung 2026-11-20 führt
 // die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
 // Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_23 } from '../src/lib/rules/quorum-2026-11-23.ts';
+import { REGELWERK_2026_11_24 } from '../src/lib/rules/quorum-2026-11-24.ts';
 import {
 	ENTNAHME_ID as FONDS_ENTNAHME_ID,
 	VEREINBART_ID as FONDS_VEREINBART_ID,
@@ -169,7 +170,8 @@ import {
 	RUECKNAHME_WEBSITE,
 	WIDERRUF_WEBSITE as WIDERRUF
 } from '../src/lib/rules/quorum-2026-11-22.ts';
-import { NACH_K, VOR_K, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-23.ts';
+import { NACH_K, VOR_K } from '../src/lib/rules/quorum-2026-11-23.ts';
+import { IM_VORAUS, IM_VORAUS_NUR_ANWENDUNG, IM_VORAUS_VORHER, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-24.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -232,7 +234,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_23;
+const rw = REGELWERK_2026_11_24;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -1048,7 +1050,13 @@ const UMFORMULIERUNGEN = new Map([
 	// Werkzeugsatz (Konzept Lesarten, Kriterium 15).
 	// Ab der Fassung 2026-11-22 mit dem Satz, was dringlich ist (Laien VK-L-1), und dem Satz zum
 	// Nein, den bis dahin nur die Anwendung trug (Fach F3-1, Laien VK2-L-2): der Eilweg wie dort.
-	[nachDieserFassung(PROZESS_BEGRUENDUNG), ersetzeGenau(PROZESS_BEGRUENDUNG_VORHER, EILWEG_GESETZ, EILWEG_NEU)],
+	// Ab der Fassung 2026-11-24 die Ermächtigung im Voraus nur für einen säumigen Eigentümer (Fach VA-1),
+	// auf beiden Seiten des Paars, sonst behielte die Website den alten Halbsatz. Die Website ohne die
+	// zwei Sätze zu Streit und Erneuerung (`IM_VORAUS_NUR_ANWENDUNG`): Die sagt dort der Kasten darunter.
+	[
+		nachDieserFassung(PROZESS_BEGRUENDUNG),
+		ersetzeGenau(ersetzeGenau(PROZESS_BEGRUENDUNG_VORHER, EILWEG_GESETZ, EILWEG_NEU), IM_VORAUS_VORHER, IM_VORAUS)
+	],
 	// **Die luxuriöse Massnahme: der Wortlaut vor der Lesart** (Fassung
 	// 2026-11-10, L12; Codeprüfung E1 Block B, Befund 1), wie bei L11: ohne die
 	// Seite «Lesarten» und ohne den Werkzeugsatz. Die Sätze dieses Abschnitts bis
@@ -2398,6 +2406,15 @@ for (const id of Object.keys(VOR_K)) {
 		throw new Error(
 			`Fallteil an «${id}»: ${n}-mal im Abzug, statt einmal im Kasten zwischen «… nicht vor Ablauf dieser Frist aus.» und «Enthaltungen zählen …».`
 		);
+	}
+}
+// **Die Ermächtigung im Voraus auf der Website ohne die Sätze nur für die Anwendung** (Fassung
+// 2026-11-24, Codeprüfung): Die sagt dort der Kasten darunter; trüge sie die Begründung auch, stünde
+// der Streit zweimal auf der Karte. `pruefeUmformulierungen` sieht das nicht, es prüft nur den Schlüssel.
+{
+	const begruendung = abzug.knoten.find((k) => k.id === 'k-prozessfuehrung')?.begruendung ?? '';
+	if (!begruendung.includes(IM_VORAUS) || begruendung.includes(IM_VORAUS_NUR_ANWENDUNG.trim())) {
+		throw new Error('Ermächtigung im Voraus: Die Begründung von «k-prozessfuehrung» trägt auf der Website nicht genau den Satz für die Website.');
 	}
 }
 const nochEinigeTage = JSON.stringify(abzug).match(/.{0,80}einige Tage nach Ablauf.{0,40}/);

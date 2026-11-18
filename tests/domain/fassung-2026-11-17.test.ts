@@ -70,7 +70,7 @@ function mass(rw: Regelwerk, k: Ergebnisknoten, wahlen: Lesartenwahl) {
 
 describe('Fassung 2026-11-17', () => {
 	it('ist seit der Fassung 2026-11-18 nicht mehr die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		expect(NEU.freigabevermerk.startsWith(VOR.freigabevermerk)).toBe(true);

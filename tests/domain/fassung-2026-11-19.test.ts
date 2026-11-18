@@ -57,7 +57,7 @@ function mass(rw: Regelwerk, k: Ergebnisknoten, wahlen: Lesartenwahl) {
 
 describe('Fassung 2026-11-19', () => {
 	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 	});

@@ -29,7 +29,7 @@ function frage(rw: ReturnType<typeof holeRegelwerk>, id: string) {
 
 describe('Fassung 2026-10-30', () => {
 	it('ist seit F1 nicht mehr die aktuelle Fassung und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-23');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-24');
 		expect(NEU.fassung).toBe('2026-10-30');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);

@@ -1651,7 +1651,10 @@ mit Probe der ganzen Folge; in der Fassung 2026-11-22 stand nur ein Satz nach de
 Kernsatz). Der Kernsatz bleibt zeichengleich, weil er auch in der FAQ der Website geprüft
 steht. 2026-11-23 ist
 in der Anwendung gleich 2026-11-22 und gibt nur dem geänderten Abzug eine eigene Kennung,
-weil der Abzug 2026-11-22 auf der Website mit seiner Prüfsumme geprüft steht. Der
+weil der Abzug 2026-11-22 auf der Website mit seiner Prüfsumme geprüft steht. 2026-11-24
+fasst an der Prozessführung die Ermächtigung im Voraus enger (`IM_VORAUS`, BGer 5A_590/2011
+E. 8.3); die Anwendung trägt dazu zwei Sätze zu Streit und Erneuerung, die auf der Website
+der Kasten darunter sagt (`IM_VORAUS_NUR_ANWENDUNG`, im Abzug weggelassen). Der
 Abzug bricht bei einer Wortdopplung ab, mit der Regel des Inhaltswächters der Website. 2026-11-16
 ändert dazu Wortlaut: die allgemeine Erklärung zum Wortlaut (`ZAEHLUNG_ANWESENDE`,
 T4) und den Freigabevermerk (`FREIGABEVERMERK_ZUSATZ`, T7d; Textrunde zu den
