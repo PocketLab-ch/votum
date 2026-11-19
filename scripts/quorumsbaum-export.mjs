@@ -143,8 +143,8 @@ import {
 	VOLLMACHT_AN_IHN
 } from '../src/lib/rules/quorum-2026-11-15.ts';
 import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
-// Die aktuelle Fassung (2026-11-25): Die Wortlaute der Website hängen an den Ersetzungen
-// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19, 2026-11-21 und 2026-11-22 (`nachDieserFassung`;
+// Die aktuelle Fassung (2026-11-26): Die Wortlaute der Website hängen an den Ersetzungen
+// der Fassungen 2026-11-14, 2026-11-15, 2026-11-17, 2026-11-19, 2026-11-21, 2026-11-22, 2026-11-25 und 2026-11-26 (`nachDieserFassung`;
 // 2026-11-19 hängt den Widerruf an den Satz zur Erweiterung, 2026-11-21 fasst ihn neu und
 // trägt ihn auf der Website ohne die Sätze zu Votum, `WIDERRUF_WEBSITE`; 2026-11-22 stellt
 // ihn um, trägt die Rücknahme vor der Wahl auf der Website ohne die Bedienung von Votum,
@@ -153,13 +153,15 @@ import { LEHRE_UND_GERICHT } from '../src/lib/rules/quorum-2026-11-14.ts';
 // als eigenen Absatz vor K, `VOR_K`, und lässt nach K nur, was bei einem Gesuch zählt, `NACH_K`;
 // 2026-11-24 fasst an der Prozessführung die Ermächtigung im Voraus enger, `IM_VORAUS`; 2026-11-25 ergänzt
 // Hilfe und Hinweise nach den niedrigen Befunden, den Fallteil an der Wahl um die Wiederwahl, den Teil nach K
-// am Fonds und den Hinweis zur Offerte auf der Website, `OFFERTE_WEBSITE`). Die Fassung 2026-11-20 führt
+// am Fonds und den Hinweis zur Offerte auf der Website, `OFFERTE_WEBSITE`; 2026-11-26 ergänzt den Widerruf auf
+// beiden Seiten, `WIDERRUF_WEBSITE`, die Begründung der Prozessführung, `mitErstreckung`, und Sätze nach K, `NACH_K`; `VOR_K` bleibt).
+// Die Fassung 2026-11-20 führt
 // die Bezahlung aus dem Fonds als eigenen Fall und ersetzt den Satz zur Entnahme und die
 // Hilfe an `f4-1-verwendung` selbst; der Abzug übernimmt sie wie jede Karte. Die Fassung
 // 2026-11-18 teilt den Erneuerungsfonds und ersetzt den Satz zur Verwendung und die Hilfe
 // an `f4-1-verwendung` selbst, nicht über `ERSETZUNGEN`; der Abzug übernimmt sie wie jede Karte.
 // Zwei Importzeilen mit Absicht: Der Wächter in `regelwerksfassungen.test.ts` sucht die Zeile, die mit `REGELWERK_` beginnt.
-import { REGELWERK_2026_11_25 } from '../src/lib/rules/quorum-2026-11-25.ts';
+import { REGELWERK_2026_11_26 } from '../src/lib/rules/quorum-2026-11-26.ts';
 import {
 	ENTNAHME_ID as FONDS_ENTNAHME_ID,
 	VEREINBART_ID as FONDS_VEREINBART_ID,
@@ -169,11 +171,18 @@ import { WARTEZEIT_K, WARTEZEIT_KK } from '../src/lib/rules/quorum-2026-11-21.ts
 import {
 	EILWEG as EILWEG_NEU,
 	RUECKNAHME_VOR_DER_WAHL,
-	RUECKNAHME_WEBSITE,
-	WIDERRUF_WEBSITE as WIDERRUF
+	RUECKNAHME_WEBSITE
 } from '../src/lib/rules/quorum-2026-11-22.ts';
 import { IM_VORAUS, IM_VORAUS_NUR_ANWENDUNG, IM_VORAUS_VORHER } from '../src/lib/rules/quorum-2026-11-24.ts';
-import { NACH_K, OFFERTE_WEBSITE, VOR_K, nachDieserFassung } from '../src/lib/rules/quorum-2026-11-25.ts';
+import { OFFERTE_WEBSITE } from '../src/lib/rules/quorum-2026-11-25.ts';
+// Ab der Fassung 2026-11-26 der Widerruf mit den Einfügungen L4-1 und L5-2 auf der Seite der Website.
+import {
+	NACH_K,
+	VOR_K,
+	WIDERRUF_WEBSITE as WIDERRUF,
+	mitErstreckung,
+	nachDieserFassung
+} from '../src/lib/rules/quorum-2026-11-26.ts';
 import { ERRICHTEN_ID as FONDS_ERRICHTEN_ID } from '../src/lib/rules/quorum-2026-11-18.ts';
 import {
 	ANFECHTUNG_VERWEIS,
@@ -236,7 +245,7 @@ import {
 import { teileHilfe } from '../src/lib/domain/hilfetext.ts';
 import { createHash } from 'node:crypto';
 
-const rw = REGELWERK_2026_11_25;
+const rw = REGELWERK_2026_11_26;
 
 /** Die Karten mit Einstimmigkeit, weil statt der Versammlung entschieden wird (ab 2026-10-27). */
 const STATT_VERSAMMLUNG = new Set([BEWIRTSCHAFTUNG_STATT_ID, UEBERTRAGUNG_STATT_ID]);
@@ -830,6 +839,8 @@ const WAHL_ERSTER_SATZ_WEBSITE =
 	// Ab der Fassung 2026-11-19 der Widerruf, ab 2026-11-21 nach dem Wortlaut der Website-Karte
 	// `#faq-pflichtenheft` (Meldung der Website vom 16.11.2026), ohne die Sätze zu Votum; ab
 	// 2026-11-22 in der Reihenfolge des FAQ-Kastens «Befugnisse zurücknehmen» (Meldung vom 18.11.2026).
+	// Ab 2026-11-26 mit dem sicheren Weg beim anderen Mehr des Reglements (L5-2) und der später erweiterten
+	// Übertragung (L4-1), dieselben Sätze wie in der Anwendung.
 	WIDERRUF;
 
 /**
@@ -1057,7 +1068,9 @@ const UMFORMULIERUNGEN = new Map([
 	// zwei Sätze zu Streit und Erneuerung (`IM_VORAUS_NUR_ANWENDUNG`): Die sagt dort der Kasten darunter.
 	[
 		nachDieserFassung(PROZESS_BEGRUENDUNG),
-		ersetzeGenau(ersetzeGenau(PROZESS_BEGRUENDUNG_VORHER, EILWEG_GESETZ, EILWEG_NEU), IM_VORAUS_VORHER, IM_VORAUS)
+		// Ab der Fassung 2026-11-26 die Erstreckung einer Frist des Gerichts (Fach F4-1 der Korrektur am Abzug
+		// 2026-11-21), auf beiden Seiten.
+		mitErstreckung(ersetzeGenau(ersetzeGenau(PROZESS_BEGRUENDUNG_VORHER, EILWEG_GESETZ, EILWEG_NEU), IM_VORAUS_VORHER, IM_VORAUS))
 	],
 	// **Die luxuriöse Massnahme: der Wortlaut vor der Lesart** (Fassung
 	// 2026-11-10, L12; Codeprüfung E1 Block B, Befund 1), wie bei L11: ohne die

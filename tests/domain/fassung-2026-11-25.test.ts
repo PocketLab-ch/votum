@@ -37,7 +37,7 @@ const ersetzeAlle = (t: string) => ERSETZUNGEN.reduce((s, [alt, neu]) => s.split
 
 describe('Fassung 2026-11-25', () => {
 	it('ist die aktuelle und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-26');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 	});

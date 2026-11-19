@@ -106,7 +106,7 @@ describe('L17 im Katalog', () => {
 	});
 
 	it('besteht die Prüfung am Regelwerk, und beide Karten rechnen nach der Vorgabe', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-26');
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
 		for (const id of KARTEN_MIT_L17) {
 			expect(knoten(id).lesart?.kennung, id).toBe('L17');

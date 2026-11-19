@@ -1657,7 +1657,11 @@ E. 8.3); die Anwendung trägt dazu zwei Sätze zu Streit und Erneuerung, die auf
 der Kasten darunter sagt (`IM_VORAUS_NUR_ANWENDUNG`, im Abzug weggelassen). 2026-11-25
 ergänzt die Hilfe zu `f2-1-kompetenzen` (laufender Vertrag, Vergabebetrag, Rücknahme, Reihenfolge),
 erklärt an der Wahl das qualifizierte Mehr und gibt den Fondskarten je Karte einen Ersatzweg
-(`ERSATZWEG_JE_KARTE`, nicht über `nachDieserFassung`, weil derselbe Satz verschieden weitergeht). Der
+(`ERSATZWEG_JE_KARTE`, nicht über `nachDieserFassung`, weil derselbe Satz verschieden weitergeht). 2026-11-26
+sagt in der Hilfe zu `f3-1-quoren`, welche Antwort die Rücknahme einer Übertragung braucht (gewöhnliche
+Bestimmung, beim Begründungsakt sicher die Antwort zu Zuständigkeit oder Quoren, bei einer
+Einstimmigkeitsklausel die Antwort dazu), und ergänzt den Widerruf an allen sechs Stellen; die Website-Seite der zwei betroffenen Paare
+im Export kommt aus derselben Fassung (`WIDERRUF_WEBSITE`, `mitErstreckung`). Der
 Abzug bricht bei einer Wortdopplung ab, mit der Regel des Inhaltswächters der Website. 2026-11-16
 ändert dazu Wortlaut: die allgemeine Erklärung zum Wortlaut (`ZAEHLUNG_ANWESENDE`,
 T4) und den Freigabevermerk (`FREIGABEVERMERK_ZUSATZ`, T7d; Textrunde zu den

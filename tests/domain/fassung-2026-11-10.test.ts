@@ -74,7 +74,7 @@ function knoten(rw: Regelwerk, id: string): Ergebnisknoten {
 
 describe('Fassung 2026-11-10', () => {
 	it('ist die aktuelle Fassung und besteht die Prüfungen', () => {
-		expect(AKTUELLE_FASSUNG).toBe('2026-11-25');
+		expect(AKTUELLE_FASSUNG).toBe('2026-11-26');
 		expect(NEU.fassung).toBe('2026-11-10');
 		expect(pruefeRegelwerk(NEU)).toStrictEqual([]);
 		expect(pruefeLesartenImRegelwerk(NEU, AKTUELLE_FASSUNG)).toStrictEqual([]);
